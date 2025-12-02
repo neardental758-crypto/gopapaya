@@ -1,0 +1,270 @@
+<div class="min-h-screen bg-dark-950 p-6 space-y-6">
+  <!-- Header -->
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-8 shadow-neon-blue">
+    <h1 class="text-4xl font-display font-bold text-white mb-2 flex items-center gap-3">
+      🧠 <span class="text-neon-blue">Brain Bike</span>
+    </h1>
+    <p class="text-gray-400 font-body">Panel de Control - Gestión de Contenidos</p>
+  </div>
+
+  <!-- Sección de Temáticas -->
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-display font-bold text-white flex items-center gap-2">
+        📚 Temáticas
+      </h2>
+      <button
+        (click)="toggleFormTematica()"
+        class="bg-neon-yellow text-dark-950 px-6 py-3 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+      >
+        ➕ Nueva Temática
+      </button>
+    </div>
+
+    <!-- Formulario de Temática -->
+    <app-dynamic-form
+      *ngIf="showForm === 'tematica'"
+      title="Temática"
+      [fields]="tematicaFields"
+      [isEditMode]="editMode"
+      (onSubmit)="onSubmitTematica($event)"
+      (onCancel)="cancelForm()"
+    ></app-dynamic-form>
+
+    <!-- Tabla de Temáticas -->
+    <div class="overflow-hidden border border-dark-700 rounded-card">
+      <table class="min-w-full divide-y divide-dark-700">
+        <thead class="bg-dark-800">
+          <tr>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Nombre</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Descripción</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Logo</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Contenidos</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="bg-dark-900 divide-y divide-dark-700">
+          <tr
+            *ngFor="let tematica of tematicas"
+            (click)="selectTematica(tematica)"
+            class="cursor-pointer transition-colors hover:bg-dark-800"
+            [class.bg-dark-800]="selectedTematica?._id === tematica._id"
+            [class.border-l-2]="selectedTematica?._id === tematica._id"
+            [class.border-neon-yellow]="selectedTematica?._id === tematica._id"
+          >
+            <td class="px-6 py-4">
+              <span class="text-sm font-semibold text-white">{{ tematica.nombre_tematica }}</span>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-400">{{ tematica.descripcion || '-' }}</td>
+            <td class="px-6 py-4">
+              <img
+                *ngIf="tematica.logo_tematica"
+                [src]="tematica.logo_tematica"
+                alt="Logo"
+                class="w-12 h-12 object-cover rounded-lg border border-dark-600"
+              />
+              <span *ngIf="!tematica.logo_tematica" class="text-gray-600">-</span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-neon-yellow/10 text-neon-yellow border border-neon-yellow">
+                {{ tematica.contenidos?.length || 0 }}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex gap-2">
+                <button
+                  (click)="toggleFormTematica(tematica); $event.stopPropagation()"
+                  class="p-2 bg-dark-700 text-neon-blue rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+                  title="Editar"
+                >
+                  ✏️
+                </button>
+                <button
+                  (click)="deleteTematica(tematica); $event.stopPropagation()"
+                  class="p-2 bg-dark-700 text-neon-red rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+                  title="Eliminar"
+                >
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Sin datos -->
+      <div *ngIf="tematicas.length === 0" class="text-center py-16 text-gray-500 bg-dark-800">
+        <div class="text-6xl mb-4 opacity-30">📭</div>
+        <p class="text-lg font-medium">No hay temáticas registradas</p>
+        <p class="text-sm mt-2 text-gray-600">Crea tu primera temática para comenzar</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de Contenidos -->
+  <div *ngIf="selectedTematica" class="bg-dark-900 border border-dark-700 rounded-card p-6 animate-fadeIn">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-display font-bold text-white flex items-center gap-2">
+        📹 Contenidos de <span class="text-neon-blue">{{ selectedTematica.nombre_tematica }}</span>
+      </h2>
+      <button
+        (click)="toggleFormContenido()"
+        class="bg-neon-blue text-dark-950 px-6 py-3 rounded-lg font-bold shadow-neon-blue hover:shadow-neon-blue-lg hover:scale-105 transition-all"
+      >
+        ➕ Nuevo Contenido
+      </button>
+    </div>
+
+    <!-- Formulario de Contenido -->
+    <app-dynamic-form
+      *ngIf="showForm === 'contenido'"
+      title="Contenido"
+      [fields]="contenidoFields"
+      [isEditMode]="editMode"
+      (onSubmit)="onSubmitContenido($event)"
+      (onCancel)="cancelForm()"
+    ></app-dynamic-form>
+
+    <!-- Lista de Contenidos -->
+    <div class="grid gap-4">
+      <div
+        *ngFor="let contenido of selectedTematica.contenidos"
+        (click)="selectContenido(contenido)"
+        class="border rounded-card p-5 cursor-pointer transition-all hover:border-neon-blue"
+        [class.border-neon-blue]="selectedContenido?._id === contenido._id"
+        [class.bg-dark-800]="selectedContenido?._id === contenido._id"
+        [class.shadow-neon-blue]="selectedContenido?._id === contenido._id"
+        [class.border-dark-600]="selectedContenido?._id !== contenido._id"
+        [class.bg-dark-850]="selectedContenido?._id !== contenido._id"
+      >
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <h3 class="font-bold text-lg text-white mb-2">{{ contenido.nombre_contenido }}</h3>
+            <a
+              *ngIf="contenido.link_video"
+              [href]="contenido.link_video"
+              target="_blank"
+              class="text-neon-blue hover:text-neon-blue/80 text-sm font-medium flex items-center gap-1"
+              (click)="$event.stopPropagation()"
+            >
+              🔗 Ver video →
+            </a>
+            <span *ngIf="!contenido.link_video" class="text-gray-600 text-sm">Sin video</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-neon-blue/10 text-neon-blue border border-neon-blue">
+              {{ contenido.preguntas?.length || 0 }} preguntas
+            </span>
+            <button
+              (click)="toggleFormContenido(contenido); $event.stopPropagation()"
+              class="p-2 bg-dark-700 text-neon-blue rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+            >
+              ✏️
+            </button>
+            <button
+              (click)="deleteContenido(contenido); $event.stopPropagation()"
+              class="p-2 bg-dark-700 text-neon-red rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+            >
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sin contenidos -->
+      <div *ngIf="!selectedTematica.contenidos || selectedTematica.contenidos.length === 0" class="text-center py-12 text-gray-500 bg-dark-800 rounded-card border border-dark-700">
+        <div class="text-4xl mb-3 opacity-30">📹</div>
+        <p class="font-medium">No hay contenidos en esta temática</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de Preguntas -->
+  <div *ngIf="selectedContenido" class="bg-dark-900 border border-dark-700 rounded-card p-6 animate-fadeIn">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-display font-bold text-white flex items-center gap-2">
+        ❓ Preguntas de <span class="text-neon-yellow">{{ selectedContenido.nombre_contenido }}</span>
+      </h2>
+      <button
+        (click)="toggleFormPregunta()"
+        class="bg-neon-yellow text-dark-950 px-6 py-3 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+      >
+        ➕ Nueva Pregunta
+      </button>
+    </div>
+
+    <!-- Formulario de Pregunta -->
+    <app-question-form
+      *ngIf="showForm === 'pregunta'"
+      [isEditMode]="editMode"
+      [preguntaData]="preguntaParaEditar"
+      (onSubmit)="onSubmitPregunta($event)"
+      (onCancel)="cancelForm()"
+    ></app-question-form>
+
+    <!-- Lista de Preguntas -->
+    <div class="space-y-4">
+      <div
+        *ngFor="let pregunta of selectedContenido.preguntas; let i = index"
+        class="border rounded-card p-5 transition-all"
+        [class.border-neon-yellow]="selectedPregunta?._id === pregunta._id"
+        [class.bg-dark-800]="selectedPregunta?._id === pregunta._id"
+        [class.shadow-neon-yellow]="selectedPregunta?._id === pregunta._id"
+        [class.border-dark-600]="selectedPregunta?._id !== pregunta._id"
+        [class.bg-dark-850]="selectedPregunta?._id !== pregunta._id"
+      >
+        <div class="flex justify-between items-start gap-4">
+          <div class="flex-1">
+            <h4 class="font-bold text-white mb-3 flex items-center gap-2">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-neon-yellow/10 text-neon-yellow text-sm font-bold border border-neon-yellow">
+                {{ i + 1 }}
+              </span>
+              {{ pregunta.texto_pregunta }}
+            </h4>
+
+            <!-- Respuestas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
+              <div
+                *ngFor="let respuesta of pregunta.respuestas"
+                class="px-4 py-2 rounded-lg text-sm transition-all border"
+                [class.bg-neon-green10]="respuesta.es_correcta"
+                [class.text-neon-green]="respuesta.es_correcta"
+                [class.border-neon-green]="respuesta.es_correcta"
+                [class.font-semibold]="respuesta.es_correcta"
+                [class.bg-dark-700]="!respuesta.es_correcta"
+                [class.text-gray-400]="!respuesta.es_correcta"
+                [class.border-dark-600]="!respuesta.es_correcta"
+              >
+                {{ respuesta.texto_respuesta }}
+                <span *ngIf="respuesta.es_correcta" class="ml-2">✓</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              (click)="editarPregunta(pregunta)"
+              class="p-2 bg-dark-700 text-neon-blue rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+              title="Editar"
+            >
+              ✏️
+            </button>
+            <button
+              (click)="deletePregunta(pregunta)"
+              class="p-2 bg-dark-700 text-neon-red rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+              title="Eliminar"
+            >
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sin preguntas -->
+      <div *ngIf="!selectedContenido.preguntas || selectedContenido.preguntas.length === 0" class="text-center py-12 text-gray-500 bg-dark-800 rounded-card border border-dark-700">
+        <div class="text-4xl mb-3 opacity-30">❓</div>
+        <p class="font-medium">No hay preguntas en este contenido</p>
+      </div>
+    </div>
+  </div>
+</div>

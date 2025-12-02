@@ -1,0 +1,231 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6 space-y-6">
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8 shadow-neon-yellow">
+    <h1 class="text-2xl sm:text-4xl font-display font-bold text-white mb-2">
+      👥 Gestión de <span class="text-neon-yellow">Usuarios</span>
+    </h1>
+    <p class="text-gray-400 font-body text-sm sm:text-base">Administra los usuarios del sistema</p>
+  </div>
+
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <h2 class="text-xl sm:text-2xl font-display font-bold text-white">Usuarios del Sistema</h2>
+      <button
+        (click)="toggleForm()"
+        class="w-full sm:w-auto bg-neon-yellow text-dark-950 px-6 py-3 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+      >
+        ➕ Nuevo Usuario
+      </button>
+    </div>
+
+    <div *ngIf="showForm" class="mb-6 border border-dark-600 rounded-card p-4 sm:p-6 bg-dark-800">
+      <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-4">
+        {{ editMode ? '✏️ Editar Usuario' : '➕ Crear Usuario' }}
+      </h3>
+
+      <div *ngIf="errorMessage" class="mb-4 p-4 bg-neon-red bg-opacity-10 border border-neon-red rounded-lg">
+        <p class="text-neon-red text-sm">{{ errorMessage }}</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-300 mb-2">Nombre *</label>
+            <input
+              type="text"
+              [(ngModel)]="usuarioForm.nombre"
+              name="nombre"
+              class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+              placeholder="Nombre del usuario"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-300 mb-2">Email *</label>
+            <input
+              type="email"
+              [(ngModel)]="usuarioForm.email"
+              name="email"
+              class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+              placeholder="correo@ejemplo.com"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">
+            Contraseña {{ editMode ? '(dejar vacío para no cambiar)' : '*' }}
+          </label>
+          <input
+            type="password"
+            [(ngModel)]="usuarioForm.password"
+            name="password"
+            (ngModelChange)="onPasswordChange()"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="••••••••"
+            [required]="!editMode"
+          />
+
+          <div *ngIf="usuarioForm.password && (!editMode || usuarioForm.password)" class="mt-3 space-y-2">
+            <p class="text-xs text-gray-400 font-bold">Requisitos de contraseña:</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div class="flex items-center gap-2">
+                <span [class.text-neon-green]="passwordRequirements.minLength" [class.text-gray-500]="!passwordRequirements.minLength" class="text-xs">
+                  {{ passwordRequirements.minLength ? '✓' : '○' }} Mínimo 8 caracteres
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span [class.text-neon-green]="passwordRequirements.hasUpperCase" [class.text-gray-500]="!passwordRequirements.hasUpperCase" class="text-xs">
+                  {{ passwordRequirements.hasUpperCase ? '✓' : '○' }} Una mayúscula
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span [class.text-neon-green]="passwordRequirements.hasLowerCase" [class.text-gray-500]="!passwordRequirements.hasLowerCase" class="text-xs">
+                  {{ passwordRequirements.hasLowerCase ? '✓' : '○' }} Una minúscula
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span [class.text-neon-green]="passwordRequirements.hasNumber" [class.text-gray-500]="!passwordRequirements.hasNumber" class="text-xs">
+                  {{ passwordRequirements.hasNumber ? '✓' : '○' }} Un número
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span [class.text-neon-green]="passwordRequirements.hasSpecialChar" [class.text-gray-500]="!passwordRequirements.hasSpecialChar" class="text-xs">
+                  {{ passwordRequirements.hasSpecialChar ? '✓' : '○' }} Un carácter especial
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+         <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Rol *</label>
+          <select
+            [(ngModel)]="usuarioForm.rol"
+            name="rol"
+            (ngModelChange)="onRolChange()"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white"
+            required
+          >
+            <option value="admin">Admin</option>
+            <option value="super_admin">Super Admin</option>
+          </select>
+        </div>
+
+        <div *ngIf="usuarioForm.rol === 'admin'">
+          <label class="block text-sm font-bold text-gray-300 mb-3">Empresas * (Selecciona una o varias)</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto p-3 bg-dark-700 border border-dark-600 rounded-lg">
+            <div
+              *ngFor="let empresa of empresas"
+              (click)="toggleEmpresa(empresa._id)"
+              class="flex items-center gap-3 p-3 rounded-lg cursor-pointer border-2 transition-all"
+              [class.bg-neon-yellow]="isEmpresaSelected(empresa._id)"
+              [class.bg-opacity-20]="isEmpresaSelected(empresa._id)"
+              [class.border-neon-yellow]="isEmpresaSelected(empresa._id)"
+              [class.bg-dark-800]="!isEmpresaSelected(empresa._id)"
+              [class.border-dark-600]="!isEmpresaSelected(empresa._id)"
+              [class.hover:border-neon-yellow]="!isEmpresaSelected(empresa._id)"
+            >
+              <div class="flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center"
+                [class.bg-neon-yellow]="isEmpresaSelected(empresa._id)"
+                [class.border-neon-yellow]="isEmpresaSelected(empresa._id)"
+                [class.border-gray-500]="!isEmpresaSelected(empresa._id)"
+              >
+                <span *ngIf="isEmpresaSelected(empresa._id)" class="text-dark-950 text-xs font-bold">✓</span>
+              </div>
+              <span class="text-sm font-medium"
+                [class.text-white]="isEmpresaSelected(empresa._id)"
+                [class.text-gray-300]="!isEmpresaSelected(empresa._id)"
+              >
+                {{ empresa.nombre }}
+              </span>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Has seleccionado {{ usuarioForm.empresa_ids.length }} empresa(s)</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 justify-end pt-4">
+          <button
+            type="button"
+            (click)="cancelForm()"
+            class="w-full sm:w-auto px-6 py-2 bg-dark-700 text-gray-300 rounded-lg font-semibold hover:bg-dark-600 border border-dark-600 transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="w-full sm:w-auto px-6 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+          >
+            {{ editMode ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="overflow-x-auto border border-dark-700 rounded-card">
+      <table class="min-w-full divide-y divide-dark-700">
+        <thead class="bg-dark-800">
+          <tr>
+            <th class="px-4 sm:px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Nombre</th>
+            <th class="px-4 sm:px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Email</th>
+            <th class="px-4 sm:px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Rol</th>
+            <th class="px-4 sm:px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Empresas</th>
+            <th class="px-4 sm:px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="bg-dark-900 divide-y divide-dark-700">
+          <tr
+            *ngFor="let usuario of usuarios"
+            (click)="selectUsuario(usuario)"
+            class="cursor-pointer hover:bg-dark-800 transition-colors"
+            [class.bg-dark-800]="selectedUsuario?._id === usuario._id"
+            [class.border-l-2]="selectedUsuario?._id === usuario._id"
+            [class.border-neon-yellow]="selectedUsuario?._id === usuario._id"
+          >
+            <td class="px-4 sm:px-6 py-4 text-sm font-semibold text-white">{{ usuario.nombre }}</td>
+            <td class="px-4 sm:px-6 py-4 text-sm text-gray-400">{{ usuario.email }}</td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 rounded-full text-xs font-bold border"
+                [class.bg-neon-blue10]="usuario.rol === 'super_admin'"
+                [class.text-neon-blue]="usuario.rol === 'super_admin'"
+                [class.border-neon-blue]="usuario.rol === 'super_admin'"
+                [class.bg-neon-yellow10]="usuario.rol === 'admin'"
+                [class.text-neon-yellow]="usuario.rol === 'admin'"
+                [class.border-neon-yellow]="usuario.rol === 'admin'"
+              >
+                {{ getRolLabel(usuario.rol) }}
+              </span>
+            </td>
+            <td class="px-4 sm:px-6 py-4 text-sm text-gray-400">
+              {{ getEmpresasNombres(usuario.empresa_ids) }}
+            </td>
+            <td class="px-4 sm:px-6 py-4">
+              <div class="flex gap-2">
+                <button
+                  (click)="toggleForm(usuario); $event.stopPropagation()"
+                  class="p-2 bg-dark-700 text-neon-blue rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+                  title="Editar"
+                >
+                  ✏️
+                </button>
+                <button
+                  (click)="deleteUsuario(usuario); $event.stopPropagation()"
+                  class="p-2 bg-dark-700 text-neon-red rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+                  title="Desactivar"
+                >
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="usuarios.length === 0" class="text-center py-16 text-gray-500 bg-dark-800">
+        <div class="text-6xl mb-4 opacity-30">👥</div>
+        <p class="text-lg font-medium">No hay usuarios registrados</p>
+      </div>
+    </div>
+  </div>
+</div>

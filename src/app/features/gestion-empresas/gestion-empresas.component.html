@@ -1,0 +1,135 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6 space-y-6">
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8 shadow-neon-yellow">
+    <h1 class="text-2xl sm:text-4xl font-display font-bold text-white mb-2">
+      🏢 Gestión de <span class="text-neon-yellow">Empresas</span>
+    </h1>
+    <p class="text-gray-400 font-body text-sm sm:text-base">Administra las empresas del sistema</p>
+  </div>
+
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <h2 class="text-xl sm:text-2xl font-display font-bold text-white">Empresas Registradas</h2>
+      <button
+        (click)="toggleForm()"
+        class="w-full sm:w-auto bg-neon-yellow text-dark-950 px-6 py-3 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+      >
+        ➕ Nueva Empresa
+      </button>
+    </div>
+
+    <div *ngIf="showForm" class="mb-6 border border-dark-600 rounded-card p-4 sm:p-6 bg-dark-800">
+      <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-4">
+        {{ editMode ? '✏️ Editar Empresa' : '➕ Crear Empresa' }}
+      </h3>
+
+      <form (ngSubmit)="onSubmit()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Nombre *</label>
+          <input
+            type="text"
+            [(ngModel)]="empresaForm.nombre"
+            name="nombre"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="Nombre de la empresa"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">URL del Logo (opcional)</label>
+          <input
+            type="text"
+            [(ngModel)]="empresaForm.logo"
+            name="logo"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="https://ejemplo.com/logo.png"
+          />
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 justify-end pt-2">
+          <button
+            type="button"
+            (click)="cancelForm()"
+            class="w-full sm:w-auto px-6 py-2 bg-dark-700 text-gray-300 rounded-lg font-semibold hover:bg-dark-600 border border-dark-600 transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="w-full sm:w-auto px-6 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+          >
+            {{ editMode ? 'Actualizar' : 'Crear' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="overflow-x-auto border border-dark-700 rounded-card">
+      <table class="min-w-full divide-y divide-dark-700">
+        <thead class="bg-dark-800">
+          <tr>
+            <th class="px-4 sm:px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Nombre</th>
+            <th class="px-4 sm:px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Logo</th>
+            <th class="px-4 sm:px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Estado</th>
+            <th class="px-4 sm:px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="bg-dark-900 divide-y divide-dark-700">
+          <tr
+            *ngFor="let empresa of empresas"
+            (click)="selectEmpresa(empresa)"
+            class="cursor-pointer hover:bg-dark-800 transition-colors"
+            [class.bg-dark-800]="selectedEmpresa?._id === empresa._id"
+            [class.border-l-2]="selectedEmpresa?._id === empresa._id"
+            [class.border-neon-yellow]="selectedEmpresa?._id === empresa._id"
+          >
+            <td class="px-4 sm:px-6 py-4 text-sm font-semibold text-white">{{ empresa.nombre }}</td>
+            <td class="px-4 sm:px-6 py-4">
+              <div *ngIf="empresa.logo" class="w-10 h-10 rounded overflow-hidden bg-dark-700">
+                <img [src]="empresa.logo" [alt]="empresa.nombre" class="w-full h-full object-cover" />
+              </div>
+              <span *ngIf="!empresa.logo" class="text-gray-500 text-xs">Sin logo</span>
+            </td>
+           <td class="px-6 py-4">
+            <span
+              class="px-3 py-1 rounded-full text-xs font-bold border"
+              [class.bg-neon-green10]="empresa.estado === 'activo'"
+              [class.text-neon-green]="empresa.estado === 'activo'"
+              [class.border-neon-green]="empresa.estado === 'activo'"
+              [class.bg-neon-red10]="empresa.estado === 'inactivo'"
+              [class.text-neon-red]="empresa.estado === 'inactivo'"
+              [class.border-neon-red]="empresa.estado === 'inactivo'"
+            >
+              {{ empresa.estado === 'activo' ? '✓ Activa' : '✗ Inactiva' }}
+            </span>
+          </td>
+            <td class="px-4 sm:px-6 py-4">
+              <div class="flex gap-2">
+                <button
+                  (click)="toggleForm(empresa); $event.stopPropagation()"
+                  class="p-2 bg-dark-700 text-neon-blue rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+                  title="Editar"
+                >
+                  ✏️
+                </button>
+                <button
+                  (click)="deleteEmpresa(empresa); $event.stopPropagation()"
+                  class="p-2 bg-dark-700 text-neon-red rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+                  title="Desactivar"
+                >
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="empresas.length === 0" class="text-center py-16 text-gray-500 bg-dark-800">
+        <div class="text-6xl mb-4 opacity-30">🏢</div>
+        <p class="text-lg font-medium">No hay empresas registradas</p>
+        <p class="text-sm mt-2">Crea tu primera empresa para comenzar</p>
+      </div>
+    </div>
+  </div>
+</div>

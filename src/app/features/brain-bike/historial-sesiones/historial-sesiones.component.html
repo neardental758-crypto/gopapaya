@@ -1,0 +1,270 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 mb-6">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+          <button (click)="volver()" class="p-2 bg-dark-800 text-neon-blue rounded-lg hover:bg-dark-700 transition-all">
+            ← Volver
+          </button>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-display font-bold text-white">📊 Historial de Sesiones</h1>
+            <p class="text-gray-400 text-sm">Sesiones finalizadas y métricas de impacto</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div>
+          <label class="block text-white text-sm font-bold mb-2">Empresa</label>
+          <select [(ngModel)]="empresaSeleccionada" (ngModelChange)="onEmpresaChange()"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-blue focus:outline-none">
+            <option value="">Todas las empresas</option>
+            <option *ngFor="let empresa of empresas" [value]="empresa._id">{{ empresa.nombre }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-white text-sm font-bold mb-2">Juego</label>
+          <select [(ngModel)]="filtroJuego" (ngModelChange)="onJuegoChange()"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-blue focus:outline-none">
+            <option value="">Todos los juegos</option>
+            <option value="Brain Bike">Brain Bike</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-white text-sm font-bold mb-2">Desde</label>
+          <input type="date" [(ngModel)]="fechaInicio" (ngModelChange)="onFechaChange()"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-blue focus:outline-none"/>
+        </div>
+        <div>
+          <label class="block text-white text-sm font-bold mb-2">Hasta</label>
+          <input type="date" [(ngModel)]="fechaFin" (ngModelChange)="onFechaChange()"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-blue focus:outline-none"/>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <button (click)="limpiarFiltros()" class="px-4 py-2 bg-dark-800 text-gray-400 rounded-lg hover:text-white hover:bg-dark-700 transition-all text-sm">
+          🗑️ Limpiar filtros
+        </button>
+        <div class="flex gap-2">
+          <button
+            (click)="exportarExcelGeneral()"
+            [disabled]="!indicadores || sesionesAgrupadas.length === 0"
+            class="px-4 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold text-sm hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            style="box-shadow: 0 0 15px rgba(255, 247, 0, 0.3);">
+            📊 Exportar Todo
+          </button>
+          <button (click)="expandirTodas()" class="px-3 py-2 bg-dark-800 text-gray-400 rounded-lg text-sm hover:text-white">Expandir todas</button>
+          <button (click)="contraerTodas()" class="px-3 py-2 bg-dark-800 text-gray-400 rounded-lg text-sm hover:text-white">Contraer todas</button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="indicadores && !cargando" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+      <div class="bg-dark-900 border border-neon-yellow/30 rounded-card p-4 text-center">
+        <p class="text-3xl font-bold text-neon-yellow">{{ indicadores.totalSesiones }}</p>
+        <p class="text-xs text-gray-400 mt-1">Sesiones</p>
+      </div>
+      <div class="bg-dark-900 border border-neon-blue/30 rounded-card p-4 text-center">
+        <p class="text-3xl font-bold text-neon-blue">{{ indicadores.totalCarreras }}</p>
+        <p class="text-xs text-gray-400 mt-1">Carreras</p>
+      </div>
+      <div class="bg-dark-900 border border-neon-green/30 rounded-card p-4 text-center">
+        <p class="text-3xl font-bold text-neon-green">{{ indicadores.totalParticipantes }}</p>
+        <p class="text-xs text-gray-400 mt-1">Participantes</p>
+      </div>
+      <div class="bg-dark-900 border border-neon-pink/30 rounded-card p-4 text-center">
+        <p class="text-3xl font-bold text-neon-pink">{{ formatearDuracion(indicadores.duracionTotalMinutos) }}</p>
+        <p class="text-xs text-gray-400 mt-1">Minutos de juego</p>
+      </div>
+      <div class="bg-dark-900 border border-white/30 rounded-card p-4 text-center">
+        <p class="text-3xl font-bold text-white">{{ indicadores.totalPreguntasRespondidas }}</p>
+        <p class="text-xs text-gray-400 mt-1">Preguntas Respondidas</p>
+      </div>
+    </div>
+
+    <div *ngIf="cargando" class="text-center py-20">
+      <div class="text-6xl mb-4 animate-pulse">⏳</div>
+      <p class="text-gray-400">Cargando historial...</p>
+    </div>
+
+    <div *ngIf="!cargando && sesionesAgrupadas.length === 0" class="text-center py-20">
+      <div class="text-6xl mb-4 opacity-30">🔭</div>
+      <p class="text-gray-400">No hay sesiones finalizadas</p>
+    </div>
+
+    <div *ngIf="!cargando && sesionesAgrupadas.length > 0" class="space-y-4">
+      <div *ngFor="let grupo of sesionesAgrupadas" class="bg-dark-900 border border-dark-700 rounded-card overflow-hidden">
+
+        <div (click)="toggleSesion(grupo.sesion_id)"
+          class="p-4 cursor-pointer hover:bg-dark-850 transition-all flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <img *ngIf="grupo.sesion?.empresa?.logo" [src]="grupo.sesion.empresa.logo"
+              class="w-12 h-12 rounded-lg object-cover" [alt]="grupo.sesion.empresa.nombre"/>
+            <div class="w-12 h-12 rounded-lg bg-dark-700 flex items-center justify-center text-2xl" *ngIf="!grupo.sesion?.empresa?.logo">🏢</div>
+            <div>
+              <h3 class="text-lg font-bold text-white">{{ grupo.sesion?.nombreCliente }}</h3>
+              <p class="text-sm text-gray-400">{{ grupo.sesion?.empresa?.nombre }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-6">
+            <div class="hidden sm:flex items-center gap-4">
+              <div class="text-center">
+                <p class="text-lg font-bold text-neon-yellow">{{ grupo.totales.totalCarreras }}</p>
+                <p class="text-xs text-gray-500">Carreras</p>
+              </div>
+              <div class="text-center">
+                <p class="text-lg font-bold text-neon-green">{{ formatearDuracion(grupo.totales.duracionTotal) }}</p>
+                <p class="text-xs text-gray-500">Duración</p>
+              </div>
+            </div>
+             <button
+              (click)="exportarExcel(grupo); $event.stopPropagation()"
+              class="px-4 py-2 bg-neon-green text-dark-950 rounded-lg font-bold text-sm hover:scale-105 transition-all flex items-center gap-2"
+              style="box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);">
+              📥 Descargar Excel
+            </button>
+            <div class="text-2xl text-neon-blue transition-transform" [class.rotate-180]="isSesionExpandida(grupo.sesion_id)">▼</div>
+          </div>
+        </div>
+
+        <div *ngIf="isSesionExpandida(grupo.sesion_id)" class="border-t border-dark-700">
+          <div class="p-4 bg-dark-850 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div class="bg-dark-800 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-400">Participantes Totales</p>
+              <p class="text-xl font-bold text-neon-yellow">{{ grupo.totales.totalParticipantes }}</p>
+            </div>
+            <div class="bg-dark-800 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-400">Vel. Promedio</p>
+              <p class="text-xl font-bold text-neon-green">{{ getVelocidadPromedioGrupo(grupo) }} km/h</p>
+            </div>
+            <div class="bg-dark-800 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-400">Vel. Máxima</p>
+              <p class="text-xl font-bold text-neon-blue">{{ getVelocidadMaximaGrupo(grupo) }} km/h</p>
+            </div>
+            <div class="bg-dark-800 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-400">Distancia Total</p>
+              <p class="text-xl font-bold text-neon-green">{{ getDistanciaTotalGrupo(grupo) }} km</p>
+            </div>
+            <div class="bg-dark-800 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-400">Calorías Quemadas Totales</p>
+              <p class="text-xl font-bold text-neon-orange">{{ getCaloriasTotalesGrupo(grupo) }} kcal</p>
+            </div>
+            <div class="bg-dark-800 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-400">Vatios Generados Totales</p>
+              <p class="text-xl font-bold text-neon-pink">{{ getVatiosTotalesGrupo(grupo) }} W</p>
+            </div>
+            <div class="bg-dark-800 rounded-lg p-3 text-center">
+              <p class="text-xs text-gray-400">Preguntas Respondidas</p>
+              <p class="text-xl font-bold text-white">{{ grupo.totales.preguntasRespondidas }}</p>
+            </div>
+            <div class="bg-dark-800 rounded-lg p-3 text-center col-span-2 sm:col-span-3 lg:col-span-1">
+              <p class="text-xs text-gray-400 mb-2">Distribución Genero</p>
+              <div class="flex items-center justify-center gap-3">
+                <div class="flex items-center gap-2 bg-neon-blue/10 border border-neon-blue/30 rounded-lg px-3 py-2">
+                  <div class="w-8 h-8 rounded-full bg-neon-blue/20 flex items-center justify-center border border-neon-blue">
+                    <span class="text-xl text-neon-blue">♂</span>
+                  </div>
+                  <span class="text-xl font-bold text-neon-blue">{{ getDistribucionSexoGrupo(grupo).hombres }}</span>
+                </div>
+
+                <div class="flex items-center gap-2 bg-neon-pink/10 border border-neon-pink/30 rounded-lg px-3 py-2">
+                  <div class="w-8 h-8 rounded-full bg-neon-pink/20 flex items-center justify-center border border-neon-pink">
+                    <span class="text-xl text-neon-pink">♀</span>
+                  </div>
+                  <span class="text-xl font-bold text-neon-pink">{{ getDistribucionSexoGrupo(grupo).mujeres }}</span>
+                </div>
+
+                <div *ngIf="getDistribucionSexoGrupo(grupo).sinEspecificar > 0" class="flex items-center gap-2 bg-gray-600/10 border border-gray-500/30 rounded-lg px-3 py-2">
+                  <span class="text-gray-400 font-bold">{{ getDistribucionSexoGrupo(grupo).sinEspecificar }}</span>
+                  <span class="text-xs text-gray-500">N/E</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 space-y-3">
+            <p class="text-sm text-gray-400 font-bold mb-2">🏁 Carreras de esta sesión:</p>
+
+            <div *ngIf="isCargandoCarreras(grupo.sesion_id)" class="text-center py-8">
+              <div class="animate-spin w-8 h-8 border-4 border-neon-yellow border-t-transparent rounded-full mx-auto"></div>
+              <p class="text-gray-400 text-sm mt-2">Cargando carreras...</p>
+            </div>
+
+            <div *ngIf="!isCargandoCarreras(grupo.sesion_id)">
+              <div *ngFor="let carrera of getCarrerasSesion(grupo.sesion_id); let i = index"
+                (click)="verDetalle(carrera.id)"
+                class="bg-dark-800 rounded-lg p-4 hover:border-neon-blue border border-transparent transition-all cursor-pointer">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-neon-blue/20 flex items-center justify-center text-neon-blue font-bold">
+                      {{ (getPaginacionCarreras(grupo.sesion_id)?.paginaActual - 1) * 5 + i + 1 }}
+                    </div>
+                    <div>
+                      <p class="text-white font-bold">{{ carrera.juego_jugado }}</p>
+                      <p class="text-xs text-gray-400">{{ formatearFecha(carrera.fecha_fin) }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <div class="text-center">
+                      <p class="text-sm font-bold text-neon-yellow">{{ formatearDuracion(carrera.duracion_minutos) }}</p>
+                      <p class="text-xs text-gray-500">Duración</p>
+                    </div>
+                    <div class="text-center">
+                      <p class="text-sm font-bold text-neon-blue">{{ carrera.participantes_data!.length || 0 }}</p>
+                      <p class="text-xs text-gray-500">Jugadores</p>
+                    </div>
+                    <div class="text-neon-blue">→</div>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="getPaginacionCarreras(grupo.sesion_id) && getPaginacionCarreras(grupo.sesion_id).totalPaginas > 1"
+                   class="flex items-center justify-center gap-3 pt-4 mt-4 border-t border-dark-700">
+                <button (click)="cambiarPaginaCarreras(grupo.sesion_id, getPaginacionCarreras(grupo.sesion_id).paginaActual - 1); $event.stopPropagation()"
+                        [disabled]="getPaginacionCarreras(grupo.sesion_id).paginaActual === 1"
+                        class="px-3 py-1.5 text-sm bg-dark-800 text-neon-yellow border border-neon-yellow/30 rounded-lg hover:bg-dark-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                  ← Ant
+                </button>
+
+                <span class="text-sm text-neon-yellow/70">
+                  {{ getPaginacionCarreras(grupo.sesion_id).paginaActual }} / {{ getPaginacionCarreras(grupo.sesion_id).totalPaginas }}
+                  <span class="text-gray-500">({{ getPaginacionCarreras(grupo.sesion_id).totalCarreras }} carreras)</span>
+                </span>
+
+                <button (click)="cambiarPaginaCarreras(grupo.sesion_id, getPaginacionCarreras(grupo.sesion_id).paginaActual + 1); $event.stopPropagation()"
+                        [disabled]="getPaginacionCarreras(grupo.sesion_id).paginaActual === getPaginacionCarreras(grupo.sesion_id).totalPaginas"
+                        class="px-3 py-1.5 text-sm bg-dark-800 text-neon-yellow border border-neon-yellow/30 rounded-lg hover:bg-dark-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+                  Sig →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="paginacionSesiones && paginacionSesiones.totalPaginas > 1"
+           class="flex items-center justify-center gap-4 py-6 bg-dark-900 border border-dark-700 rounded-card">
+        <button (click)="cambiarPaginaSesiones(paginacionSesiones.paginaActual - 1)"
+                [disabled]="paginacionSesiones.paginaActual === 1"
+                class="px-6 py-3 bg-dark-800 text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-dark-700 hover:border-neon-blue disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold">
+          ← Anterior
+        </button>
+
+        <div class="text-center">
+          <p class="text-2xl font-bold text-neon-blue">{{ paginacionSesiones.paginaActual }} / {{ paginacionSesiones.totalPaginas }}</p>
+          <p class="text-xs text-gray-400 mt-1">{{ paginacionSesiones.totalSesiones }} sesiones totales</p>
+        </div>
+
+        <button (click)="cambiarPaginaSesiones(paginacionSesiones.paginaActual + 1)"
+                [disabled]="paginacionSesiones.paginaActual === paginacionSesiones.totalPaginas"
+                class="px-6 py-3 bg-dark-800 text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-dark-700 hover:border-neon-blue disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold">
+          Siguiente →
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

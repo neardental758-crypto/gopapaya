@@ -1,0 +1,410 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6 lg:p-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-dark-900/90 border border-dark-700  p-4 sm:p-6 mb-6 sm:mb-8 shadow-2xl">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-4">
+          <div class="text-4xl sm:text-5xl drop-shadow-lg">🚴</div>
+          <div>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-white">
+              <span class="text-neon-blue">Biketona</span> - Configuración
+            </h1>
+            <p class="text-gray-400 text-sm sm:text-base mt-1">
+              Paso {{ paso }} de 2:
+              <span class="text-neon-yellow font-medium">
+                {{ paso === 1 ? 'Selecciona el tipo de pista' : 'Configura la carrera' }}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <button
+          (click)="volver()"
+          class="px-5 sm:px-6 py-2.5 sm:py-3 bg-dark-800 text-gray-300 rounded-xl border-2 border-dark-600 hover:border-neon-blue hover:text-neon-blue hover:shadow-neon-blue duration-300 text-sm sm:text-base font-medium"
+        >
+          {{ paso > 1 ? '← Anterior' : '← Volver' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Indicador de progreso -->
+    <div class="mb-8 sm:mb-10">
+      <div class="flex items-center justify-center gap-6 sm:gap-8">
+        <!-- Paso 1 -->
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg duration-300"
+            [ngClass]="paso === 1 
+              ? 'bg-neon-blue text-dark-900 shadow-neon-blue scale-110' 
+              : 'bg-dark-700 text-gray-500'"
+          >
+            1
+          </div>
+          <span
+            class="hidden sm:inline text-sm sm:text-base font-medium transition-colors"
+            [ngClass]="paso >= 1 ? 'text-white' : 'text-gray-500'"
+          >
+            Tipo de Pista
+          </span>
+        </div>
+
+        <!-- Línea conectora -->
+        <div class="relative w-20 sm:w-32 h-1 bg-dark-800 rounded-full overflow-hidden">
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-neon-blue to-neon-yellow duration-500"
+            [style.width]="paso >= 2 ? '100%' : '0%'"
+          ></div>
+        </div>
+
+        <!-- Paso 2 -->
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg duration-300"
+            [ngClass]="paso >= 2 
+              ? 'bg-neon-yellow text-dark-900 shadow-neon-yellow scale-110' 
+              : 'bg-dark-700 text-gray-500'"
+          >
+            2
+          </div>
+          <span
+            class="hidden sm:inline text-sm sm:text-base font-medium transition-colors"
+            [ngClass]="paso >= 2 ? 'text-white' : 'text-gray-500'"
+          >
+            Configuración
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 1: Selección de tipo de pista -->
+    <div *ngIf="paso === 1" class="animate-fadeIn">
+      <div class="bg-dark-900 border border-dark-700  p-6 sm:p-8 lg:p-10 shadow-2xl">
+        <!-- Título de sección -->
+        <div class="mb-8 sm:mb-10 text-center">
+          <h2 class="text-3xl sm:text-4xl font-display font-bold text-white mb-3">
+            🏁 Selecciona el Tipo de Pista
+          </h2>
+          <p class="text-gray-400 text-base sm:text-lg">
+            Elige cómo se llevará a cabo la competencia
+          </p>
+        </div>
+
+        <!-- Opciones de pista -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto mb-10">
+          <!-- Pista Digital -->
+          <button
+            (click)="seleccionarTipoPista('digital')"
+            class="group relative bg-dark-800 rounded-xl border-4 p-8 sm:p-10 duration-300 overflow-hidden"
+            [class.border-2]="configuracion.tipoPista === 'digital'"
+            [class.border-neon-yellow]="configuracion.tipoPista === 'digital'"
+            [class.shadow-neon-yellow]="configuracion.tipoPista === 'digital'"
+            [class.border]="configuracion.tipoPista !== 'digital'"
+            [class.border-dark-700]="configuracion.tipoPista !== 'digital'"
+            [class.hover:border-dark-600]="configuracion.tipoPista !== 'digital'"
+          >
+            <div class="absolute inset-0 bg-gradient-to-br from-neon-yellow/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            <div class="relative text-center">
+              <div class="text-6xl sm:text-7xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                💻
+              </div>
+              <h3 class="text-2xl sm:text-3xl font-display font-bold text-white mb-3">
+                Pista Digital
+              </h3>
+              <p class="text-gray-400 text-base sm:text-lg mb-6">
+                Módulo simulador de la pista de carritos
+              </p>
+              <div class="inline-flex items-center gap-2 text-sm text-neon-blue px-4 py-2 rounded-full bg-neon-blue/10 border border-neon-blue/40">
+                <span>💡</span>
+                <span class="font-medium">Simulación virtual</span>
+              </div>
+            </div>
+          </button>
+
+          <!-- Pista Física -->
+          <button
+            (click)="seleccionarTipoPista('fisica')"
+            class="group relative bg-dark-800 rounded-xl border-4 p-8 sm:p-10 duration-300 overflow-hidden"
+            [class.border-2]="configuracion.tipoPista === 'fisica'"
+            [class.border-neon-yellow]="configuracion.tipoPista === 'fisica'"
+            [class.shadow-neon-yellow]="configuracion.tipoPista === 'fisica'"
+            [class.border]="configuracion.tipoPista !== 'fisica'"
+            [class.border-dark-700]="configuracion.tipoPista !== 'fisica'"
+            [class.hover:border-dark-600]="configuracion.tipoPista !== 'fisica'"
+          >
+            <div class="absolute inset-0 bg-gradient-to-br from-neon-green/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            
+            <div class="relative text-center">
+              <div class="text-6xl sm:text-7xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                🚴‍♂️
+              </div>
+              <h3 class="text-2xl sm:text-3xl font-display font-bold text-white mb-3">
+                Pista Física
+              </h3>
+              <p class="text-gray-400 text-base sm:text-lg mb-6">
+                Módulo interactivo con hardware
+              </p>
+              <div class="inline-flex items-center gap-2 text-sm text-neon-green px-4 py-2 rounded-full bg-neon-green/10 border border-neon-green/40">
+                <span>🏃</span>
+                <span class="font-medium">Actividad física</span>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Botón siguiente -->
+        <div class="flex justify-center">
+          <button
+            (click)="siguiente()"
+            [disabled]="!puedeAvanzarPaso1()"
+            class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-yellow text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
+            [ngClass]="
+              puedeAvanzarPaso1()
+                ? 'bg-neon-blue text-dark-900 shadow-neon-blue-lg hover:shadow-neon-blue'
+                : 'bg-dark-700 text-gray-500 border border-dark-600 cursor-not-allowed opacity-60'
+            "
+          >
+            Siguiente →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 2: Configuración de carrera -->
+    <div *ngIf="paso === 2" class="animate-fadeIn space-y-6 sm:space-y-8">
+      <div class="bg-dark-900 border border-dark-700  p-6 sm:p-8 lg:p-10 shadow-2xl">
+        <!-- Título de sección -->
+        <div class="mb-8 sm:mb-10 text-center">
+          <h2 class="text-3xl sm:text-4xl font-display font-bold text-white mb-3">
+            ⚙️ Configura la Carrera
+          </h2>
+          <p class="text-gray-400 text-base sm:text-lg">
+            Define los parámetros de la competencia
+          </p>
+        </div>
+
+        <!-- Controles numéricos -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-8">
+          <!-- Número de bicicletas -->
+          <div class="bg-gradient-to-br from-dark-800 via-dark-900 to-dark-800 rounded-xl border-4 border-neon-yellow p-6 sm:p-8 shadow-xl hover:shadow-neon-yellow/30 duration-300">
+            <div class="flex justify-center mb-4">
+              <div class="text-5xl sm:text-6xl">🚴</div>
+            </div>
+            
+            <div class="text-center mb-6">
+              <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-2">
+                Número de Bicicletas
+              </h3>
+              <p class="text-gray-400 text-xs sm:text-sm">
+                Cantidad de bicicletas físicas disponibles
+              </p>
+            </div>
+
+            <div class="flex items-center justify-center gap-3">
+              <button
+                (click)="ajustarBicicletas(configuracion.numeroBicicletas - 1)"
+                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-yellow to-yellow-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-yellow/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
+              >
+                
+                <span class="relative z-10">-</span>
+              </button>
+
+              <div class="relative flex-1 max-w-[110px]">
+                <input
+                  type="number"
+                  [(ngModel)]="configuracion.numeroBicicletas"
+                  (change)="ajustarBicicletas(configuracion.numeroBicicletas)"
+                  min="1"
+                  max="10"
+                  class="w-full bg-gradient-to-br from-dark-700 to-dark-800 border-2 border-neon-yellow/60 text-white text-center text-3xl font-black rounded-xl py-3 focus:outline-none focus:border-neon-yellow focus:shadow-lg focus:shadow-neon-yellow/40 duration-300"
+                />
+              </div>
+
+              <button
+                (click)="ajustarBicicletas(configuracion.numeroBicicletas + 1)"
+                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-yellow to-yellow-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-yellow/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
+              >
+                <span class="relative z-10">+</span>
+              </button>
+            </div>
+          </div> 
+
+          <!-- Número de participantes -->
+          <div class="bg-gradient-to-br from-dark-800 via-dark-900 to-dark-800 rounded-xl border-4 border-neon-blue  p-6 sm:p-8 shadow-xl hover:shadow-neon-blue/30 duration-300">
+            <div class="flex justify-center mb-4">
+              <div class="text-5xl sm:text-6xl">👥</div>
+            </div>
+            
+            <div class="text-center mb-6">
+              <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-2">
+                Número de Participantes
+              </h3>
+              <p class="text-gray-400 text-xs sm:text-sm">
+                Cantidad total de jugadores que competirán
+              </p>
+            </div>
+
+            <div class="flex items-center justify-center gap-3">
+              <button
+                (click)="ajustarParticipantes(configuracion.numeroParticipantes - 1)"
+                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-blue to-blue-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-blue/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
+              >
+                
+                <span class="relative z-10">-</span>
+              </button>
+
+              <div class="relative flex-1 max-w-[110px]">
+                <input
+                  type="number"
+                  [(ngModel)]="configuracion.numeroParticipantes"
+                  (change)="ajustarParticipantes(configuracion.numeroParticipantes)"
+                  [min]="configuracion.numeroBicicletas"
+                  max="50"
+                  class="w-full bg-gradient-to-br from-dark-700 to-dark-800 border-2 border-neon-blue/60 text-white text-center text-3xl font-black rounded-xl py-3 focus:outline-none focus:border-neon-blue focus:shadow-lg focus:shadow-neon-blue/40 duration-300"
+                />
+              </div>
+
+              <button
+                (click)="ajustarParticipantes(configuracion.numeroParticipantes + 1)"
+                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-blue to-blue-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-blue/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
+              >
+                
+                <span class="relative z-10">+</span>
+              </button>
+            </div>
+          </div> 
+
+          <!-- Número de vueltas -->
+          <div class="bg-gradient-to-br from-dark-800 via-dark-900 to-dark-800 rounded-xl border-4 border-neon-green  p-6 sm:p-8 shadow-xl hover:shadow-neon-green/30 duration-300">
+            <div class="flex justify-center mb-4">
+              <div class="text-5xl sm:text-6xl">🔄</div>
+            </div>
+            
+            <div class="text-center mb-6">
+              <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-2">
+                Número de Vueltas
+              </h3>
+              <p class="text-gray-400 text-xs sm:text-sm">
+                Vueltas totales de la carrera
+              </p>
+            </div>
+
+            <div class="flex items-center justify-center gap-3">
+              <button
+                (click)="ajustarVueltas(configuracion.numeroVueltas - 1)"
+                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-green to-green-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-green/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
+              >
+                
+                <span class="relative z-10">-</span>
+              </button>
+
+              <div class="relative flex-1 max-w-[110px]">
+                <input
+                  type="number"
+                  [(ngModel)]="configuracion.numeroVueltas"
+                  (change)="ajustarVueltas(configuracion.numeroVueltas)"
+                  min="1"
+                  max="20"
+                  class="w-full bg-gradient-to-br from-dark-700 to-dark-800 border-2 border-neon-green/60 text-white text-center text-3xl font-black rounded-xl py-3 focus:outline-none focus:border-neon-green focus:shadow-lg focus:shadow-neon-green/40 duration-300"
+                />
+              </div>
+
+              <button
+                (click)="ajustarVueltas(configuracion.numeroVueltas + 1)"
+                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-green to-green-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-green/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
+              >
+                
+                <span class="relative z-10">+</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tipo de competencia -->
+        <div class="bg-dark-800/50 border border-dark-700  p-6 sm:p-8 mb-8 rounded-xl border-4 border-neon-pink">
+          <h3 class="text-xl sm:text-2xl font-display font-bold text-white mb-6 text-center">
+            🏆 Tipo de Competencia
+          </h3>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+            <!-- 1 vs 1 -->
+            <button
+              (click)="seleccionarTipoCompetencia('1v1')"
+              class="group relative bg-dark-700 rounded-xl p-6 duration-300 hover:scale-105"
+              [class.border-2]="configuracion.tipoCompetencia === '1v1'"
+              [class.border-neon-yellow]="configuracion.tipoCompetencia === '1v1'"
+              [class.shadow-neon-yellow]="configuracion.tipoCompetencia === '1v1'"
+              [class.border]="configuracion.tipoCompetencia !== '1v1'"
+              [class.border-dark-600]="configuracion.tipoCompetencia !== '1v1'"
+            >
+              <div class="text-center">
+                <div class="text-4xl mb-3">⚔️</div>
+                <h4 class="text-white font-bold text-base sm:text-lg mb-2">1 vs 1</h4>
+                <p class="text-gray-400 text-sm">Duelo directo</p>
+                <div *ngIf="configuracion.tipoCompetencia === '1v1'" class="mt-3 text-neon-yellow text-sm font-bold">
+                  ✓ Seleccionado
+                </div>
+              </div>
+            </button>
+
+            <!-- Campeonato -->
+            <button
+              (click)="seleccionarTipoCompetencia('campeonato')"
+              class="group relative bg-dark-700 rounded-xl p-6 duration-300 hover:scale-105"
+              [class.border-2]="configuracion.tipoCompetencia === 'campeonato'"
+              [class.border-neon-blue]="configuracion.tipoCompetencia === 'campeonato'"
+              [class.shadow-neon-blue]="configuracion.tipoCompetencia === 'campeonato'"
+              [class.border]="configuracion.tipoCompetencia !== 'campeonato'"
+              [class.border-dark-600]="configuracion.tipoCompetencia !== 'campeonato'"
+            >
+              <div class="text-center">
+                <div class="text-4xl mb-3">🏅</div>
+                <h4 class="text-white font-bold text-base sm:text-lg mb-2">Campeonato</h4>
+                <p class="text-gray-400 text-sm">Individual</p>
+                <div *ngIf="configuracion.tipoCompetencia === 'campeonato'" class="mt-3 text-neon-blue text-sm font-bold">
+                  ✓ Seleccionado
+                </div>
+              </div>
+            </button>
+
+            <!-- Campeonato por equipos -->
+            <button
+              (click)="seleccionarTipoCompetencia('campeonato-equipos')"
+              class="group relative bg-dark-700 rounded-xl p-6 duration-300 hover:scale-105"
+              [class.border-2]="configuracion.tipoCompetencia === 'campeonato-equipos'"
+              [class.border-neon-green]="configuracion.tipoCompetencia === 'campeonato-equipos'"
+              [class.shadow-neon-green]="configuracion.tipoCompetencia === 'campeonato-equipos'"
+              [class.border]="configuracion.tipoCompetencia !== 'campeonato-equipos'"
+              [class.border-dark-600]="configuracion.tipoCompetencia !== 'campeonato-equipos'"
+            >
+              <div class="text-center">
+                <div class="text-4xl mb-3">👥</div>
+                <h4 class="text-white font-bold text-base sm:text-lg mb-2">Campeonato</h4>
+                <p class="text-gray-400 text-sm">Por equipos</p>
+                <div *ngIf="configuracion.tipoCompetencia === 'campeonato-equipos'" class="mt-3 text-neon-green text-sm font-bold">
+                  ✓ Seleccionado
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Botón finalizar -->
+        <div class="flex justify-center">
+          <button
+            (click)="siguiente()"
+            [disabled]="!puedeAvanzarPaso2()"
+            class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-yellow text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
+            [ngClass]="
+              puedeAvanzarPaso2()
+                ? 'bg-neon-green text-dark-900 shadow-neon-green-lg hover:shadow-neon-green'
+                : 'bg-dark-700 text-gray-500 border border-dark-600 cursor-not-allowed opacity-60'
+            "
+          >
+            🎯 Continuar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,43 @@
+<div class="card">
+  <h2>🚴 ESP32 BLE - Bici</h2>
+  <p><strong>Estado:</strong> {{ status }}</p>
+
+  <div class="actions">
+    <button (click)="buscar()">🔍 Buscar Bici</button>
+    <button (click)="conectar()">📡 Conectar</button>
+    <button class="danger" (click)="desconectar()">❌ Desconectar</button>
+  </div>
+
+  <hr>
+
+  <h3>Datos del dispositivo</h3>
+  <p><strong>ID:</strong> {{ id || '-' }}</p>
+  <p><strong>Velocidad</strong></p>
+  <p class="speed">{{ velocidad }} km/h</p>
+
+  <hr>
+
+  <ng-container *ngIf="currentQuestion as q; else finJuego">
+    <h3>Pregunta {{ currentQuestionIndex + 1 }} / {{ questions.length }}</h3>
+    <p class="question">{{ q.text }}</p>
+
+    <ol class="options">
+      <li *ngFor="let opt of q.options; index as i">
+        <span class="badge">{{ i + 1 }}</span> {{ opt }}
+      </li>
+    </ol>
+
+    <div *ngIf="lastAnswerBtn !== null">
+      <p>
+        Respuesta seleccionada: Opción {{ lastAnswerBtn }}
+        <span *ngIf="lastAnswerCorrect === true" class="ok">✅ Correcto</span>
+        <span *ngIf="lastAnswerCorrect === false" class="ko">❌ Incorrecto</span>
+      </p>
+    </div>
+  </ng-container>
+
+  <ng-template #finJuego>
+    <h3>Juego terminado</h3>
+    <p>Puntaje: {{ score }} / {{ questions.length }}</p>
+  </ng-template>
+</div>

@@ -1,0 +1,216 @@
+<div class="min-h-screen bg-dark-950 flex items-center justify-center p-4 sm:p-6 relative">
+  <!-- Logo Brain Bike fijo en esquina superior izquierda -->
+  <div class="absolute top-4 left-4 sm:top-6 sm:left-6 z-10">
+    <div class="flex items-center gap-2 bg-dark-900/80 backdrop-blur-sm border border-dark-700 rounded-lg px-3 py-2 sm:px-4 sm:py-3">
+      <div class="text-3xl sm:text-4xl">🧠</div>
+      <div class="hidden sm:block">
+        <p class="text-2xl font-display font-bold text-neon-blue">Brain Bike</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-5xl w-full h-[90vh] flex flex-col">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8 flex-1 flex flex-col">
+      <div class="text-center mb-4 sm:mb-6">
+        <img
+          *ngIf="logoEmpresa"
+          [src]="logoEmpresa"
+          class="h-16 w-16 sm:h-20 sm:w-20 mx-auto mb-3 rounded-lg object-cover border-2 border-neon-blue shadow-neon-blue"
+          [alt]="sesion?.nombreCliente || 'Logo'"/>
+        <h1 class="text-2xl sm:text-3xl font-display font-bold text-white mb-1">
+          Reglas del <span class="text-neon-blue">Brain Bike</span>
+        </h1>
+        <p class="text-xs sm:text-sm font-body text-gray-400">Desliza para conocer las reglas</p>
+      </div>
+
+      <div class="flex-1 flex items-center justify-center overflow-hidden">
+        <div class="w-full">
+          <!-- Página 0: Video -->
+          <div *ngIf="reglasActuales === 0" class="animate-fadeIn">
+            <div class="bg-dark-800 border-2 border-neon-blue rounded-card p-6 sm:p-8 shadow-neon-blue">
+              <div class="text-center mb-4">
+                <div class="text-5xl sm:text-6xl mb-3">📹</div>
+                <h3 class="text-xl sm:text-2xl font-display font-bold text-neon-blue mb-4">Video Tutorial</h3>
+              </div>
+              <div class="aspect-video bg-dark-900 rounded-card overflow-hidden border-2 border-neon-blue shadow-neon-blue-lg mb-4">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                  title="Reglas del juego"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                  class="w-full h-full"
+                ></iframe>
+              </div>
+              <p class="text-sm sm:text-base font-body text-gray-400 text-center">
+                Observa el video para entender cómo funciona el juego
+              </p>
+            </div>
+          </div>
+
+          <!-- Página 1: Velocidad -->
+          <div *ngIf="reglasActuales === 1" class="animate-fadeIn">
+            <div class="bg-dark-800 border-2 border-neon-yellow rounded-card p-6 sm:p-8 shadow-neon-yellow">
+              <div class="text-center mb-4">
+                <div class="text-5xl sm:text-6xl mb-3">🚴</div>
+                <h3 class="text-xl sm:text-2xl font-display font-bold text-neon-yellow mb-4">Velocidad Mínima</h3>
+              </div>
+              <div class="space-y-4 text-center">
+                <div class="bg-dark-900 rounded-card p-4">
+                  <p class="text-sm sm:text-base font-body text-gray-400 mb-2">Durante el video</p>
+                  <p class="text-3xl sm:text-4xl font-display font-bold text-neon-yellow">
+                    {{ config?.velocidadMinimaVideo }} km/h
+                  </p>
+                </div>
+                <div class="bg-dark-900 rounded-card p-4">
+                  <p class="text-sm sm:text-base font-body text-gray-400 mb-2">Durante las preguntas</p>
+                  <p class="text-3xl sm:text-4xl font-display font-bold text-neon-yellow">
+                    {{ config?.velocidadMinimaTrivia }} km/h
+                  </p>
+                </div>
+                <p class="text-sm sm:text-base font-body text-neon-red font-bold mt-4">
+                  ⚠️ Si bajas de velocidad, tus botones se desactivan
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Página 2: Puntuación -->
+          <div *ngIf="reglasActuales === 2" class="animate-fadeIn">
+            <div class="bg-dark-800 border-2 border-neon-blue rounded-card p-6 sm:p-8 shadow-neon-blue">
+              <div class="text-center mb-4">
+                <div class="text-5xl sm:text-6xl mb-3">⚡</div>
+                <h3 class="text-xl sm:text-2xl font-display font-bold text-neon-blue mb-4">Puntuación</h3>
+              </div>
+              <div class="grid grid-cols-2 gap-3 sm:gap-4">
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-green/30">
+                  <p class="text-2xl sm:text-3xl font-display font-bold text-neon-green mb-1">+2</p>
+                  <p class="text-xs sm:text-sm font-body text-gray-400">Respuesta correcta</p>
+                </div>
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-green/30">
+                  <p class="text-2xl sm:text-3xl font-display font-bold text-neon-green mb-1">+1</p>
+                  <p class="text-xs sm:text-sm font-body text-gray-400">Mantener velocidad</p>
+                </div>
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-green/30">
+                  <p class="text-2xl sm:text-3xl font-display font-bold text-neon-green mb-1">+2</p>
+                  <p class="text-xs sm:text-sm font-body text-gray-400">Velocidad más alta</p>
+                </div>
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-red/30">
+                  <p class="text-2xl sm:text-3xl font-display font-bold text-neon-red mb-1">-1</p>
+                  <p class="text-xs sm:text-sm font-body text-gray-400">Bajar de velocidad</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Página 3: Bonificaciones -->
+          <div *ngIf="reglasActuales === 3" class="animate-fadeIn">
+            <div class="bg-dark-800 border-2 border-neon-yellow rounded-card p-6 sm:p-8 shadow-neon-yellow">
+              <div class="text-center mb-4">
+                <div class="text-5xl sm:text-6xl mb-3">🎯</div>
+                <h3 class="text-xl sm:text-2xl font-display font-bold text-neon-yellow mb-4">Bonificaciones Extra</h3>
+              </div>
+              <div class="space-y-3 sm:space-y-4">
+                <div class="bg-dark-900 rounded-card p-4 flex items-center gap-4 border border-neon-green/20">
+                  <span class="text-2xl sm:text-3xl">🎨</span>
+                  <div class="flex-1">
+                    <p class="font-bold text-white text-sm sm:text-base font-display">Círculos de colores</p>
+                    <p class="text-xs sm:text-sm font-body text-gray-400">Durante el video, cada minuto aparece un círculo. +1 punto al más rápido</p>
+                  </div>
+                  <span class="text-xl sm:text-2xl font-display font-bold text-neon-green">+1</span>
+                </div>
+                <div class="bg-dark-900 rounded-card p-4 flex items-center gap-4 border border-neon-green/20">
+                  <span class="text-2xl sm:text-3xl">🚀</span>
+                  <div class="flex-1">
+                    <p class="font-bold text-white text-sm sm:text-base font-display">Reto de velocidad</p>
+                    <p class="text-xs sm:text-sm font-body text-gray-400">Entre pregunta 3 y 4: llega a 30 km/h primero</p>
+                  </div>
+                  <span class="text-xl sm:text-2xl font-display font-bold text-neon-green">+1</span>
+                </div>
+                <div class="bg-dark-900 rounded-card p-4 flex items-center gap-4 border border-neon-green/20">
+                  <span class="text-2xl sm:text-3xl">🔥</span>
+                  <div class="flex-1">
+                    <p class="font-bold text-white text-sm sm:text-base font-display">Reto final</p>
+                    <p class="text-xs sm:text-sm font-body text-gray-400">Después de todas las preguntas: llega a 30 km/h</p>
+                  </div>
+                  <span class="text-xl sm:text-2xl font-display font-bold text-neon-green">+2</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Página 4: Victoria -->
+          <div *ngIf="reglasActuales === 4" class="animate-fadeIn">
+            <div class="bg-dark-800 border-2 border-neon-green rounded-card p-6 sm:p-8 shadow-neon-green">
+              <div class="text-center mb-6">
+                <div class="text-5xl sm:text-6xl mb-3">🏆</div>
+                <h3 class="text-xl sm:text-2xl font-display font-bold text-neon-green mb-2">¿Cómo Ganar?</h3>
+              </div>
+              <div class="space-y-4 text-center">
+                <p class="text-base sm:text-lg font-body text-gray-300">
+                  El participante con <span class="text-neon-green font-display font-bold text-xl sm:text-2xl">más puntos</span>
+                  al finalizar todas las preguntas
+                </p>
+                <p class="text-2xl sm:text-3xl font-display font-bold text-white my-4">
+                  ¡GANA LA COMPETENCIA!
+                </p>
+                <div class="bg-dark-900 rounded-card p-4 mt-4 border border-neon-blue/20">
+                  <p class="text-xs sm:text-sm font-body text-gray-400 mb-2">Colores de respuesta</p>
+                  <div class="flex justify-center gap-2 sm:gap-3">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-neon-blue border-2 border-white flex items-center justify-center text-xl sm:text-2xl shadow-neon-blue">🔵</div>
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-neon-yellow border-2 border-white flex items-center justify-center text-xl sm:text-2xl shadow-neon-yellow">🟡</div>
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-neon-red border-2 border-white flex items-center justify-center text-xl sm:text-2xl shadow-neon-red">🔴</div>
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-neon-green border-2 border-white flex items-center justify-center text-xl sm:text-2xl shadow-neon-green">🟢</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Indicadores y Botones -->
+      <div class="mt-4 sm:mt-6">
+        <div class="flex justify-center gap-2 mb-4">
+          <button
+            *ngFor="let i of [0, 1, 2, 3, 4]"
+            (click)="irARegla(i)"
+            class="h-2 sm:h-3 rounded-full transition-all duration-500"
+            [class.bg-neon-blue]="reglasActuales === i"
+            [class.shadow-neon-blue]="reglasActuales === i"
+            [class.w-6]="reglasActuales === i"
+            [class.sm:w-8]="reglasActuales === i"
+            [class.w-2]="reglasActuales !== i"
+            [class.sm:w-3]="reglasActuales !== i"
+            [class.bg-dark-600]="reglasActuales !== i"
+          ></button>
+        </div>
+
+        <div class="flex gap-3 sm:gap-4">
+          <button
+            (click)="volver()"
+            class="px-4 sm:px-6 py-3 bg-dark-700 text-gray-300 rounded-card font-display font-bold border-2 border-dark-600 hover:bg-dark-600 transition-all text-sm sm:text-base"
+          >
+            ← Volver
+          </button>
+          <button
+            *ngIf="reglasActuales < totalReglas - 1"
+            (click)="siguiente()"
+            class="flex-1 py-3 bg-neon-blue text-white rounded-card font-display font-bold shadow-neon-blue hover:shadow-neon-blue-lg hover:scale-[1.02] transition-all text-sm sm:text-base"
+          >
+            Siguiente →
+          </button>
+          <button
+            *ngIf="reglasActuales === totalReglas - 1"
+            (click)="iniciarJuego()"
+            class="flex-1 py-3 bg-neon-yellow text-dark-950 rounded-card font-display font-bold shadow-neon-yellow-lg hover:scale-[1.02] transition-all text-sm sm:text-base"
+          >
+            ¡Comenzar! 🎮
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,94 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8 shadow-neon-yellow">
+      <div class="mb-8">
+        <h1 class="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
+          ✏️ Editar Parámetros de Sesión
+        </h1>
+        <p class="text-gray-400">{{ sesion?.nombreCliente }}</p>
+      </div>
+
+      <div *ngIf="sesion?.estadoSesion === 'finalizada'" class="mb-6 p-4 bg-dark-800 border-2 border-gray-600 rounded-lg">
+  <p class="text-gray-400 text-center text-lg">⚠️ Esta sesión ya finalizó y no se puede editar</p>
+</div>
+
+      <div *ngIf="errorMensaje" class="mb-6 p-4 bg-neon-red bg-opacity-10 border border-neon-red rounded-lg">
+        <p class="text-neon-red text-sm font-bold">{{ errorMensaje }}</p>
+      </div>
+
+      <div class="space-y-6">
+        <div>
+          <label class="block text-white font-bold mb-2">Temática</label>
+          <select
+            [(ngModel)]="parametrosBrainBike.tematica_id"
+            (ngModelChange)="onTematicaChange()"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Seleccionar temática...</option>
+            <option *ngFor="let tematica of tematicas" [value]="tematica._id">
+              {{ tematica.nombre_tematica }}
+            </option>
+          </select>
+        </div>
+
+        <div *ngIf="parametrosBrainBike.tematica_id">
+          <label class="block text-white font-bold mb-2">Contenido</label>
+          <select
+            [(ngModel)]="parametrosBrainBike.contenido_id"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Seleccionar contenido...</option>
+            <option *ngFor="let contenido of contenidosDisponibles" [value]="contenido._id">
+              {{ contenido.nombre_contenido }} ({{ contenido.preguntas?.length || 0 }} preguntas)
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-white font-bold mb-2">Dificultad</label>
+          <div class="flex gap-3">
+            <button
+              (click)="parametrosBrainBike.dificultad = 'facil'"
+              class="flex-1 px-4 py-3 rounded-lg font-bold transition-all"
+              [class]="parametrosBrainBike.dificultad === 'facil' ? 'bg-neon-green text-dark-950' : 'bg-dark-800 text-gray-400 border border-dark-600 hover:border-neon-green'"
+            >
+              Fácil
+            </button>
+            <button
+              (click)="parametrosBrainBike.dificultad = 'media'"
+              class="flex-1 px-4 py-3 rounded-lg font-bold transition-all"
+              [class]="parametrosBrainBike.dificultad === 'media' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-gray-400 border border-dark-600 hover:border-neon-yellow'"
+            >
+              Media
+            </button>
+            <button
+              (click)="parametrosBrainBike.dificultad = 'dificil'"
+              class="flex-1 px-4 py-3 rounded-lg font-bold transition-all"
+              [class]="parametrosBrainBike.dificultad === 'dificil' ? 'bg-neon-red text-white' : 'bg-dark-800 text-gray-400 border border-dark-600 hover:border-neon-red'"
+            >
+              Difícil
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-8 pt-6 border-t border-dark-700">
+        <button
+          (click)="cancelar()"
+          class="flex-1 px-6 py-3 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 transition-all"
+        >
+          Cancelar
+        </button>
+
+        <button
+          (click)="guardarCambios()"
+          [disabled]="cargando"
+          class="flex-1 px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span *ngIf="!cargando">✓ Guardar Cambios</span>
+          <span *ngIf="cargando">Guardando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

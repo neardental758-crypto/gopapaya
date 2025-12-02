@@ -1,0 +1,75 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6">
+  <div class="max-w-6xl mx-auto">
+    <div *ngIf="cargandoSesion" class="flex items-center justify-center min-h-screen">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-neon-yellow border-t-transparent"></div>
+        <p class="text-gray-400 mt-4 text-lg">Cargando sesión...</p>
+      </div>
+    </div>
+
+    <div *ngIf="!cargandoSesion && sesionActiva">
+      <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8 mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
+              Selecciona un <span class="text-neon-yellow">Juego</span>
+            </h1>
+            <p class="text-gray-400 text-sm sm:text-base mb-1">
+              Sesión: <span class="text-neon-yellow font-semibold">{{ sesionActiva.nombreCliente }}</span>
+            </p>
+            <p class="text-gray-500 text-xs" *ngIf="sesionActiva.lugarEjecucion">
+              📍 {{ sesionActiva.lugarEjecucion }}
+            </p>
+          </div>
+          <button
+            (click)="volverHome()"
+            class="w-full sm:w-auto px-6 py-3 bg-dark-700 text-gray-300 rounded-lg font-bold border border-dark-600 hover:bg-dark-600 transition-all"
+          >
+            ← Volver
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div
+          *ngFor="let juego of juegos"
+          (click)="seleccionarJuego(juego)"
+          class="bg-dark-900 border rounded-card p-6 sm:p-8 transition-all"
+          [class.border-neon-yellow]="juego.disponible"
+          [class.hover:border-neon-yellow]="juego.disponible"
+          [class.hover:shadow-neon-yellow]="juego.disponible"
+          [class.cursor-pointer]="juego.disponible"
+          [class.border-dark-700]="!juego.disponible"
+          [class.opacity-50]="!juego.disponible"
+          [class.cursor-not-allowed]="!juego.disponible"
+        >
+          <div class="text-center">
+            <div class="text-5xl sm:text-7xl mb-4">{{ juego.icono }}</div>
+            <h3
+              class="text-xl sm:text-2xl font-display font-bold mb-2"
+              [class.text-white]="juego.disponible"
+              [class.text-gray-600]="!juego.disponible"
+            >
+              {{ juego.nombre }}
+            </h3>
+            <p class="text-gray-400 text-sm sm:text-base mb-4">{{ juego.descripcion }}</p>
+
+            <span
+              *ngIf="!juego.disponible"
+              class="inline-block px-4 py-2 bg-dark-700 text-gray-500 rounded-lg text-sm font-bold border border-dark-600"
+            >
+              Próximamente
+            </span>
+
+            <button
+              *ngIf="juego.disponible"
+              class="w-full sm:w-auto px-8 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+            >
+              Jugar →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

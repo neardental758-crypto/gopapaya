@@ -1,0 +1,705 @@
+<div class="min-h-screen bg-dark-950 p-3 sm:p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6 mb-4 sm:mb-6 shadow-lg">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3 sm:gap-4">
+          <div class="text-3xl sm:text-5xl">🏎️</div>
+          <div>
+            <h1 class="text-xl sm:text-3xl font-display font-bold text-white">
+              <span class="text-neon-blue">Pista Digital</span> - 
+              {{ esCampeonato ? 'Campeonato' : 'Carrera' }}
+            </h1>
+            <p class="text-gray-400 text-xs sm:text-sm">
+              <ng-container *ngIf="paso === 1">Registra los participantes</ng-container>
+              <ng-container *ngIf="paso === 2 && !esFinal">
+                {{ esCampeonato ? obtenerLlaveActual()?.nombre + ' - ' : '' }}
+                Carrera en vivo - {{ configuracion.numeroVueltas }} vueltas
+              </ng-container>
+              <ng-container *ngIf="paso === 2 && esFinal">
+                🏆 GRAN FINAL - {{ configuracion.numeroVueltas }} vueltas
+              </ng-container>
+              <ng-container *ngIf="paso === 3">¡Campeonato finalizado!</ng-container>
+            </p>
+          </div>
+        </div>
+        <button
+          (click)="volver()"
+          class="px-4 sm:px-6 py-2 sm:py-3 bg-dark-800 text-gray-300 rounded-lg font-bold border border-dark-600 hover:bg-dark-700 hover:border-dark-500 transition-all text-sm sm:text-base"
+        >
+          ← Volver
+        </button>
+      </div>
+    </div>
+
+    <!-- Panel de conexión BLE / Bici -->
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-4 mb-4 shadow-lg">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 class="text-white font-bold text-sm sm:text-base">
+            🚲 Bici conectada por Bluetooth (ESP32)
+          </h3>
+          <p class="text-xs sm:text-sm text-gray-400">
+            Estado: <span class="font-semibold text-neon-blue">{{ bleStatus }}</span>
+            <span *ngIf="bleId" class="ml-2 text-gray-300">ID: {{ bleId }}</span>
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button
+            (click)="buscarBici()"
+            class="px-3 py-2 bg-dark-800 text-gray-200 rounded-lg text-xs sm:text-sm border border-dark-600 hover:bg-dark-700"
+          >
+            🔍 Buscar Bici
+          </button>
+          <button
+            (click)="conectarBici()"
+            class="px-3 py-2 bg-neon-blue text-white rounded-lg text-xs sm:text-sm hover:bg-neon-blue/80"
+          >
+            📡 Conectar
+          </button>
+          <button
+            (click)="desconectarBici()"
+            class="px-3 py-2 bg-dark-700 text-gray-200 rounded-lg text-xs sm:text-sm border border-dark-600 hover:bg-dark-600"
+          >
+            ❌ Desconectar
+          </button>
+        </div>
+      </div>
+      <p class="mt-2 text-xs text-gray-500">
+        La velocidad del <span class="font-semibold">Jugador 1</span> se tomará directamente desde la bicicleta física.
+      </p>
+    </div>
+
+
+    <!-- PASO 1: Registro de jugadores -->
+    <div *ngIf="paso === 1" class="space-y-4 sm:space-y-6">
+      <!-- Modo Campeonato: Registro por llaves -->
+      <div *ngIf="esCampeonato">
+        <div class="bg-dark-900 border border-dark-700 rounded-card p-5 sm:p-8 shadow-lg mb-6">
+          <div class="mb-6 sm:mb-8 text-center">
+            <h2 class="text-2xl sm:text-3xl font-display font-bold text-white mb-2 sm:mb-3">
+              🏆 Registra los Participantes del Campeonato
+            </h2>
+            <p class="text-gray-400 text-sm sm:text-base">
+              Se crearán {{ llaves.length }} {{ llaves.length === 1 ? 'llave' : 'llaves' }} de competencia
+            </p>
+          </div>
+
+          <!-- Llaves -->
+          <div class="space-y-6">
+            <div 
+              *ngFor="let llave of llaves; let llaveIndex = index"
+              class="bg-dark-800 border-2 border-dark-600 rounded-xl p-5"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg sm:text-xl font-display font-bold text-neon-yellow flex items-center gap-2">
+                  <span>⚔️</span>
+                  {{ llave.nombre }}
+                </h3>
+                <span class="text-xs text-gray-500 bg-dark-700 px-3 py-1 rounded-full">
+                  {{ llave.jugadores.length }} jugadores
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div 
+                  *ngFor="let jugador of llave.jugadores; let i = index"
+                  class="bg-dark-700 border border-dark-600 rounded-lg p-4 hover:border-dark-500 transition-all"
+                >
+                  <div class="flex items-center gap-3 mb-3">
+                    <div 
+                      class="w-10 h-10 rounded-full flex items-center justify-center text-xl"
+                      [style.backgroundColor]="jugador.color + '20'"
+                      [style.border]="'2px solid ' + jugador.color"
+                    >
+                      {{ jugador.icono }}
+                    </div>
+                    <h4 class="text-sm font-bold text-white">
+                      Jugador {{ jugador.id }}
+                    </h4>
+                  </div>
+
+                  <div class="space-y-3">
+                    <!-- Nombre -->
+                    <div>
+                      <label class="block text-gray-400 text-xs font-medium mb-1">
+                        Nombre
+                      </label>
+                      <input
+                        type="text"
+                        [(ngModel)]="jugador.nombre"
+                        placeholder="Ingresa el nombre"
+                        class="w-full bg-dark-600 border border-dark-500 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neon-blue transition-all"
+                        maxlength="20"
+                      />
+                    </div>
+
+                    <!-- Género -->
+                    <div>
+                      <label class="block text-gray-400 text-xs font-medium mb-1">
+                        Género
+                      </label>
+                      <div class="grid grid-cols-3 gap-1">
+                        <button
+                          (click)="jugador.genero = 'masculino'"
+                          [class]="jugador.genero === 'masculino' 
+                            ? 'bg-neon-blue/20 border border-neon-blue text-white rounded py-1 text-xs font-medium'
+                            : 'bg-dark-600 border border-dark-500 text-gray-400 rounded py-1 text-xs font-medium hover:border-dark-400'"
+                        >
+                          👨
+                        </button>
+                        <button
+                          (click)="jugador.genero = 'femenino'"
+                          [class]="jugador.genero === 'femenino' 
+                            ? 'bg-neon-blue/20 border border-neon-blue text-white rounded py-1 text-xs font-medium'
+                            : 'bg-dark-600 border border-dark-500 text-gray-400 rounded py-1 text-xs font-medium hover:border-dark-400'"
+                        >
+                          👩
+                        </button>
+                        <button
+                          (click)="jugador.genero = 'otro'"
+                          [class]="jugador.genero === 'otro' 
+                            ? 'bg-neon-blue/20 border border-neon-blue text-white rounded py-1 text-xs font-medium'
+                            : 'bg-dark-600 border border-dark-500 text-gray-400 rounded py-1 text-xs font-medium hover:border-dark-400'"
+                        >
+                          🌈
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+         
+        </div>
+      </div>
+
+      <!-- Modo 1v1: Registro simple -->
+      <div *ngIf="modo1v1" class="bg-dark-900 border border-dark-700 rounded-card p-5 sm:p-8 shadow-lg">
+        <div class="mb-6 sm:mb-8 text-center">
+          <h2 class="text-2xl sm:text-3xl font-display font-bold text-white mb-2 sm:mb-3">
+            👥 Registra los Participantes
+          </h2>
+          <p class="text-gray-400 text-sm sm:text-base">
+            Completa la información de los {{ modo1v1 ? configuracion.numeroParticipantes : jugadores.length }} participantes
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-5xl mx-auto">
+          <div 
+            *ngFor="let jugador of todosJugadores; let i = index"
+            class="bg-dark-800 border-2 border-dark-600 rounded-xl p-5 sm:p-6 hover:border-dark-500 transition-all"
+          >
+            <div class="flex items-center gap-3 mb-4">
+              <div 
+                class="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                [style.backgroundColor]="jugador.color + '20'"
+                [style.border]="'2px solid ' + jugador.color"
+              >
+                {{ jugador.icono }}
+              </div>
+              <h3 class="text-lg font-bold text-white">
+                Jugador {{ jugador.id }}
+              </h3>
+            </div>
+
+            <div class="space-y-4">
+              <!-- Nombre -->
+              <div>
+                <label class="block text-gray-400 text-sm font-medium mb-2">
+                  Nombre del participante
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="jugador.nombre"
+                  placeholder="Ingresa el nombre"
+                  class="w-full bg-dark-700 border-2 border-dark-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-neon-blue transition-all"
+                  maxlength="20"
+                />
+              </div>
+
+              <!-- Género -->
+              <div>
+                <label class="block text-gray-400 text-sm font-medium mb-2">
+                  Género
+                </label>
+                <div class="grid grid-cols-3 gap-2">
+                  <button
+                    (click)="jugador.genero = 'masculino'"
+                    [class]="jugador.genero === 'masculino' 
+                      ? 'bg-neon-blue/20 border-2 border-neon-blue text-white rounded-lg py-2 text-sm font-medium transition-all'
+                      : 'bg-dark-700 border-2 border-dark-600 text-gray-400 rounded-lg py-2 text-sm font-medium hover:border-dark-500 transition-all'"
+                  >
+                    👨 Hombre
+                  </button>
+                  <button
+                    (click)="jugador.genero = 'femenino'"
+                    [class]="jugador.genero === 'femenino' 
+                      ? 'bg-neon-blue/20 border-2 border-neon-blue text-white rounded-lg py-2 text-sm font-medium transition-all'
+                      : 'bg-dark-700 border-2 border-dark-600 text-gray-400 rounded-lg py-2 text-sm font-medium hover:border-dark-500 transition-all'"
+                  >
+                    👩 Mujer
+                  </button>
+                  <button
+                    (click)="jugador.genero = 'otro'"
+                    [class]="jugador.genero === 'otro' 
+                      ? 'bg-neon-blue/20 border-2 border-neon-blue text-white rounded-lg py-2 text-sm font-medium transition-all'
+                      : 'bg-dark-700 border-2 border-dark-600 text-gray-400 rounded-lg py-2 text-sm font-medium hover:border-dark-500 transition-all'"
+                  >
+                    🌈 Otro
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+       
+      </div>
+    </div>
+
+    <!-- PASO 2: Carrera en vivo -->
+    <div *ngIf="paso === 2" class="space-y-4">
+      <!-- Animación de cuenta regresiva -->
+      <div 
+        *ngIf="mostrarCuentaRegresiva"
+        class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+      >
+        <div class="text-center">
+          <div 
+            *ngIf="numeroCuentaRegresiva > 0"
+            class="text-9xl font-display font-bold text-white animate-pulse"
+            [style.color]="numeroCuentaRegresiva === 3 ? '#ff0099' : numeroCuentaRegresiva === 2 ? '#ffdd00' : '#00ff88'"
+          >
+            {{ numeroCuentaRegresiva }}
+          </div>
+          <div 
+            *ngIf="numeroCuentaRegresiva === 0"
+            class="text-9xl font-display font-bold text-neon-green animate-pulse"
+          >
+            ¡YA!
+          </div>
+          <p class="text-2xl text-gray-400 mt-6">
+            {{ esFinal ? 'Preparando la GRAN FINAL...' : esCampeonato ? obtenerLlaveActual()?.nombre : 'Prepárate para correr...' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Modal siguiente llave / final -->
+      <div 
+        *ngIf="mostrarModalSiguienteLlave"
+        class="fixed inset-0 bg-black/80 z-40 flex items-center justify-center p-4"
+        (click)="cerrarModal()"
+      >
+        <div 
+          class="bg-dark-900 border-2 border-dark-700 rounded-xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl"
+          (click)="$event.stopPropagation()"
+        >
+          <!-- Modal para siguiente llave -->
+          <div *ngIf="datosModalLlave?.tipo === 'siguiente'">
+            <div class="text-center mb-6">
+              <div class="text-6xl mb-4">🏆</div>
+              <h2 class="text-2xl sm:text-3xl font-display font-bold text-white mb-3">
+                ¡{{ datosModalLlave.ganadorActual.nombre }} gana la {{ datosModalLlave.llaveActual.nombre }}!
+              </h2>
+              <div class="flex items-center justify-center gap-2 mb-6">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                  [style.backgroundColor]="datosModalLlave.ganadorActual.color + '20'"
+                  [style.border]="'2px solid ' + datosModalLlave.ganadorActual.color">
+                  {{ datosModalLlave.ganadorActual.icono }}
+                </div>
+                <span class="text-xl font-bold text-neon-green">Clasificado a la siguiente ronda</span>
+              </div>
+            </div>
+
+            <div class="bg-dark-800 border border-dark-600 rounded-lg p-5 mb-6">
+              <h3 class="text-lg font-bold text-neon-yellow mb-4 flex items-center gap-2">
+                <span>⚔️</span>
+                Siguiente: {{ datosModalLlave.siguienteLlave.nombre }}
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div 
+                  *ngFor="let jugador of datosModalLlave.siguienteLlave.jugadores"
+                  class="bg-dark-700 border border-dark-600 rounded-lg p-4 flex items-center gap-3"
+                >
+                  <div 
+                    class="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                    [style.backgroundColor]="jugador.color + '20'"
+                    [style.border]="'2px solid ' + jugador.color"
+                  >
+                    {{ jugador.icono }}
+                  </div>
+                  <div>
+                    <h4 class="text-white font-bold">{{ jugador.nombre }}</h4>
+                    <p class="text-xs text-gray-400">Participante {{ jugador.id }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              (click)="cerrarModalYContinuar()"
+              class="w-full px-8 py-4 bg-neon-blue text-white rounded-lg font-bold text-lg hover:bg-neon-blue/80 transition-all transform hover:scale-105 shadow-lg"
+            >
+              🏁 Iniciar {{ datosModalLlave.siguienteLlave.nombre }}
+            </button>
+          </div>
+
+          <!-- Modal para la final -->
+          <div *ngIf="datosModalLlave?.tipo === 'final'">
+            <div class="text-center mb-6">
+              <div class="text-6xl mb-4">🎉</div>
+              <h2 class="text-2xl sm:text-3xl font-display font-bold text-white mb-3">
+                ¡{{ datosModalLlave.ganadorActual.nombre }} gana la {{ datosModalLlave.llaveActual.nombre }}!
+              </h2>
+              <p class="text-lg text-neon-yellow font-bold mb-6">
+                ¡Todas las llaves han terminado!
+              </p>
+            </div>
+
+            <div class="bg-dark-800 border border-dark-600 rounded-lg p-5 mb-6">
+              <h3 class="text-lg font-bold text-neon-yellow mb-4 flex items-center gap-2">
+                <span>👑</span>
+                GRAN FINAL
+              </h3>
+              <p class="text-sm text-gray-400 mb-4">Los ganadores de cada llave se enfrentarán:</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div 
+                  *ngFor="let ganador of datosModalLlave.ganadores"
+                  class="bg-gradient-to-r from-neon-green/10 to-dark-700 border-2 border-neon-green rounded-lg p-4 flex items-center gap-3"
+                >
+                  <div 
+                    class="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                    [style.backgroundColor]="ganador.color + '20'"
+                    [style.border]="'2px solid ' + ganador.color"
+                  >
+                    {{ ganador.icono }}
+                  </div>
+                  <div>
+                    <h4 class="text-white font-bold">{{ ganador.nombre }}</h4>
+                    <p class="text-xs text-neon-green">✓ Clasificado</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              (click)="cerrarModalYContinuar()"
+              class="w-full px-8 py-4 bg-gradient-to-r from-neon-yellow to-neon-green text-dark-950 rounded-lg font-bold text-lg hover:opacity-80 transition-all transform hover:scale-105 shadow-lg"
+            >
+              👑 ¡INICIAR LA GRAN FINAL!
+            </button>
+          </div>
+
+          <!-- Modal para siguiente carrera 1vs1 -->
+          <div *ngIf="datosModalLlave?.tipo === 'siguiente-1v1'">
+            <div class="text-center mb-6">
+              <div class="text-6xl mb-4">🏁</div>
+              <h2 class="text-2xl sm:text-3xl font-display font-bold text-white mb-3">
+                Siguiente carrera 1 vs 1
+              </h2>
+              <p class="text-gray-400 text-sm sm:text-base mb-4">
+                Prepárense los siguientes participantes:
+              </p>
+            </div>
+
+            <div class="bg-dark-800 border border-dark-600 rounded-lg p-5 mb-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div 
+                  *ngFor="let jugador of datosModalLlave.jugadores"
+                  class="bg-dark-700 border border-dark-600 rounded-lg p-4 flex items-center gap-3"
+                >
+                  <div 
+                    class="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                    [style.backgroundColor]="jugador.color + '20'"
+                    [style.border]="'2px solid ' + jugador.color"
+                  >
+                    {{ jugador.icono }}
+                  </div>
+                  <div>
+                    <h4 class="text-white font-bold">{{ jugador.nombre || ('Jugador ' + jugador.id) }}</h4>
+                    <p class="text-xs text-gray-400">Participante {{ jugador.id }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              (click)="cerrarModalYContinuar()"
+              class="w-full px-8 py-4 bg-neon-blue text-white rounded-lg font-bold text-lg hover:bg-neon-blue/80 transition-all transform hover:scale-105 shadow-lg"
+            >
+              🚦 Iniciar siguiente carrera
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Indicador de progreso del campeonato -->
+      <div *ngIf="esCampeonato" class="bg-dark-900 border border-dark-700 rounded-card p-4 shadow-lg">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h3 class="text-white font-bold mb-2">
+              {{ esFinal ? '🏆 GRAN FINAL' : '⚔️ ' + obtenerLlaveActual()?.nombre }}
+            </h3>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span 
+                *ngFor="let llave of llaves; let i = index"
+                [class]="llave.finalizada 
+                  ? 'px-3 py-1 bg-neon-green/20 border border-neon-green rounded-full text-xs text-neon-green font-medium'
+                  : i === llaveActualIndex && !esFinal
+                    ? 'px-3 py-1 bg-neon-blue/20 border border-neon-blue rounded-full text-xs text-neon-blue font-medium'
+                    : 'px-3 py-1 bg-dark-700 border border-dark-600 rounded-full text-xs text-gray-500 font-medium'"
+              >
+                {{ llave.finalizada ? '✓' : '' }} {{ llave.nombre }}
+              </span>
+              <span 
+                *ngIf="esFinal"
+                class="px-3 py-1 bg-neon-yellow/20 border border-neon-yellow rounded-full text-xs text-neon-yellow font-medium"
+              >
+                👑 FINAL
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel de información superior -->
+      <div class="bg-dark-900 border border-dark-700 rounded-card p-4 shadow-lg">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="flex items-center gap-6">
+            <div class="text-center">
+              <div class="text-gray-400 text-xs mb-1">⏱️ TIEMPO</div>
+              <div class="text-white font-bold text-xl sm:text-2xl font-mono">
+                {{ formatearTiempo(tiempoTranscurrido) }}
+              </div>
+            </div>
+            <div class="w-px h-12 bg-dark-600"></div>
+            <div class="text-center">
+              <div class="text-gray-400 text-xs mb-1">🔄 VUELTAS</div>
+              <div class="text-white font-bold text-xl sm:text-2xl">
+                {{ configuracion.numeroVueltas }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Controles de carrera -->
+          <div class="flex items-center gap-3">
+            <button
+              (click)="pausarReanudarCarrera()"
+              [class]="carreraPausada 
+                ? 'px-4 py-2 bg-neon-green text-white rounded-lg font-bold text-sm hover:bg-neon-green/80 transition-all'
+                : 'px-4 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold text-sm hover:bg-neon-yellow/80 transition-all'"
+            >
+              {{ carreraPausada ? '▶️ Reanudar' : '⏸️ Pausar' }}
+            </button>
+            <button
+              (click)="reiniciarCarrera()"
+              class="px-4 py-2 bg-dark-700 text-white rounded-lg font-bold text-sm border border-dark-600 hover:bg-dark-600 transition-all"
+            >
+              🔄 Reiniciar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pista de carreras -->
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 shadow-lg">
+      <!-- PISTA ÚNICA OVALADA PARA TODAS LAS BICIS -->
+      <div class="relative w-full aspect-[3/1] bg-dark-700 rounded-full border-4 border-dark-600 overflow-hidden mx-auto">
+
+        <!-- Líneas interiores del óvalo -->
+        <div class="absolute inset-4 rounded-full border-4 border-dark-500"></div>
+        <div class="absolute inset-7 rounded-full border-2 border-dark-600/70"></div>
+
+        <!-- Línea de meta -->
+        <div class="absolute top-[12%] left-1/2 -translate-x-1/2 h-[76%] w-[2px] bg-white/50">
+          <div class="absolute inset-0 bg-[repeating-linear-gradient(to-bottom,white,white_6px,transparent_6px,transparent_12px)] opacity-90"></div>
+        </div>
+
+        <!-- CARRITOS SOBRE LA MISMA PISTA -->
+        <div 
+          *ngFor="let jugador of jugadores"
+          class="absolute text-4xl transition-all duration-75 ease-linear"
+          [ngStyle]="getCarStyle(jugador)"
+        >
+          {{ jugador.icono }}
+        </div>
+
+      </div>
+
+      <!-- Tarjetas de info de cada jugador (SIN pista dentro) -->
+      <div class="mt-6 space-y-4">
+        <div 
+          *ngFor="let jugador of jugadores"
+          class="bg-dark-800 border border-dark-600 rounded-lg p-4 hover:border-dark-500 transition-all"
+        >
+          <!-- Información del jugador -->
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div 
+                class="w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold"
+                [style.backgroundColor]="jugador.posicion === 1 ? '#ffd700' : jugador.posicion === 2 ? '#c0c0c0' : jugador.posicion === 3 ? '#cd7f32' : jugador.color + '20'"
+                [style.border]="'2px solid ' + jugador.color"
+              >
+                {{ jugador.posicion }}
+              </div>
+              <div>
+                <h3 class="text-white font-bold text-lg">{{ jugador.nombre }}</h3>
+                <div class="flex items-center gap-4 text-xs text-gray-400">
+                  <span>🏁 Vuelta {{ jugador.vueltaActual }}/{{ configuracion.numeroVueltas }}</span>
+                  <span>⚡ {{ jugador.velocidad.toFixed(1) }} km/h</span>
+                 <span *ngIf="jugador.mejorTiempo != null" class="text-neon-green font-mono">
+                    ⏱ {{ formatearTiempo(jugador.mejorTiempo) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-2xl">{{ jugador.icono }}</div>
+            </div>
+          </div>
+
+          <div class="mt-4 flex items-center justify-between">
+            <!-- Estado de la llave -->
+            <div *ngIf="llave.finalizada" class="text-xs sm:text-sm text-neon-green flex items-center gap-2">
+              <span>✓ Llave finalizada</span>
+              <span *ngIf="obtenerGanadorLlave(llave)">
+                - Ganador: <span class="font-semibold">{{ obtenerGanadorLlave(llave)?.nombre }}</span>
+              </span>
+            </div>
+
+            <!-- Botón iniciar esta llave -->
+            <button
+              (click)="iniciarLlave(llaveIndex)"
+              [disabled]="llave.finalizada || llave.jugadores.some(j => !j.nombre || j.nombre.trim() === '') || !bleConectado"
+              [class]="
+                llave.finalizada || !bleConectado
+                  ? 'px-4 py-2 bg-dark-700 text-gray-500 rounded-lg text-xs sm:text-sm font-bold border border-dark-600 cursor-not-allowed opacity-50'
+                  : 'px-4 py-2 bg-neon-green text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-neon-green/80 transition-all'
+              "
+            >
+              {{ llave.finalizada ? 'Llave jugada' : '🏁 Iniciar carrera de esta llave' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+      <!-- Tabla de posiciones -->
+      <div class="bg-dark-900 border border-dark-700 rounded-card p-5 shadow-lg">
+        <h3 class="text-xl font-display font-bold text-white mb-4 flex items-center gap-2">
+          🏆 {{ modo1v1 && !esCampeonato ? 'Ranking por Mejor Tiempo' : 'Tabla de Posiciones' }}
+        </h3>
+        <div class="space-y-2">
+          <div 
+            *ngFor="let jugador of obtenerJugadoresOrdenados(); let i = index"
+            class="flex items-center justify-between bg-dark-800 border border-dark-600 rounded-lg p-3"
+          >
+            <div class="flex items-center gap-3">
+              <div 
+                class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                [style.backgroundColor]="i === 0 ? '#ffd700' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : jugador.color + '20'"
+                [style.border]="'2px solid ' + jugador.color"
+              >
+                {{ jugador.posicion }}
+              </div>
+              <span class="text-xl">{{ jugador.icono }}</span>
+              <span class="text-white font-bold">{{ jugador.nombre }}</span>
+            </div>
+            <div class="flex items-center gap-4 text-sm">
+              <span class="text-gray-400">Vuelta {{ jugador.vueltaActual }}</span>
+              <span class="text-neon-blue font-mono">{{ jugador.velocidad.toFixed(1) }} km/h</span>
+              <span *ngIf="jugador.mejorTiempo != null" class="text-neon-green font-mono">
+                ⏱ {{ formatearTiempo(jugador.mejorTiempo) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 3: Pantalla final del campeonato -->
+    <div *ngIf="paso === 3" class="space-y-4">
+      <div class="bg-dark-900 border border-dark-700 rounded-card p-8 shadow-lg text-center">
+        <div class="text-7xl mb-6">🏆</div>
+        <h2 class="text-3xl sm:text-4xl font-display font-bold text-white mb-4">
+          ¡Campeonato Finalizado!
+        </h2>
+        <p class="text-gray-400 text-lg mb-8">
+          El campeón ha sido coronado
+        </p>
+
+        <!-- Resumen de llaves -->
+        <div *ngIf="esCampeonato" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8">
+          <div 
+            *ngFor="let llave of obtenerLlavesFinalizadas()"
+            class="bg-dark-800 border border-dark-600 rounded-lg p-4"
+          >
+            <h4 class="text-neon-yellow font-bold mb-3">{{ llave.nombre }}</h4>
+            <div class="space-y-2">
+              <div 
+                *ngFor="let jugador of llave.jugadores"
+                [class]="jugador.id === llave.ganadorId 
+                  ? 'flex items-center justify-between bg-neon-green/10 border border-neon-green rounded px-3 py-2'
+                  : 'flex items-center justify-between bg-dark-700 rounded px-3 py-2'"
+              >
+                <span class="text-white text-sm">{{ jugador.nombre }}</span>
+                <span *ngIf="jugador.id === llave.ganadorId" class="text-neon-green text-xs font-bold">
+                  ✓ Ganador
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de posiciones -->
+      <div class="bg-dark-900 border border-dark-700 rounded-card p-5 shadow-lg">
+        <h3 class="text-xl font-display font-bold text-white mb-4 flex items-center gap-2">
+          🏆 Final
+        </h3>
+        <div class="space-y-2">
+          <div 
+            *ngFor="let jugador of obtenerJugadoresOrdenados(); let i = index"
+            class="flex items-center justify-between bg-dark-800 border border-dark-600 rounded-lg p-3"
+          >
+            <div class="flex items-center gap-3">
+              <div 
+                class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                [style.backgroundColor]="i === 0 ? '#ffd700' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : jugador.color + '20'"
+                [style.border]="'2px solid ' + jugador.color"
+              >
+                {{ jugador.posicion }}
+              </div>
+              <span class="text-xl">{{ jugador.icono }}</span>
+              <span class="text-white font-bold">{{ jugador.nombre }}</span>
+              
+              <span *ngIf="jugador.posicion===1" class="text-xl font-display font-bold text-white mb-4 flex items-center gap-2">
+                🏆 Ganador
+              </span>
+            </div>
+            <div class="flex items-center gap-4 text-sm">
+              <span class="text-gray-400">Vuelta {{ jugador.vueltaActual }}</span>
+              <span class="text-neon-blue font-mono">{{ jugador.velocidad.toFixed(1) }} km/h</span>
+              <span *ngIf="jugador.mejorTiempo != null" class="text-neon-green font-mono">
+                ⏱ {{ formatearTiempo(jugador.mejorTiempo) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <!-- Botón nuevo campeonato -->
+        <button
+          (click)="nuevoCampeonato()"
+          class="px-8 py-4 bg-neon-yellow text-black rounded-lg font-bold text-lg hover:bg-neon-blue/80 transition-all transform hover:scale-105 shadow-lg"
+        >
+          🏁 Nuevo Campeonato
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

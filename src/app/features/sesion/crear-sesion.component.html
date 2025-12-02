@@ -1,0 +1,299 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8 shadow-neon-yellow">
+      <div class="mb-8">
+        <h1 class="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
+          ✨ Nueva Sesión
+        </h1>
+        <p class="text-gray-400">Configura una nueva sesión de juego</p>
+      </div>
+
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center space-x-2">
+          <div class="flex items-center">
+            <div [class]="paso >= 1 ? 'w-10 h-10 rounded-full bg-neon-yellow text-dark-950 flex items-center justify-center font-bold' : 'w-10 h-10 rounded-full bg-dark-700 text-gray-400 flex items-center justify-center'">
+              1
+            </div>
+            <span class="ml-2 text-sm font-bold" [class]="paso >= 1 ? 'text-white' : 'text-gray-500'">Info Básica</span>
+          </div>
+          <div class="w-16 h-1" [class]="paso >= 2 ? 'bg-neon-yellow' : 'bg-dark-700'"></div>
+          <div class="flex items-center">
+            <div [class]="paso >= 2 ? 'w-10 h-10 rounded-full bg-neon-yellow text-dark-950 flex items-center justify-center font-bold' : 'w-10 h-10 rounded-full bg-dark-700 text-gray-400 flex items-center justify-center'">
+              2
+            </div>
+            <span class="ml-2 text-sm font-bold" [class]="paso >= 2 ? 'text-white' : 'text-gray-500'">Juego</span>
+          </div>
+          <div class="w-16 h-1" [class]="paso >= 3 ? 'bg-neon-yellow' : 'bg-dark-700'"></div>
+          <div class="flex items-center">
+            <div [class]="paso >= 3 ? 'w-10 h-10 rounded-full bg-neon-yellow text-dark-950 flex items-center justify-center font-bold' : 'w-10 h-10 rounded-full bg-dark-700 text-gray-400 flex items-center justify-center'">
+              3
+            </div>
+            <span class="ml-2 text-sm font-bold" [class]="paso >= 3 ? 'text-white' : 'text-gray-500'">Parámetros</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="errorMensaje" class="mb-6 p-4 bg-neon-red bg-opacity-10 border border-neon-red rounded-lg">
+        <p class="text-neon-red text-sm font-bold">{{ errorMensaje }}</p>
+      </div>
+
+      <div *ngIf="paso === 1" class="space-y-6">
+        <div>
+          <label class="block text-white font-bold mb-2">Empresa Cliente</label>
+          <select
+            [(ngModel)]="empresaSeleccionada"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Seleccionar empresa...</option>
+            <option *ngFor="let empresa of empresas" [value]="empresa._id">
+              {{ empresa.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-white font-bold mb-2">Lugar de Ejecución</label>
+          <input
+            type="text"
+            [(ngModel)]="lugarEjecucion"
+            placeholder="Ej: Sede Principal, Evento XYZ..."
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white placeholder-gray-500 focus:border-neon-yellow focus:outline-none"
+          />
+        </div>
+
+        <div *ngIf="fechaPreseleccionada">
+          <div class="p-4 bg-neon-yellow bg-opacity-10 border border-neon-yellow rounded-lg mb-4">
+            <p class="text-white font-bold mb-1">📅 Fecha Seleccionada</p>
+            <p class="text-neon-yellow text-lg font-bold">{{ formatearFechaPreseleccionada() }}</p>
+          </div>
+
+          <label class="block text-white font-bold mb-2">Hora de Inicio</label>
+          <input
+            type="time"
+            [(ngModel)]="horaSesion"
+            [min]="horaMinima"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
+          />
+        </div>
+
+        <div *ngIf="!fechaPreseleccionada">
+          <label class="block text-white font-bold mb-2">Fecha y Hora de Inicio</label>
+          <input
+            type="datetime-local"
+            [(ngModel)]="fechaHoraSesion"
+            [min]="fechaHoraMinima"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label class="block text-white font-bold mb-2">Asignar Admins</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div
+              *ngFor="let admin of admins"
+              (click)="toggleAdmin(admin._id)"
+              class="p-4 border rounded-lg cursor-pointer transition-all"
+              [class]="isAdminSeleccionado(admin._id) ? 'bg-neon-yellow bg-opacity-10 border-neon-yellow' : 'bg-dark-800 border-dark-600 hover:border-gray-500'"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-white font-bold">{{ admin.nombre }}</p>
+                  <p class="text-gray-400 text-sm">{{ admin.email }}</p>
+                </div>
+                <div
+                  class="w-6 h-6 rounded border-2 flex items-center justify-center"
+                  [class]="isAdminSeleccionado(admin._id) ? 'border-neon-yellow bg-neon-yellow' : 'border-gray-500'"
+                >
+                  <span *ngIf="isAdminSeleccionado(admin._id)" class="text-dark-950 text-sm">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-white font-bold mb-2">Nota (Opcional)</label>
+          <textarea
+            [(ngModel)]="nota"
+            rows="3"
+            placeholder="Instrucciones especiales, observaciones..."
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white placeholder-gray-500 focus:border-neon-yellow focus:outline-none resize-none"
+          ></textarea>
+        </div>
+      </div>
+
+      <div *ngIf="paso === 2" class="space-y-6">
+        <div>
+          <label class="block text-white font-bold mb-4">Seleccionar Juego</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div
+              (click)="seleccionarJuego('brain-bike')"
+              class="p-6 border rounded-lg cursor-pointer transition-all group"
+              [class]="juegoAsignado === 'brain-bike' ? 'bg-neon-blue bg-opacity-10 border-neon-blue' : 'bg-dark-800 border-dark-600 hover:border-neon-blue'"
+            >
+              <div class="text-4xl mb-3">🧠</div>
+              <p class="text-white font-bold text-lg mb-1">Brain Bike</p>
+              <p class="text-gray-400 text-sm">Trivia interactiva con bicicletas</p>
+            </div>
+
+            <div
+              (click)="seleccionarJuego('biketona')"
+              class="p-6 border rounded-lg cursor-pointer transition-all group"
+              [class]="juegoAsignado === 'biketona'
+                ? 'bg-neon-pink bg-opacity-10 border-neon-pink'
+                : 'bg-dark-800 border-dark-600 hover:border-neon-pink'"
+            >
+              <div class="text-4xl mb-3">🚴</div>
+              <p class="text-white font-bold text-lg mb-1">Biketona</p>
+              <p class="text-gray-400 text-sm">Carrera digital 1 vs 1 o masiva</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="paso === 3 && juegoAsignado === 'brain-bike'" class="space-y-6">
+        <div>
+          <label class="block text-white font-bold mb-2">Temática</label>
+          <select
+            [(ngModel)]="parametrosBrainBike.tematica_id"
+            (ngModelChange)="onTematicaChange()"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Seleccionar temática...</option>
+            <option *ngFor="let tematica of tematicas" [value]="tematica._id">
+              {{ tematica.nombre_tematica }}
+            </option>
+          </select>
+        </div>
+
+        <div *ngIf="parametrosBrainBike.tematica_id">
+          <label class="block text-white font-bold mb-2">Contenido</label>
+          <select
+            [(ngModel)]="parametrosBrainBike.contenido_id"
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Seleccionar contenido...</option>
+            <option *ngFor="let contenido of contenidosDisponibles" [value]="contenido._id">
+              {{ contenido.nombre_contenido }} ({{ contenido.preguntas?.length || 0 }} preguntas)
+            </option>
+          </select>
+        </div>
+
+        <!-- <div>
+          <label class="block text-white font-bold mb-2">Dificultad</label>
+          <div class="flex gap-3">
+            <button
+              (click)="parametrosBrainBike.dificultad = 'facil'"
+              class="flex-1 px-4 py-3 rounded-lg font-bold transition-all"
+              [class]="parametrosBrainBike.dificultad === 'facil' ? 'bg-neon-green text-dark-950' : 'bg-dark-800 text-gray-400 border border-dark-600 hover:border-neon-green'"
+            >
+              Fácil
+            </button>
+            <button
+              (click)="parametrosBrainBike.dificultad = 'media'"
+              class="flex-1 px-4 py-3 rounded-lg font-bold transition-all"
+              [class]="parametrosBrainBike.dificultad === 'media' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-gray-400 border border-dark-600 hover:border-neon-yellow'"
+            >
+              Media
+            </button>
+            <button
+              (click)="parametrosBrainBike.dificultad = 'dificil'"
+              class="flex-1 px-4 py-3 rounded-lg font-bold transition-all"
+              [class]="parametrosBrainBike.dificultad === 'dificil' ? 'bg-neon-red text-white' : 'bg-dark-800 text-gray-400 border border-dark-600 hover:border-neon-red'"
+            >
+              Difícil
+            </button>
+          </div>
+        </div> -->
+      </div>
+
+      <!-- bloque biketona -->
+      <!---------------------> 
+      <div *ngIf="paso === 3 && juegoAsignado === 'biketona'" class="space-y-6">
+        <div class="p-4 bg-neon-yellow bg-opacity-10 border border-neon-yellow rounded-lg">
+          <p class="text-white font-bold mb-1">🚴 Parámetros Biketona</p>
+          <p class="text-gray-300 text-sm">
+            Por ahora Biketona no requiere configuración adicional desde este panel.
+            Solo confirma la información de la sesión y haz clic en
+            <span class="font-bold text-neon-yellow">"Crear Sesión"</span>.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+            <p class="text-gray-400">Empresa</p>
+            <p class="text-white font-bold">
+              {{ nombreEmpresaSeleccionada }}
+            </p>
+          </div>
+
+          <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+            <p class="text-gray-400">Fecha y Hora</p>
+            <p class="text-white font-bold">
+              <ng-container *ngIf="fechaPreseleccionada">
+                {{ formatearFechaPreseleccionada() }} - {{ horaSesion }}
+              </ng-container>
+              <ng-container *ngIf="!fechaPreseleccionada">
+                {{ fechaHoraSesion | date: 'dd/MM/yyyy HH:mm' }}
+              </ng-container>
+            </p>
+          </div>
+
+          <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+            <p class="text-gray-400">Lugar</p>
+            <p class="text-white font-bold">
+              {{ lugarEjecucion || 'No definido' }}
+            </p>
+          </div>
+
+          <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+            <p class="text-gray-400">Admins asignados</p>
+            <p class="text-white font-bold">
+              {{ adminsSeleccionados.length }} admin(s)
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!------------------>
+      <!------------------>
+
+      <div class="flex justify-between mt-8 pt-6 border-t border-dark-700">
+        <button
+          *ngIf="paso > 1"
+          (click)="pasoAnterior()"
+          class="px-6 py-3 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 transition-all"
+        >
+          ← Anterior
+        </button>
+
+        <div class="flex gap-3" [class.ml-auto]="paso === 1">
+          <button
+            (click)="cancelar()"
+            class="px-6 py-3 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 transition-all"
+          >
+            Cancelar
+          </button>
+
+          <button
+            *ngIf="paso < 3"
+            (click)="siguientePaso()"
+            class="px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+          >
+            Siguiente →
+          </button>
+
+          <button
+            *ngIf="paso === 3"
+            (click)="crearSesion()"
+            [disabled]="cargando"
+            class="px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span *ngIf="!cargando">✓ Crear Sesión</span>
+            <span *ngIf="cargando">Creando...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

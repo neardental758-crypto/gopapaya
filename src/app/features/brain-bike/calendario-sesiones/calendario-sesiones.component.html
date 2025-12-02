@@ -1,0 +1,305 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 shadow-neon-yellow">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-4">
+          <button
+            (click)="volver()"
+            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 hover:border-neon-yellow transition-all"
+          >
+            ← Volver
+          </button>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
+              📅 Calendario de Sesiones
+            </h1>
+            <p class="text-gray-400">
+              <span *ngIf="isSuperAdmin()">Gestiona todas las sesiones programadas</span>
+              <span *ngIf="!isSuperAdmin()">Tus sesiones asignadas</span>
+            </p>
+          </div>
+        </div>
+        <button
+          *ngIf="isSuperAdmin()"
+          (click)="crearSesion()"
+          class="px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+        >
+          ➕ Nueva Sesión
+        </button>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-2">
+          <button
+            (click)="mesAnterior()"
+            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 hover:border-neon-yellow transition-all"
+          >
+            ←
+          </button>
+          <button
+            (click)="irHoy()"
+            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 hover:border-neon-yellow transition-all"
+          >
+            Hoy
+          </button>
+          <button
+            (click)="mesSiguiente()"
+            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 hover:border-neon-yellow transition-all"
+          >
+            →
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <h2 class="text-xl font-bold text-white">
+            {{ obtenerNombreMes() }} {{ obtenerAnio() }}
+          </h2>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            (click)="cambiarVista('mes')"
+            [class]="vista === 'mes' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-white border-dark-600'"
+            class="px-4 py-2 rounded-lg border hover:border-neon-yellow transition-all font-bold"
+          >
+            Mes
+          </button>
+          <button
+            (click)="cambiarVista('semana')"
+            [class]="vista === 'semana' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-white border-dark-600'"
+            class="px-4 py-2 rounded-lg border hover:border-neon-yellow transition-all font-bold"
+          >
+            Semana
+          </button>
+          <button
+            (click)="cambiarVista('dia')"
+            [class]="vista === 'dia' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-white border-dark-600'"
+            class="px-4 py-2 rounded-lg border hover:border-neon-yellow transition-all font-bold"
+          >
+            Día
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="cargando" class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-neon-yellow border-t-transparent"></div>
+        <p class="text-gray-400 mt-4">Cargando calendario...</p>
+      </div>
+
+      <div *ngIf="!cargando && vista === 'mes'" class="bg-dark-800 rounded-lg border border-dark-700 overflow-hidden">
+        <div class="grid grid-cols-7 bg-dark-900 border-b border-dark-700">
+          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Lun</div>
+          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Mar</div>
+          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Mié</div>
+          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Jue</div>
+          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Vie</div>
+          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Sáb</div>
+          <div class="p-3 text-center text-gray-400 text-sm font-bold">Dom</div>
+        </div>
+
+        <div class="grid grid-cols-7">
+          <div
+            *ngFor="let dia of diasCalendario"
+            (click)="seleccionarDia(dia)"
+            class="min-h-[120px] p-2 border-r border-b border-dark-700 cursor-pointer hover:bg-dark-750 transition-all relative"
+            [class.bg-dark-850]="!dia.esMesActual"
+            [class.bg-neon-yellow]="dia.esHoy"
+            [class.bg-opacity-5]="dia.esHoy"
+          >
+            <div class="flex justify-between items-start mb-2">
+              <span
+                class="text-sm font-bold"
+                [class]="dia.esHoy ? 'text-neon-yellow' : (dia.esMesActual ? 'text-white' : 'text-gray-600')"
+              >
+                {{ dia.fecha.getDate() }}
+              </span>
+              <button
+                *ngIf="isSuperAdmin() && dia.esMesActual"
+                (click)="crearSesionEnFecha(dia, $event)"
+                class="text-neon-blue hover:text-neon-yellow transition-all text-xs"
+                title="Crear sesión"
+              >
+                ➕
+              </button>
+            </div>
+
+           <div class="space-y-1">
+        <div
+          *ngFor="let evento of dia.eventos.slice(0, 2)"
+          (click)="verDetalleSesion(evento.sesion, $event)"
+          class="p-1 rounded text-xs border-l-2 bg-dark-900 hover:bg-dark-800 transition-all"
+          [class]="obtenerColorJuego(evento.sesion.juego_asignado)"
+          [class.opacity-50]="evento.sesion.estadoSesion === 'finalizada'"
+        >
+          <p class="text-white font-bold truncate">
+            {{ obtenerHoraFormateada(evento.inicio) }} - {{ evento.sesion.nombreCliente }}
+            <span *ngIf="evento.sesion.estadoSesion === 'finalizada'" class="text-gray-500">✓</span>
+          </p>
+          <p class="text-gray-400 truncate text-[10px]">
+            {{ evento.sesion.lugarEjecucion || 'Sin ubicación' }}
+          </p>
+        </div>
+  <div
+    *ngIf="dia.eventos.length > 2"
+    class="text-xs text-neon-yellow font-bold"
+  >
+    +{{ dia.eventos.length - 2 }} más
+  </div>
+</div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!cargando && vista === 'semana'" class="bg-dark-800 rounded-lg border border-dark-700 overflow-x-auto">
+        <div class="grid grid-cols-8 min-w-[800px]">
+          <div class="p-3 bg-dark-900 border-b border-r border-dark-700"></div>
+          <div
+            *ngFor="let dia of diasSemana"
+            class="p-3 text-center bg-dark-900 border-b border-r border-dark-700"
+            [class.bg-neon-yellow]="dia.esHoy"
+            [class.bg-opacity-10]="dia.esHoy"
+          >
+            <p class="text-xs text-gray-400">{{ obtenerNombreDiaSemana(dia.fecha) }}</p>
+            <p
+              class="text-lg font-bold"
+              [class]="dia.esHoy ? 'text-neon-yellow' : 'text-white'"
+            >
+              {{ dia.fecha.getDate() }}
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-8 min-w-[800px]">
+          <div class="border-r border-dark-700">
+            <div
+              *ngFor="let hora of horasDelDia"
+              class="h-16 p-2 text-xs text-gray-400 border-b border-dark-700"
+            >
+              {{ hora }}:00
+            </div>
+          </div>
+
+          <div
+            *ngFor="let dia of diasSemana"
+            class="border-r border-dark-700 relative"
+          >
+            <div
+              *ngFor="let hora of horasDelDia"
+              class="h-16 border-b border-dark-700 relative"
+            ></div>
+
+            <div
+              *ngFor="let evento of dia.eventos"
+              (click)="verDetalleSesion(evento.sesion)"
+              class="absolute left-0 right-0 mx-1 p-2 rounded border-l-4 bg-dark-900 hover:bg-dark-800 cursor-pointer transition-all shadow-lg z-10"
+              [class]="obtenerColorJuego(evento.sesion.juego_asignado)"
+              [style.top.px]="(evento.inicio.getHours() * 64) + (evento.inicio.getMinutes() / 60 * 64)"
+              [style.height.px]="evento.duracion * 64"
+            >
+              <p class="text-white font-bold text-xs truncate">{{ evento.sesion.nombreCliente }}</p>
+              <p class="text-gray-400 text-[10px] truncate">{{ evento.sesion.lugarEjecucion }}</p>
+              <p class="text-gray-500 text-[10px]">
+                {{ evento.inicio.getHours() }}:{{ evento.inicio.getMinutes().toString().padStart(2, '0') }} -
+                {{ evento.fin.getHours() }}:{{ evento.fin.getMinutes().toString().padStart(2, '0') }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!cargando && vista === 'dia'" class="space-y-4">
+        <div class="bg-dark-800 rounded-lg border border-dark-700 p-6">
+          <h3 class="text-xl font-bold text-white mb-4">
+            {{ obtenerFechaCompletaDia() }}
+          </h3>
+
+          <div *ngIf="eventosDia.length === 0" class="text-center py-12">
+            <div class="text-6xl mb-4">🔭</div>
+            <p class="text-gray-400 text-lg">No hay sesiones programadas para este día</p>
+            <button
+              *ngIf="isSuperAdmin()"
+              (click)="crearSesion()"
+              class="mt-4 px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold hover:shadow-neon-yellow transition-all"
+            >
+              Crear Sesión
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <div
+              *ngFor="let evento of eventosDia"
+              class="bg-dark-900 border-l-4 rounded-lg p-4 hover:bg-dark-850 transition-all"
+              [class]="obtenerColorJuego(evento.sesion.juego_asignado)"
+            >
+              <div class="flex justify-between items-start mb-3">
+                <div class="flex-1">
+                  <h4 class="text-lg font-bold text-white mb-1">{{ evento.sesion.nombreCliente }}</h4>
+                  <p class="text-gray-400 text-sm mb-2" *ngIf="evento.sesion.lugarEjecucion">
+                    📍 {{ evento.sesion.lugarEjecucion }}
+                  </p>
+                  <p class="text-gray-500 text-sm">
+                    🕐 {{ evento.inicio.getHours() }}:{{ evento.inicio.getMinutes().toString().padStart(2, '0') }} -
+                    {{ evento.fin.getHours() }}:{{ evento.fin.getMinutes().toString().padStart(2, '0') }}
+                  </p>
+                </div>
+               <div class="flex gap-2">
+                <span
+                  *ngIf="evento.sesion.estadoSesion === 'finalizada'"
+                  class="px-3 py-1 bg-dark-700 text-gray-400 rounded text-xs font-bold border border-dark-600"
+                >
+                  ✓ Sesión Finalizada
+                </span>
+
+                <button
+                  *ngIf="isSuperAdmin() && evento.sesion.estadoSesion !== 'finalizada' && puedeEditarSesion(evento.sesion)"
+                  (click)="editarParametros(evento.sesion, $event)"
+                  class="px-3 py-1 bg-neon-blue text-white rounded text-xs font-bold hover:shadow-neon-blue transition-all"
+                >
+                  Editar
+                </button>
+
+                <button
+                  *ngIf="evento.sesion.estadoSesion !== 'finalizada'"
+                  (click)="finalizarSesion(evento.sesion, $event)"
+                  class="px-3 py-1 bg-neon-red text-white rounded text-xs font-bold hover:shadow-neon-red transition-all"
+                >
+                  Finalizar
+                </button>
+              </div>
+              </div>
+
+              <div *ngIf="evento.sesion.juego_asignado" class="mb-2 px-3 py-2 bg-dark-800 rounded">
+                <p class="text-neon-blue text-xs font-bold">
+                  🎮 {{ evento.sesion.juego_asignado === 'brain-bike' ? 'Brain Bike' : evento.sesion.juego_asignado }}
+                </p>
+              </div>
+
+              <div *ngIf="evento.sesion.nota" class="mb-3 p-3 bg-dark-800 rounded">
+                <p class="text-gray-400 text-xs mb-1">Nota:</p>
+                <p class="text-gray-300 text-sm">{{ evento.sesion.nota }}</p>
+              </div>
+
+              <div *ngIf="evento.sesion.admins && evento.sesion.admins.length > 0" class="flex flex-wrap gap-2">
+                <div
+                  *ngFor="let admin of evento.sesion.admins"
+                  class="px-2 py-1 bg-dark-800 rounded text-xs text-gray-300"
+                >
+                  👤 {{ admin.nombre }}
+                </div>
+              </div>
+
+              <button
+              *ngIf="evento.sesion.estadoSesion !== 'finalizada'"
+              (click)="verDetalleSesion(evento.sesion)"
+              class="mt-3 w-full px-4 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold hover:shadow-neon-yellow transition-all"
+            >
+              <span *ngIf="isSuperAdmin()">Editar Parámetros →</span>
+              <span *ngIf="!isSuperAdmin()">Continuar Sesión →</span>
+            </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

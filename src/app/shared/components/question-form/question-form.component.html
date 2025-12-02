@@ -1,0 +1,107 @@
+<div class="bg-dark-800 border border-dark-600 rounded-card p-6">
+  <h3 class="text-xl font-display font-bold text-white mb-6">
+    {{ isEditMode ? '✏️ Editar Pregunta' : '➕ Nueva Pregunta' }}
+  </h3>
+
+  <div class="mb-6">
+    <label class="block text-sm font-bold text-gray-300 mb-2">
+      Pregunta <span class="text-neon-red">*</span>
+    </label>
+    <textarea
+      [(ngModel)]="pregunta.texto_pregunta"
+      rows="3"
+      placeholder="¿Cuánto es 2 + 2?"
+      class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow transition-all resize-none text-white placeholder-gray-500"
+    ></textarea>
+    <p *ngIf="!pregunta.texto_pregunta?.trim()" class="text-neon-red text-xs mt-1">
+      La pregunta es obligatoria
+    </p>
+  </div>
+
+  <div class="mb-6">
+    <label class="block text-sm font-bold text-gray-300 mb-3">
+      Respuestas <span class="text-gray-500 text-xs">(marca la correcta)</span>
+    </label>
+
+    <div class="space-y-2 mb-4">
+      <div
+        *ngFor="let respuesta of pregunta.respuestas; let i = index"
+        class="flex items-center gap-3 p-3 rounded-lg transition-all border"
+        [class.bg-neon-green10]="respuesta.es_correcta"
+        [class.border-neon-green]="respuesta.es_correcta"
+        [class.bg-dark-700]="!respuesta.es_correcta"
+        [class.border-dark-600]="!respuesta.es_correcta"
+      >
+        <input
+          type="radio"
+          [name]="'correcta'"
+          [checked]="respuesta.es_correcta"
+          (change)="marcarCorrecta(i)"
+          class="w-5 h-5 accent-neon-green cursor-pointer"
+        />
+
+        <input
+          type="text"
+          [(ngModel)]="respuesta.texto_respuesta"
+          class="flex-1 px-3 py-2 bg-dark-900 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-blue text-white"
+          placeholder="Escribe la respuesta"
+        />
+
+        <button
+          type="button"
+          (click)="eliminarRespuesta(i)"
+          class="p-2 text-neon-red hover:bg-dark-600 rounded-lg transition-all"
+          title="Eliminar"
+        >
+          🗑️
+        </button>
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <input
+        type="text"
+        [(ngModel)]="nuevaRespuesta"
+        (keyup.enter)="agregarRespuesta()"
+        placeholder="Nueva respuesta"
+        class="flex-1 px-4 py-2 bg-dark-700 border border-dashed border-dark-600 rounded-lg focus:outline-none focus:border-neon-blue text-white placeholder-gray-500"
+      />
+      <button
+        type="button"
+        (click)="agregarRespuesta()"
+        [disabled]="!nuevaRespuesta.trim()"
+        class="px-4 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold hover:shadow-neon-yellow disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+      >
+        ➕
+      </button>
+    </div>
+
+    <p class="text-xs text-gray-500 mt-2">
+      * Agrega al menos 2 respuestas y marca cuál es la correcta
+    </p>
+    <p *ngIf="pregunta.respuestas.length < 2" class="text-neon-red text-xs mt-1">
+      Se requieren al menos 2 respuestas
+    </p>
+    <p *ngIf="pregunta.respuestas.length >= 2 && !tieneRespuestaCorrecta()" class="text-neon-red text-xs mt-1">
+      Debes marcar cuál es la respuesta correcta
+    </p>
+  </div>
+
+  <div class="flex justify-end gap-3 pt-4 border-t border-dark-600">
+    <button
+      type="button"
+      (click)="cancelar()"
+      class="px-6 py-3 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 border border-dark-600 transition-all"
+    >
+      Cancelar
+    </button>
+    <button
+      type="button"
+      (click)="guardar()"
+      [disabled]="!isValid()"
+      class="px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+    >
+      💾 {{ isEditMode ? 'Actualizar' : 'Guardar' }}
+    </button>
+  </div>
+</div>

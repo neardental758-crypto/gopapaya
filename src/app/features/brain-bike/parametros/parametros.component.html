@@ -1,0 +1,369 @@
+<div class="min-h-screen bg-dark-950 p-3 sm:p-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6 mb-4 sm:mb-6 shadow-lg">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-3 sm:gap-4">
+          <div class="text-3xl sm:text-5xl">🧠</div>
+          <div>
+            <h1 class="text-xl sm:text-3xl font-display font-bold text-white">
+              <span class="text-neon-blue">Brain Bike</span> - Configuración
+            </h1>
+            <p class="text-gray-400 text-xs sm:text-sm">Paso {{ paso }} de 3</p>
+          </div>
+        </div>
+        <button
+          (click)="volver()"
+          class="px-4 sm:px-6 py-2 sm:py-3 bg-dark-800 text-gray-300 rounded-lg font-bold border border-dark-600 hover:bg-dark-700 hover:border-dark-500 transition-all text-sm sm:text-base"
+        >
+          ← Volver
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="paso === 1" class="space-y-4 sm:space-y-6">
+      <div class="bg-dark-900 border border-dark-700 rounded-card p-5 sm:p-8 shadow-lg">
+        <div class="mb-5 sm:mb-6">
+          <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-1 sm:mb-2">
+            📚 Selecciona la Temática
+          </h2>
+          <p class="text-gray-400 text-sm sm:text-base">Elige la categoría de contenido para la actividad</p>
+        </div>
+
+        <div *ngIf="loading" class="text-center py-12 sm:py-20">
+          <div class="inline-block">
+            <div class="w-12 h-12 sm:w-16 sm:h-16 border-4 border-neon-blue border-t-transparent rounded-full animate-spin mx-auto mb-3 sm:mb-4"></div>
+            <p class="text-gray-400 font-medium text-sm sm:text-base">Cargando temáticas...</p>
+          </div>
+        </div>
+
+        <div *ngIf="!loading && tematicas.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div
+            *ngFor="let tematica of tematicas"
+            (click)="seleccionarTematica(tematica)"
+            class="group bg-dark-800 border-2 border-dark-600 rounded-card p-4 sm:p-6 cursor-pointer hover:border-neon-blue hover:shadow-neon-blue transition-all duration-300 active:scale-95 sm:hover:-translate-y-1"
+          >
+            <div class="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
+              <div class="flex-shrink-0">
+                <img
+                  *ngIf="tematica.logo_tematica"
+                  [src]="tematica.logo_tematica"
+                  [alt]="tematica.nombre_tematica"
+                  class="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border-2 border-dark-600 group-hover:border-neon-blue transition-colors"
+                />
+                <div
+                  *ngIf="!tematica.logo_tematica"
+                  class="w-16 h-16 sm:w-20 sm:h-20 bg-dark-700 rounded-lg border-2 border-dark-600 flex items-center justify-center text-3xl sm:text-4xl group-hover:border-neon-blue transition-colors"
+                >
+                  📚
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-display font-bold text-base sm:text-lg text-white group-hover:text-neon-blue transition-colors mb-1 sm:mb-2">
+                  {{ tematica.nombre_tematica }}
+                </h3>
+                <p class="text-xs sm:text-sm text-gray-500 line-clamp-2" *ngIf="tematica.descripcion">
+                  {{ tematica.descripcion }}
+                </p>
+                <p class="text-xs sm:text-sm text-gray-600 italic" *ngIf="!tematica.descripcion">
+                  Sin descripción
+                </p>
+              </div>
+            </div>
+
+            <div class="border-t border-dark-600 pt-3 sm:pt-4 mt-3 sm:mt-4">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-neon-yellow text-base sm:text-lg">📹</span>
+                    <span class="text-gray-400 font-medium">{{ getNumeroContenidos(tematica) }}</span>
+                    <span class="text-gray-600 text-xs hidden xs:inline">videos</span>
+                  </div>
+                  <div class="w-px h-3 sm:h-4 bg-dark-600"></div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-neon-green text-base sm:text-lg">❓</span>
+                    <span class="text-gray-400 font-medium">{{ getNumeroPreguntas(tematica) }}</span>
+                    <span class="text-gray-600 text-xs hidden xs:inline">preguntas</span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                *ngIf="getNumeroContenidos(tematica) === 0"
+                class="flex items-center gap-2 text-xs text-neon-orange bg-neon-orange/10 border border-neon-orange/30 rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 mb-3"
+              >
+                <span>⚠️</span>
+                <span class="font-medium">Sin contenido disponible</span>
+              </div>
+
+              <div class="flex items-center justify-end">
+                <span class="text-neon-blue font-bold text-xs sm:text-sm group-hover:scale-110 group-hover:text-neon-yellow transition-all duration-300 flex items-center gap-1.5 sm:gap-2">
+                  Seleccionar
+                  <span class="transform group-hover:translate-x-1 transition-transform">→</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!loading && tematicas.length === 0" class="text-center py-12 sm:py-20">
+          <div class="inline-block">
+            <div class="text-5xl sm:text-7xl mb-4 sm:mb-6 opacity-20">📭</div>
+            <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-2">No hay temáticas disponibles</h3>
+            <p class="text-sm sm:text-base text-gray-500">Contacta al administrador para agregar contenidos</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="paso === 2" class="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div class="bg-dark-900 border-2 border-neon-blue rounded-card p-4 sm:p-6 shadow-neon-blue-lg">
+        <div class="flex items-start gap-3 sm:gap-5 flex-col xs:flex-row">
+          <div class="flex-shrink-0 mx-auto xs:mx-0">
+            <img
+              *ngIf="tematicaSeleccionada?.logo_tematica"
+              [src]="tematicaSeleccionada.logo_tematica"
+              [alt]="tematicaSeleccionada.nombre_tematica"
+              class="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border-2 border-neon-blue shadow-neon-blue"
+            />
+            <div
+              *ngIf="!tematicaSeleccionada?.logo_tematica"
+              class="w-20 h-20 sm:w-24 sm:h-24 bg-dark-700 rounded-xl border-2 border-neon-blue flex items-center justify-center text-4xl sm:text-5xl shadow-neon-blue"
+            >
+              📚
+            </div>
+          </div>
+          <div class="flex-1 min-w-0 text-center xs:text-left">
+            <h3 class="text-xl sm:text-2xl font-display font-bold text-white mb-2">
+              {{ tematicaSeleccionada?.nombre_tematica }}
+            </h3>
+            <p class="text-sm sm:text-base text-gray-400 mb-3" *ngIf="tematicaSeleccionada?.descripcion">
+              {{ tematicaSeleccionada?.descripcion }}
+            </p>
+          </div>
+          <button
+            (click)="cambiarPaso(1)"
+            class="px-4 sm:px-5 py-2 sm:py-2.5 bg-dark-700 text-neon-blue rounded-lg font-bold hover:bg-dark-600 border-2 border-dark-600 hover:border-neon-blue transition-all flex-shrink-0 text-sm sm:text-base w-full xs:w-auto"
+          >
+            Cambiar
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-dark-900 border border-dark-700 rounded-card p-5 sm:p-8 shadow-lg">
+        <div class="mb-5 sm:mb-6">
+          <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-1 sm:mb-2">
+            📹 Selecciona el Video y Preguntas
+          </h2>
+          <p class="text-gray-400 text-sm sm:text-base">Elige el contenido específico para la actividad</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div
+            *ngFor="let contenido of tematicaSeleccionada?.contenidos"
+            (click)="seleccionarContenido(contenido)"
+            class="group bg-dark-800 border-2 border-dark-600 rounded-card p-4 sm:p-5 cursor-pointer hover:border-neon-yellow hover:shadow-neon-yellow transition-all duration-300 active:scale-95 sm:hover:-translate-y-1"
+          >
+            <div class="mb-3 sm:mb-4">
+              <div class="flex items-start gap-2 mb-2">
+                <span class="text-2xl sm:text-3xl">🎬</span>
+                <h3 class="font-display font-bold text-base sm:text-lg text-white group-hover:text-neon-yellow transition-colors flex-1">
+                  {{ contenido.nombre_contenido }}
+                </h3>
+              </div>
+            </div>
+
+            <div class="border-t border-dark-600 pt-3 mb-3">
+              <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-400 mb-2">
+                <span class="text-neon-green">❓</span>
+                <span class="font-medium">{{ getNumeroPreguntasContenido(contenido) }} preguntas</span>
+              </div>
+              <div *ngIf="contenido.link_video" class="flex items-center gap-2 text-xs text-gray-500">
+                <span>🔗</span>
+                <span class="truncate">Video disponible</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end">
+              <span class="text-neon-yellow font-bold text-xs sm:text-sm group-hover:scale-110 transition-all duration-300 flex items-center gap-1.5 sm:gap-2">
+                Seleccionar
+                <span class="transform group-hover:translate-x-1 transition-transform">→</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="bg-neon-red/10 border-2 border-neon-red/50 rounded-card p-3 sm:p-4 shadow-neon-red animate-fadeIn">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <span class="text-xl sm:text-2xl">⚠️</span>
+          <p class="text-neon-red font-medium text-sm sm:text-base">{{ errorMessage }}</p>
+        </div>
+      </div>
+
+      <div class="flex justify-start">
+        <button
+          (click)="cambiarPaso(1)"
+          class="py-3 sm:py-4 px-6 sm:px-8 bg-dark-800 text-gray-300 rounded-xl font-bold border-2 border-dark-600 hover:bg-dark-700 hover:border-dark-500 transition-all text-sm sm:text-base min-h-touch"
+        >
+          ← Atrás
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="paso === 3" class="space-y-4 sm:space-y-6 animate-fadeIn">
+      <div class="bg-dark-900 border-2 border-neon-yellow rounded-card p-4 sm:p-6 shadow-neon-yellow-lg">
+        <div class="flex items-start gap-3 sm:gap-5 flex-col xs:flex-row">
+          <div class="flex-shrink-0 mx-auto xs:mx-0">
+            <div class="text-5xl sm:text-6xl">🎬</div>
+          </div>
+          <div class="flex-1 min-w-0 text-center xs:text-left">
+            <h3 class="text-xl sm:text-2xl font-display font-bold text-white mb-2">
+              {{ contenidoSeleccionado?.nombre_contenido }}
+            </h3>
+            <div class="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm justify-center xs:justify-start flex-wrap">
+              <div class="flex items-center gap-2 bg-dark-800 px-2.5 sm:px-3 py-1.5 rounded-lg border border-dark-600">
+                <span class="text-neon-blue">📚</span>
+                <span class="text-gray-400">{{ tematicaSeleccionada?.nombre_tematica }}</span>
+              </div>
+              <div class="flex items-center gap-2 bg-dark-800 px-2.5 sm:px-3 py-1.5 rounded-lg border border-dark-600">
+                <span class="text-neon-green">❓</span>
+                <span class="text-white font-bold">{{ getNumeroPreguntasContenido(contenidoSeleccionado) }}</span>
+                <span class="text-gray-500 hidden xs:inline">preguntas</span>
+              </div>
+            </div>
+          </div>
+          <button
+          *ngIf="isSuperAdmin()"
+            (click)="cambiarPaso(2)"
+            class="px-4 sm:px-5 py-2 sm:py-2.5 bg-dark-700 text-neon-yellow rounded-lg font-bold hover:bg-dark-600 border-2 border-dark-600 hover:border-neon-yellow transition-all flex-shrink-0 text-sm sm:text-base w-full xs:w-auto"
+          >
+            Cambiar
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-dark-900 border border-dark-700 rounded-card p-5 sm:p-8 shadow-lg">
+        <div class="mb-6 sm:mb-8">
+          <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-1 sm:mb-2">
+            ⚙️ Configuración de la Actividad
+          </h2>
+          <p class="text-gray-400 text-sm sm:text-base">Ajusta los parámetros de la competencia</p>
+        </div>
+
+        <div class="space-y-6 sm:space-y-8">
+          <div>
+            <label class="block text-sm sm:text-base font-bold text-white mb-3 sm:mb-4">
+              Número de Participantes / Bicicletas
+            </label>
+            <div class="grid grid-cols-3 gap-3 sm:gap-4">
+              <button
+                *ngFor="let num of [2, 3, 4]"
+                (click)="numeroBicicletas = num"
+                class="relative p-5 sm:p-8 rounded-xl border-2 transition-all font-bold active:scale-95 sm:hover:scale-105"
+                [class.border-neon-yellow]="numeroBicicletas === num"
+                [class.bg-neon-yellow]="numeroBicicletas === num"
+                [class.bg-opacity-10]="numeroBicicletas === num"
+                [class.text-neon-yellow]="numeroBicicletas === num"
+                [class.shadow-neon-yellow-lg]="numeroBicicletas === num"
+                [class.border-dark-600]="numeroBicicletas !== num"
+                [class.bg-dark-800]="numeroBicicletas !== num"
+                [class.text-gray-500]="numeroBicicletas !== num"
+                [class.hover:border-dark-500]="numeroBicicletas !== num"
+              >
+                <div class="text-3xl sm:text-5xl mb-2 sm:mb-3">🚴</div>
+                <div class="text-2xl sm:text-3xl font-display">{{ num }}</div>
+                <div class="text-xs mt-1 sm:mt-2 opacity-75" [class.text-neon-yellow]="numeroBicicletas === num" [class.text-gray-600]="numeroBicicletas !== num">
+                  {{ num === 2 ? 'Dúo' : num === 3 ? 'Trío' : 'Cuarteto' }}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm sm:text-base font-bold text-white mb-3 sm:mb-4">
+              Nivel de Dificultad
+              <span class="text-xs sm:text-sm font-normal text-gray-500 block xs:inline xs:ml-2 mt-1 xs:mt-0">
+                (Velocidad mínima requerida)
+              </span>
+            </label>
+            <div class="grid grid-cols-1 xs:grid-cols-3 gap-3 sm:gap-4">
+              <button
+                *ngFor="let preset of velocidadPresets; let i = index"
+                (click)="velocidadPresetSeleccionado = i"
+                class="p-5 sm:p-6 rounded-xl border-2 transition-all active:scale-95 sm:hover:scale-105"
+                [class.border-neon-blue]="velocidadPresetSeleccionado === i"
+                [class.bg-neon-blue]="velocidadPresetSeleccionado === i"
+                [class.bg-opacity-10]="velocidadPresetSeleccionado === i"
+                [class.shadow-neon-blue-lg]="velocidadPresetSeleccionado === i"
+                [class.border-dark-600]="velocidadPresetSeleccionado !== i"
+                [class.bg-dark-800]="velocidadPresetSeleccionado !== i"
+                [class.hover:border-dark-500]="velocidadPresetSeleccionado !== i"
+              >
+                <div class="text-3xl sm:text-4xl mb-2 sm:mb-3">
+                  {{ i === 0 ? '🌱' : i === 1 ? '⚡' : '🔥' }}
+                </div>
+                <h4 class="font-display font-bold text-base sm:text-lg mb-3 sm:mb-4"
+                  [class.text-neon-blue]="velocidadPresetSeleccionado === i"
+                  [class.text-white]="velocidadPresetSeleccionado !== i"
+                >
+                  {{ preset.nombre }}
+                </h4>
+                <div class="space-y-2 text-xs sm:text-sm">
+                  <div class="flex items-center justify-between bg-dark-900 px-2.5 sm:px-3 py-2 rounded-lg border border-dark-700">
+                    <span class="text-gray-500">Durante video:</span>
+                    <span class="font-bold"
+                      [class.text-neon-blue]="velocidadPresetSeleccionado === i"
+                      [class.text-white]="velocidadPresetSeleccionado !== i"
+                    >
+                      {{ preset.video }} km/h
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between bg-dark-900 px-2.5 sm:px-3 py-2 rounded-lg border border-dark-700">
+                    <span class="text-gray-500">Durante trivia:</span>
+                    <span class="font-bold"
+                      [class.text-neon-blue]="velocidadPresetSeleccionado === i"
+                      [class.text-white]="velocidadPresetSeleccionado !== i"
+                    >
+                      {{ preset.trivia }} km/h
+                    </span>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="bg-neon-red/10 border-2 border-neon-red/50 rounded-card p-3 sm:p-4 shadow-neon-red animate-fadeIn">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <span class="text-xl sm:text-2xl">⚠️</span>
+          <p class="text-neon-red font-medium text-sm sm:text-base">{{ errorMessage }}</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col xs:flex-row gap-3 sm:gap-4">
+        <button
+        *ngIf="isSuperAdmin()"
+          (click)="cambiarPaso(2)"
+          class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-dark-800 text-gray-300 rounded-xl font-bold border-2 border-dark-600 hover:bg-dark-700 hover:border-dark-500 transition-all text-sm sm:text-base min-h-touch"
+        >
+          ← Atrás
+        </button>
+        <button
+          (click)="guardarConfiguracion()"
+          [disabled]="loading || !contenidoSeleccionado"
+          class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-yellow text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
+        >
+          <span *ngIf="!loading" class="flex items-center justify-center gap-2">
+            <span>Iniciar Actividad</span>
+            <span class="text-lg sm:text-xl">→</span>
+          </span>
+          <span *ngIf="loading" class="flex items-center justify-center gap-2">
+            <span class="inline-block w-4 h-4 border-2 border-dark-950 border-t-transparent rounded-full animate-spin"></span>
+            <span>Guardando...</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

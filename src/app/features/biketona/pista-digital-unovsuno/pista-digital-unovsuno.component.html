@@ -1,0 +1,922 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6 lg:p-8">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-dark-900/90 border border-dark-700  p-4 sm:p-6 mb-6 sm:mb-8 shadow-2xl">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-4">
+          <div class="text-4xl sm:text-5xl drop-shadow-lg">🚴</div>
+          <div>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-white">
+              <span class="text-neon-blue">Pista Digital</span> - 1 vs 1
+            </h1>
+           <p class="text-gray-400 text-xs sm:text-sm mt-1">
+              <ng-container *ngIf="paso === 1">
+                Conecta las bicicletas físicas vía Bluetooth BLE.
+              </ng-container>
+              <ng-container *ngIf="paso === 2">
+                Registra los participantes y administra la llave 1 vs 1.
+              </ng-container>
+              <ng-container *ngIf="paso === 3">
+                Carrera en vivo · {{ configuracion.numeroVueltas }} vueltas.
+              </ng-container>
+            </p>
+          </div>
+        </div>
+
+        <button
+          (click)="volver()"
+          class="px-5 sm:px-6 py-2.5 sm:py-3 bg-dark-800 text-gray-300 rounded-xl border-2 border-dark-600 hover:border-neon-blue hover:text-neon-blue hover:shadow-neon-blue duration-300 text-sm sm:text-base font-medium"
+        >
+          {{ paso > 1 ? '← Anterior' : '← Volver' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL HEAT (inicio/fin de carrera) -->
+    <!-- MODAL HEAT (inicio/fin de carrera) -->
+    <div
+      *ngIf="mostrarModalHeat"
+      class="fixed inset-0 bg-black/80 z-40 flex items-center justify-center p-4"
+    >
+      <div
+        class="relative border-2 border-yellow-400/50 rounded-3xl p-6 sm:p-8 max-w-xl w-full 
+              shadow-[0_0_30px_rgba(250,204,21,0.45)] backdrop-blur-xl bg-transparent"
+      >
+        <!-- Glow neón alrededor -->
+        <div class="pointer-events-none absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_top,#facc15,transparent_55%)]"></div>
+        <div class="pointer-events-none absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_bottom,#22c55e,transparent_55%)]"></div>
+
+        <!-- Contenido -->
+        <div class="relative z-10">
+          <!-- Versión CELEBRACIÓN cuando termina la carrera -->
+          <ng-container *ngIf="modoModalHeat === 'fin' && ganadorActual; else modalGenerico">
+            <div class="text-center mb-8">
+
+              <!-- Iconos celebración -->
+              <div class="text-6xl mb-6 animate-bounce drop-shadow-[0_0_25px_rgba(250,204,21,0.9)]">
+                🏆🎉
+              </div>
+
+              <!-- Título pequeño -->
+              <p class="text-[11px] sm:text-xs font-mono uppercase tracking-[0.35em] text-gray-400 mb-2">
+                Carrera finalizada
+              </p>
+
+              <!-- Título GANADOR: ahora en un solo color -->
+              <h2
+                class="text-3xl sm:text-4xl font-display font-extrabold text-yellow-100 drop-shadow-[0_0_25px_rgba(250,204,21,0.9)] mb-4 uppercase"
+              >
+                ¡Ganador de la llave!
+              </h2>
+
+              <!-- Nombre del ganador ENORME en amarillo sólido -->
+              <h3
+                class="text-4xl sm:text-5xl md:text-6xl font-display font-extrabold uppercase tracking-wide text-yellow-500 drop-shadow-[0_0_35px_rgba(250,204,21,1)] mb-6"
+              >
+                {{ ganadorActual.nombre || ('Jugador ' + ganadorActual.id) }}
+              </h3>
+
+              <!-- Mensaje de felicitación -->
+              <p class="text-gray-300 text-sm sm:text-base mb-2">
+                ¡Felicidades! Has logrado una victoria impecable en esta carrera digital 🚀
+              </p>
+
+              <!-- Tiempo -->
+              <p
+                *ngIf="ganadorActual.mejorTiempo != null"
+                class="text-yellow-300 text-sm sm:text-base font-mono mt-3 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]"
+              >
+                Tiempo registrado: ⏱ {{ formatearTiempo(ganadorActual.mejorTiempo!) }}
+              </p>
+
+              <!-- Texto inferior (el que viene desde TS) -->
+              <p class="text-gray-400 text-xs sm:text-sm mt-6">
+                {{ textoModalHeat }}
+              </p>
+            </div>
+
+            <!-- Botones -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+              <button
+                (click)="cerrarModalHeat()"
+                class="w-full sm:flex-1 py-3 sm:py-3.5 px-4 sm:px-6 bg-dark-800/70 text-gray-200 rounded-xl font-display font-semibold 
+                      border border-dark-600 hover:border-neon-blue hover:text-neon-blue hover:shadow-[0_0_18px_rgba(56,189,248,0.8)] 
+                      transition-all text-sm sm:text-base"
+              >
+                ✨ Cerrar
+              </button>
+
+              <button
+                (click)="cerrarModalHeatYVolverALlaves()"
+                class="w-full sm:flex-1 py-3 sm:py-3.5 px-4 sm:px-6 bg-yellow-400 text-dark-950 rounded-xl font-display font-bold 
+                      shadow-[0_0_25px_rgba(250,204,21,0.9)] hover:shadow-[0_0_35px_rgba(250,204,21,1)] hover:scale-[1.02] active:scale-95 
+                      transition-all text-sm sm:text-base"
+              >
+                ← Siguiente llave / Ranking
+              </button>
+            </div>
+          </ng-container>
+
+
+          <!-- Versión genérica (inicio de carrera u otros casos) -->
+          <ng-template #modalGenerico>
+            <h2 class="text-2xl font-display font-bold text-white mb-2">
+              {{ tituloModalHeat }}
+            </h2>
+            <p class="text-sm mb-10 mt-10 text-white font-medium">
+              {{ textoModalHeat }}
+            </p>
+
+            <div class="flex gap-3 justify-center mt-4 flex-wrap">
+              <button
+                (click)="cerrarModalHeat()"
+                class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-blue text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
+              >
+                Cerrar
+              </button>
+
+              <!-- Inicio de carrera -->
+              <button
+                *ngIf="modoModalHeat === 'inicio'"
+                (click)="iniciarHeat()"
+                class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-yellow text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
+              >
+                🏁 Iniciar carrera
+              </button>
+
+              <!-- Fin de carrera genérico (por si acaso sin ganadorActual) -->
+              <button
+                *ngIf="modoModalHeat === 'fin'"
+                (click)="cerrarModalHeatYVolverALlaves()"
+                class="neon-btn px-4 py-2 bg-yellow-400 text-dark-950 rounded-lg text-xs sm:text-sm font-bold hover:bg-yellow-300"
+              >
+                ← Volver al registro
+              </button>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===================== -->
+    <!-- PASO 1: SOLO CONEXIÓN BLE -->
+    <!-- ===================== -->
+    <div *ngIf="paso === 1" class="space-y-4 sm:space-y-6">
+      <!-- Panel de conexión BLE para dos bicis -->
+      <div class="bg-dark-900/90 border border-dark-700 rounded-card p-4 mb-2 shadow-lg neon-panel">
+        <div class="flex items-center justify-between gap-3 flex-wrap mb-8">
+          <div>
+             <h2 class="text-3xl sm:text-4xl font-display font-bold text-white mb-3">
+              Conexión Bluetooth
+            </h2>
+            <p class="text-gray-400 text-base sm:text-lg mb-10">
+              Bici 1 controla al <span class="font-semibold">Jugador 1</span> y Bici 2 controla al
+              <span class="font-semibold">Jugador 2</span>. Si alguna bici no está conectada, ese jugador se simula.
+            </p>
+            <p class="text-xl sm:text-xl font-display font-bold text-white mb-3">
+              Estado general:
+              <span
+                class="font-semibold"
+                [ngClass]="todasBicisNecesariasConectadas() ? 'text-green-400' : 'text-yellow-300'"
+              >
+                {{
+                  todasBicisNecesariasConectadas()
+                    ? 'Listo para continuar'
+                    : 'Conecta las dos bicis para continuar'
+                }}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Tarjeta de cada bici -->
+          <div
+            *ngFor="let bici of bicis"
+            class="bg-gradient-to-br from-dark-800 via-dark-900 to-dark-800 rounded-xl border-4 border-neon-yellow p-6 sm:p-8 shadow-xl hover:shadow-neon-blue/30 duration-300 mb-10"
+            [ngClass]="{
+              'border-green-400': bici.conectado,
+              'border-neon-yellow': !bici.conectado
+            }"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <p class="text-xs text-gray-400">Dispositivo</p>
+                <h4 class="text-white font-bold text-base">{{ bici.label }}</h4>
+              </div>
+              <span
+                class="px-3 py-1 rounded-full text-[11px] font-semibold"
+                [ngClass]="{
+                  'bg-dark-700 text-gray-300 border border-dark-500':
+                    !bici.conectado && bici.status === 'Desconectado',
+                  'bg-yellow-400/20 text-yellow-300 border border-yellow-400':
+                    !bici.conectado && bici.status !== 'Desconectado',
+                  'bg-green-400/20 text-green-400 border border-green-400': bici.conectado
+                }"
+              >
+                {{ bici.conectado ? 'Conexión exitosa' : bici.status }}
+              </span>
+            </div>
+
+            <!-- Animación visual bici ↔ ESP32 -->
+            <div class="flex items-center justify-around mt-2 mb-10 mt-10">
+              <div class="flex flex-col items-center text-xs text-gray-400">
+                <div class="text-6xl sm:text-7xl" [ngClass]="bici.conectado ? 'animate-pulse text-green-400' : ''">
+                  💻
+                </div>
+                <span class="mt-1 text-[10px] uppercase tracking-wide">ESP32</span>
+              </div>
+              <div
+                class="flex-1 h-px border-t border-dashed mx-2"
+                [ngClass]="bici.conectado ? 'border-green-400' : 'border-dark-500'"
+              ></div>
+              <div class="flex flex-col items-center text-xs text-gray-400">
+                <div
+                  class="text-6xl sm:text-7xl"
+                  [ngClass]="bici.conectado ? 'animate-bounce text-yellow-300' : ''"
+                >
+                  🚴‍♂️
+                </div>
+                <span class="mt-1 text-[10px] uppercase tracking-wide">
+                  {{ bici.label === 'Bici 1' ? 'Jugador 1' : 'Jugador 2' }}
+                </span>
+              </div>
+            </div>
+
+            <p class="text-[11px] text-gray-500 truncate" *ngIf="bici.deviceId">
+              ID: {{ bici.deviceId }}
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-8">
+              <button
+                (click)="buscarBici(bici.key)"
+                class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-blue text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
+              >
+                🔍  Buscar
+              </button>
+              <button
+                (click)="conectarBici(bici.key)"
+                class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-yellow text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
+              >
+                📡  Conectar
+              </button>
+              <button
+                (click)="desconectarBici(bici.key)"
+                class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 text-white rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
+              >
+                ❌  Desconectar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón siguiente -->
+        <div class="mt-6 flex justify-end">
+          <button
+            (click)="irARegistroParticipantes()"
+            [disabled]="!todasBicisNecesariasConectadas()"
+            class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-yellow text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
+            [ngClass]="
+              !todasBicisNecesariasConectadas()
+                ? 'bg-dark-700 text-gray-500 border border-dark-600 cursor-not-allowed opacity-50'
+                : 'bg-green-400 text-dark-950 border border-green-400 hover:bg-green-300'
+            "
+          >
+            Siguiente → Registro
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== -->
+    <!-- PASO 2: REGISTRO Y LLAVE ACTUAL 1 vs 1 -->
+    <!-- ===================== -->
+    <div *ngIf="paso === 2" class="space-y-4 sm:space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Columna izquierda: LLAVE ACTUAL (2/3) -->
+        <div class="lg:col-span-2 bg-dark-900 border border-dark-700 rounded-card p-6">
+          <h2 class="text-2xl font-display font-bold text-white mb-6">
+            👥 Registro de participantes
+          </h2>
+          
+          <p class="text-gray-400 text-sm mb-6">
+            Estás configurando la
+            <span class="font-semibold text-neon-yellow">
+              llave {{ currentLlaveIndex + 1 }} de {{ llaves.length || 0 }}
+            </span>.
+            Completa los datos de los jugadores y lanza la carrera.
+          </p>
+
+          <div class="space-y-4">
+            <ng-container *ngIf="llaveEnPantalla as llave; else sinLlaves">
+              <div 
+                class="bg-dark-800 border-2 border-dark-950 p-4 relative transition-all"
+              >
+                <div class="flex items-center justify-between mb-4 gap-3">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold font-display border-2 flex-shrink-0 transition-all"
+                      style="background-color: #8b5cf620; border-color: #8b5cf6; color: #8b5cf6; box-shadow: 0 0 15px #8b5cf640;"
+                    >
+                      {{ llave.id }}
+                    </div>
+                    <div>
+                      <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wide">
+                        Llave {{ llave.id }}
+                      </label>
+                      <span
+                        class="inline-block px-3 py-1 rounded-full text-[11px] font-semibold"
+                        [ngClass]="{
+                          'bg-dark-700 text-gray-300 border border-dark-500': llave.estado === 'pendiente',
+                          'bg-yellow-400/20 text-yellow-300 border border-yellow-400': llave.estado === 'en_curso',
+                          'bg-green-400/20 text-green-400 border border-green-400': llave.estado === 'finalizado'
+                        }"
+                      >
+                        {{ llave.estado === 'pendiente' ? 'Pendiente' : '' }}
+                        {{ llave.estado === 'en_curso' ? 'En curso' : '' }}
+                        {{ llave.estado === 'finalizado' ? 'Finalizado' : '' }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="text-4xl">⚔️</div>
+                </div>
+
+                <!-- Jugadores de la llave actual -->
+                <div class="space-y-3 mb-4">
+                  <div
+                    *ngFor="let jugador of llave.jugadores"
+                    class="bg-dark-800 border-2 rounded-lg p-4 relative transition-all border-neon-blue"
+                  >
+                    <div class="flex items-center gap-4 mb-3">
+                      <div
+                        class="w-12 h-12 rounded-full flex items-center justify-center text-2xl border-2"
+                        [style.backgroundColor]="jugador.color + '20'"
+                        [style.borderColor]="jugador.color"
+                        [style.color]="jugador.color"
+                      >
+                        {{ jugador.icono }}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wide">
+                          Jugador {{ jugador.id }}
+                        </label>
+                        <div class="flex items-center gap-3 mt-3">
+                          <!-- Input nombre -->
+                          <input
+                            type="text"
+                            [(ngModel)]="jugador.nombre"
+                            placeholder="Nombre completo del participante"
+                            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-yellow focus:shadow-lg transition-all text-white placeholder-gray-500"
+                            maxlength="20"
+                          />
+
+                          <!-- Botón género + modal -->
+                          <div class="relative">
+                            <button
+                              (click)="abrirSelectSexo(jugador.id)"
+                              class="w-12 h-12 rounded-lg border-2 transition-all hover:scale-110 flex items-center justify-center text-2xl"
+                              [class.bg-neon-blue]="jugador.genero === 'masculino'"
+                              [class.bg-neon-pink]="jugador.genero === 'femenino'"
+                              [class.bg-dark-700]="!jugador.genero"
+                              [class.border-neon-blue]="jugador.genero === 'masculino'"
+                              [class.border-neon-pink]="jugador.genero === 'femenino'"
+                              [class.border-dark-600]="!jugador.genero"
+                              [style.box-shadow]="jugador.genero ? (jugador.genero === 'masculino' ? '0 0 15px rgba(0, 240, 255, 0.5)' : '0 0 15px rgba(255, 16, 240, 0.5)') : 'none'"
+                            >
+                              {{ jugador.genero === 'masculino' ? '♂' : jugador.genero === 'femenino' ? '♀' : '?' }}
+                            </button>
+
+                            <!-- Modal justo debajo del botón -->
+                            <div
+                              *ngIf="modalSexoJugadorId === jugador.id"
+                              class="absolute z-10 right-0 top-full mt-2 bg-dark-850 border-2 border-dark-600 rounded-lg p-4 shadow-2xl animate-fadeIn"
+                              style="min-width: 250px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);"
+                            >
+                              <div class="flex items-center justify-between mb-3">
+                                <p class="text-sm font-bold text-white font-display uppercase tracking-wide">
+                                  Selecciona el sexo
+                                </p>
+                                <button
+                                  (click)="cerrarSelectSexo()"
+                                  class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-white hover:bg-dark-700 rounded transition-all"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+
+                              <div class="grid grid-cols-2 gap-3">
+                                <!-- Hombre -->
+                                <button
+                                  (click)="seleccionarGenero(jugador, 'masculino')"
+                                  class="flex flex-col items-center gap-2 p-4 rounded-lg transition-all hover:bg-dark-700 border-2"
+                                  [class.bg-dark-700]="jugador.genero === 'masculino'"
+                                  [class.border-neon-blue]="jugador.genero === 'masculino'"
+                                  [class.border-transparent]="jugador.genero !== 'masculino'"
+                                  [style.box-shadow]="jugador.genero === 'masculino' ? '0 0 15px rgba(0, 240, 255, 0.5)' : 'none'"
+                                >
+                                  <div class="text-5xl" [class.text-neon-blue]="jugador.genero === 'masculino'" [class.text-white]="jugador.genero !== 'masculino'">
+                                    ♂
+                                  </div>
+                                  <span class="text-sm font-bold" [class.text-neon-blue]="jugador.genero === 'masculino'" [class.text-gray-400]="jugador.genero !== 'masculino'">
+                                    Hombre
+                                  </span>
+                                </button>
+
+                                <!-- Mujer -->
+                                <button
+                                  (click)="seleccionarGenero(jugador, 'femenino')"
+                                  class="flex flex-col items-center gap-2 p-4 rounded-lg transition-all hover:bg-dark-700 border-2"
+                                  [class.bg-dark-700]="jugador.genero === 'femenino'"
+                                  [class.border-neon-pink]="jugador.genero === 'femenino'"
+                                  [class.border-transparent]="jugador.genero !== 'femenino'"
+                                  [style.box-shadow]="jugador.genero === 'femenino' ? '0 0 15px rgba(255, 16, 240, 0.5)' : 'none'"
+                                >
+                                  <div class="text-5xl" [class.text-neon-pink]="jugador.genero === 'femenino'" [class.text-white]="jugador.genero !== 'femenino'">
+                                    ♀
+                                  </div>
+                                  <span class="text-sm font-bold" [class.text-neon-pink]="jugador.genero === 'femenino'" [class.text-gray-400]="jugador.genero !== 'femenino'">
+                                    Mujer
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="mt-6 flex gap-4">
+                  <button
+                    (click)="iniciarCarreraLlave(llave)"
+                    [disabled]="!puedeIniciarLlave(llave)"
+                    class="flex-1 py-4 px-6 rounded-lg font-bold font-display shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                    [ngClass]="
+                      !puedeIniciarLlave(llave)
+                        ? 'bg-dark-700 text-gray-500 border border-dark-600'
+                        : 'bg-green-400 text-dark-950 border border-green-400 hover:bg-green-300'
+                    "
+                    [style.box-shadow]="puedeIniciarLlave(llave) ? '0 0 20px rgba(74, 222, 128, 0.3)' : 'none'"
+                  >
+                    {{ llave.estado === 'finalizado' ? 'Llave finalizada ✓' : '🏁 Iniciar carrera' }}
+                  </button>
+
+                  <button
+                    (click)="siguienteLlave()"
+                    [disabled]="!puedePasarASiguienteLlave()"
+                    class="flex-1 py-4 px-6 rounded-lg font-bold font-display shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                    [ngClass]="
+                      !puedePasarASiguienteLlave()
+                        ? 'bg-dark-700 text-gray-500 border border-dark-600'
+                        : 'bg-neon-yellow text-dark-950 border border-neon-yellow hover:bg-yellow-300'
+                    "
+                    [style.box-shadow]="puedePasarASiguienteLlave() ? '0 0 20px rgba(255, 247, 0, 0.3)' : 'none'"
+                  >
+                    Siguiente llave →
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-template #sinLlaves>
+              <div class="text-center py-12 text-gray-500">
+                <div class="text-4xl mb-2 opacity-30">⚔️</div>
+                <p class="text-sm">No hay llaves configuradas</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- Columna derecha: RANKING (1/3) -->
+        <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+          <h2 class="text-xl font-display font-bold text-white mb-4 flex items-center gap-2">
+            🏆 Ranking por mejor tiempo
+          </h2>
+
+          <p class="text-xs text-gray-400 mb-4">
+            Se actualiza a medida que los jugadores completan sus carreras.
+          </p>
+
+          <div class="space-y-2">
+            <div 
+              *ngFor="let jugador of obtenerRanking(); let i = index"
+              class="bg-dark-800 border border-dark-600 rounded-lg p-3 flex items-center gap-3 hover:border-dark-500 transition-all"
+            >
+              <div
+                class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold font-display"
+                [class.bg-neon-yellow]="i === 0"
+                [class.text-dark-950]="i === 0"
+                [class.bg-gray-400]="i === 1"
+                [class.text-dark-950]="i === 1"
+                [class.bg-orange-500]="i === 2"
+                [class.text-white]="i === 2"
+                [class.bg-dark-700]="i > 2"
+                [class.text-gray-400]="i > 2"
+                [style.box-shadow]="i === 0 ? '0 0 15px rgba(255, 247, 0, 0.4)' : 'none'"
+              >
+                {{ i + 1 }}
+              </div>
+              <div class="flex-1">
+                <p class="text-white font-semibold text-sm truncate">
+                  {{ jugador.nombre || ('Jugador ' + jugador.id) }}
+                </p>
+                <p class="text-gray-400 text-xs font-mono" *ngIf="jugador.mejorTiempo != null">
+                  ⏱ {{ formatearTiempo(jugador.mejorTiempo) }}
+                </p>
+                <p class="text-gray-500 text-xs" *ngIf="jugador.mejorTiempo == null">
+                  Sin tiempo
+                </p>
+              </div>
+              <div *ngIf="i < 3" class="text-2xl">
+                {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!obtenerRanking().length" class="text-center py-12 text-gray-500">
+            <div class="text-4xl mb-2 opacity-30">🏆</div>
+            <p class="text-sm">Aún no hay tiempos registrados</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===================== -->
+    <!-- PASO 3: CARRERA EN VIVO -->
+    <!-- ===================== -->
+    <!-- ===================== -->
+    <!-- PASO 3: CARRERA EN VIVO -->
+    <!-- ===================== -->
+    <div *ngIf="paso === 3" class="space-y-4">
+      <!-- Cuenta regresiva -->
+      <div 
+        *ngIf="mostrarCuentaRegresiva"
+        class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+      >
+        <div class="text-center">
+          <div 
+            *ngIf="numeroCuentaRegresiva > 0"
+            class="text-9xl font-display font-bold text-white animate-pulse"
+            [style.color]="numeroCuentaRegresiva === 3 ? '#ef4444' : numeroCuentaRegresiva === 2 ? '#facc15' : '#22c55e'"
+          >
+            {{ numeroCuentaRegresiva }}
+          </div>
+          <div 
+            *ngIf="numeroCuentaRegresiva === 0"
+            class="text-9xl font-display font-bold text-green-400 animate-pulse"
+          >
+            ¡YA!
+          </div>
+          <p class="text-2xl text-gray-400 mt-6">
+            ¡A correr!
+          </p>
+        </div>
+      </div>
+
+      <!-- Título llave -->
+      <div class="text-left" *ngIf="llaveActual">
+        <div class="mb-6 sm:mb-8 text-center">
+          <h2 class="text-3xl sm:text-4xl font-display font-bold text-white mb-2 tracking-[0.2em] uppercase">
+            🕹️ Arcade Race
+          </h2>
+          <p class="text-gray-400 text-sm sm:text-base">
+            Llave <span class="text-neon-yellow font-semibold">#{{ llaveActual.id }}</span>
+            · {{ configuracion.numeroVueltas }} vueltas
+          </p>
+        </div>
+      </div>
+
+      <!-- GRID: la pista ocupa 2/3, panel 1/3 -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-8">
+        <!-- Pista (PROTAGONISTA) -->
+        <div class="lg:col-span-2">
+          <div class="arcade-track-card bg-dark-900/90 border border-dark-700 rounded-3xl p-4 sm:p-6 lg:p-8 shadow-[0_0_40px_rgba(56,189,248,0.28)] overflow-hidden neon-panel neon-card neon-card--blue">
+            <!-- “marco” arcade -->
+            <div class="flex justify-between items-center text-[10px] sm:text-xs text-gray-400 font-mono mb-2 sm:mb-3 uppercase">
+              <span>BC RACE SYSTEM</span>
+              <span>PLAYER 1 · PLAYER 2</span>
+            </div>
+
+            <div class="relative z-10 w-full mx-auto aspect-[16/9] lg:aspect-[21/9] arcade-track-arena">
+              <!-- Fondo / “pantalla” -->
+              <div class="absolute inset-0 rounded-[28px] bg-gradient-to-br from-[#020617] via-[#020617] to-[#0f172a] overflow-hidden arcade-scanlines">
+                <!-- Grid tipo videojuego -->
+                <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,#22c55e_0,transparent_55%)]"></div>
+                <div class="absolute inset-0 opacity-20 bg-[linear-gradient(to_right,rgba(148,163,184,0.2)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.2)_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+              </div>
+
+              <!-- Anillo de carretera -->
+              <div class="absolute inset-[7%] sm:inset-[8%] lg:inset-[9%] rounded-full bg-[#18181b] border-[8px] border-[#27272a] shadow-[0_0_30px_rgba(15,23,42,0.9)]"></div>
+
+              <!-- LEDs exteriores -->
+              <div class="absolute inset-[4%] rounded-full border border-dashed border-neon-blue/40"></div>
+
+              <!-- Línea amarilla central circular -->
+              <div class="absolute inset-[15%] rounded-full border-4 border-dashed border-yellow-400/90 shadow-[0_0_25px_rgba(250,204,21,0.5)]"></div>
+
+              <!-- Interior “stadium” -->
+              <div class="absolute inset-[26%] rounded-full bg-dark-900/95 border border-dark-700"></div>
+
+              <!-- Línea de meta vertical -->
+              <div class="absolute top-[9%] left-1/2 -translate-x-1/2 h-[82%] w-[3px] bg-white/70">
+                <div class="absolute inset-0 bg-[repeating-linear-gradient(to_bottom,white,white_6px,transparent_6px,transparent_12px)] opacity-100"></div>
+              </div>
+
+              <!-- Cartel START / GO -->
+              <div class="absolute top-[12%] left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 sm:px-6 py-1 sm:py-2 rounded-full bg-black/80 border border-neon-blue/80 shadow-[0_0_20px_rgba(56,189,248,0.8)]">
+                <span class="text-[10px] sm:text-xs md:text-sm font-mono tracking-[0.3em] text-neon-blue uppercase">
+                  {{ carreraIniciada ? 'GO GO GO!' : 'READY' }}
+                </span>
+              </div>
+
+              <!-- CARROS / AVATARES -->
+              <div
+                *ngFor="let jugador of jugadores"
+                class="absolute flex flex-col items-center transition-all duration-75 ease-linear -translate-x-1/2 -translate-y-1/2"
+                [ngStyle]="getCarStyle(jugador)"
+              >
+                <!-- Avatar grande estilo arcade -->
+                <div
+                  class="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center text-3xl sm:text-4xl md:text-5xl arcade-avatar"
+                  [style.background]="jugador.color + '33'"
+                  [style.border]="'3px solid ' + jugador.color"
+                  [style.boxShadow]="'0 0 25px ' + jugador.color"
+                >
+                  {{ jugador.icono }}
+                </div>
+
+                <!-- Nombre del jugador dentro de la pista, grande -->
+                <div
+                  class="mt-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-black/80 border border-white/10 text-[11px] sm:text-xs md:text-sm text-white font-display font-semibold whitespace-nowrap max-w-[180px] md:max-w-none overflow-hidden text-ellipsis tracking-wide uppercase arcade-name-tag"
+                >
+                  #{{ jugador.posicion }} · {{ jugador.nombre || ('Jugador ' + jugador.id) }}
+                </div>
+
+                <!-- Info mini debajo (vuelta / velocidad) -->
+                <div class="mt-1 text-[9px] sm:text-[10px] text-gray-300 font-mono bg-black/70 px-2 py-0.5 rounded-full">
+                  V{{ jugador.vueltaActual }}/{{ configuracion.numeroVueltas }} · {{ jugador.velocidad.toFixed(1) }} km/h
+                </div>
+              </div>
+
+              <!-- Esquinas con “LEDs” -->
+              <div class="absolute inset-3 pointer-events-none">
+                <div class="absolute top-0 left-0 w-3 h-3 rounded-full bg-neon-blue shadow-[0_0_15px_rgba(56,189,248,0.9)]"></div>
+                <div class="absolute top-0 right-0 w-3 h-3 rounded-full bg-neon-pink shadow-[0_0_15px_rgba(236,72,153,0.9)]"></div>
+                <div class="absolute bottom-0 left-0 w-3 h-3 rounded-full bg-neon-yellow shadow-[0_0_15px_rgba(250,204,21,0.9)]"></div>
+                <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.9)]"></div>
+              </div>
+            </div>
+
+            <!-- HUD inferior tipo arcade -->
+            <div class="mt-4 flex justify-between items-center text-[10px] sm:text-xs font-mono text-gray-400 uppercase">
+              <span>
+                Lap {{ jugadores.length > 0 ? jugadores[0]!.vueltaActual : 1 }}/{{ configuracion.numeroVueltas }}
+              </span>
+
+              <span>
+                Time {{ formatearTiempo(tiempoTranscurrido) }}
+              </span>
+
+              <span *ngIf="jugadores.length > 0">
+                P1 {{ jugadores[0]!.velocidad.toFixed(1) }} km/h
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel info (queda a la derecha / abajo) -->
+        <div class="lg:col-span-1">
+          <div class="bg-dark-900/90 border border-dark-700 rounded-card p-4 shadow-lg neon-panel neon-card neon-card--purple">
+            <!-- FILA: Tiempo y Botones -->
+            <div class="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+              <!-- Tiempo y Vueltas -->
+              <div class="bg-gradient-to-br from-dark-800 via-dark-900 to-dark-800 rounded-xl border-4 border-neon-yellow p-4 sm:p-6 shadow-xl hover:shadow-neon-yellow/30 duration-300">
+                <div class="flex items-center justify-around h-full">
+                  <div class="text-center">
+                    <div class="text-gray-400 text-xs mb-1">⏱️ TIEMPO</div>
+                    <div class="text-white font-bold text-2xl sm:text-3xl font-mono">
+                      {{ formatearTiempo(tiempoTranscurrido) }}
+                    </div>
+                  </div>
+                  <div class="w-px h-12 bg-dark-600"></div>
+                  <div class="text-center">
+                    <div class="text-gray-400 text-xs mb-1">🔄 VUELTAS</div>
+                    <div class="text-white font-bold text-2xl sm:text-3xl">
+                      {{ configuracion.numeroVueltas }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botones -->
+              <div class="bg-gradient-to-br from-dark-800 via-dark-900 to-dark-800 rounded-xl border-4 border-neon-yellow p-4 sm:p-6 shadow-xl hover:shadow-neon-yellow/30 duration-300">
+                <div class="flex flex-col gap-3 h-full">
+                  <button
+                    (click)="pausarReanudarCarrera()"
+                    class="neon-btn px-4 py-2.5 rounded-lg font-bold text-sm sm:text-base"
+                    [ngClass]="carreraPausada 
+                      ? 'bg-green-400 text-dark-950 border border-green-400 hover:bg-green-300'
+                      : 'bg-yellow-400 text-dark-950 border border-yellow-400 hover:bg-yellow-300'"
+                  >
+                    {{ carreraPausada ? '▶️ Reanudar' : '⏸️ Pausar' }}
+                  </button>
+                  <button
+                    (click)="reiniciarCarrera()"
+                    class="neon-btn px-4 py-2.5 bg-dark-700 text-white rounded-lg font-bold text-sm sm:text-base border border-dark-600 hover:border-red-400/60"
+                  >
+                    🔄 Reiniciar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Título posiciones -->
+            <div class="mb-4 text-center">
+              <h2 class="text-2xl sm:text-3xl font-display font-bold text-white tracking-[0.25em] uppercase">
+                Posición
+              </h2>
+            </div>
+
+            <!-- Info jugadores actuales -->
+            <div class="space-y-4">
+              <div 
+                *ngFor="let jugador of jugadores"
+                class="bg-dark-800/90 border border-dark-600 rounded-lg p-4 hover:border-neon-blue/60 transition-all"
+              >
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <div 
+                      class="w-11 h-11 rounded-full flex items-center justify-center text-lg font-bold"
+                      [style.backgroundColor]="jugador.posicion === 1 ? '#22c55e' : jugador.posicion === 2 ? '#facc15' : '#ef4444'"
+                      [style.border]="'2px solid ' + jugador.color"
+                    >
+                      {{ jugador.posicion }}
+                    </div>
+                    <div>
+                      <h3 class="text-white font-bold text-base sm:text-lg">
+                        {{ jugador.nombre || ('Jugador ' + jugador.id) }}
+                      </h3>
+                      <div class="flex flex-wrap items-center gap-3 text-[11px] sm:text-xs text-gray-400">
+                        <span>🏁 V{{ jugador.vueltaActual }}/{{ configuracion.numeroVueltas }}</span>
+                        <span>⚡ {{ jugador.velocidad.toFixed(1) }} km/h</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-right text-3xl sm:text-4xl">
+                    {{ jugador.icono }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===================== -->
+    <!-- PASO 4: RANKING FINAL / GANADOR -->
+    <!-- ===================== -->
+    <div *ngIf="paso === 4" class="py-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Card izquierda: Ganador / resumen -->
+        <div class="bg-dark-800 rounded-card p-6 border-2 border-neon-yellow shadow-neon-yellow-lg">
+          <div class="text-center mb-6">
+            <div class="text-6xl mb-3 animate-bounce">🏆</div>
+            <h2 class="text-2xl sm:text-3xl font-display font-bold text-white animate-pulse">
+              ¡Torneo finalizado!
+            </h2>
+            <p class="text-gray-400 text-xs sm:text-sm mt-2">
+              El ganador es el mejor tiempo entre todas las llaves.
+            </p>
+          </div>
+
+          <ng-container *ngIf="obtenerRanking().length > 0">
+            <!-- Ganador general -->
+            <div
+              class="mt-4 mb-8 mx-auto max-w-sm bg-dark-900 rounded-xl p-4 sm:p-5 border-4 border-neon-yellow shadow-neon-yellow"
+            >
+              <div class="flex items-center gap-4">
+                <div class="text-5xl drop-shadow-lg animate-bounce">👑</div>
+                <div class="flex-1">
+                  <p class="text-xs text-gray-400 uppercase tracking-wide">Ganador general</p>
+                  <h3 class="text-xl sm:text-2xl font-display font-bold text-neon-yellow truncate">
+                    {{ obtenerRanking()[0].nombre || ('Jugador ' + obtenerRanking()[0].id) }}
+                  </h3>
+                  <p
+                    class="text-gray-300 text-sm font-mono mt-1"
+                    *ngIf="obtenerRanking()[0].mejorTiempo != null"
+                  >
+                    ⏱ {{ formatearTiempo(obtenerRanking()[0].mejorTiempo!) }}
+                  </p>
+                  <p
+                    class="text-gray-500 text-xs mt-1"
+                    *ngIf="obtenerRanking()[0].mejorTiempo == null"
+                  >
+                    Sin tiempo registrado
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pequeño resumen -->
+            <div class="grid grid-cols-2 gap-3 text-center">
+              <div class="bg-dark-900 rounded-lg p-3 border border-neon-yellow/40">
+                <p class="text-neon-yellow font-bold text-lg">
+                  {{ obtenerRanking().length }}
+                </p>
+                <p class="text-gray-500 text-xs">Participantes</p>
+              </div>
+              <div class="bg-dark-900 rounded-lg p-3 border border-neon-blue/40">
+                <p class="text-neon-blue font-bold text-lg">
+                  {{ formatearTiempo(obtenerRanking()[0].mejorTiempo || 0) }}
+                </p>
+                <p class="text-gray-500 text-xs">Mejor tiempo</p>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Card derecha: Ranking completo -->
+        <div class="bg-dark-800 rounded-card p-4 sm:p-5 border border-dark-700">
+          <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-4 flex items-center gap-2">
+            📈 Ranking final
+          </h3>
+
+          <ng-container *ngIf="obtenerRanking().length > 0; else sinDatos">
+            <div class="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+              <div
+                *ngFor="let jugador of obtenerRanking(); let i = index"
+                class="bg-dark-900 rounded-lg p-4 border-l-4 hover:scale-[1.02] transition-all flex items-center gap-3"
+                [style.border-color]="jugador.color || '#facc15'"
+              >
+                <!-- Posición -->
+                <div
+                  class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold font-display
+                  border-2 border-white"
+                  [ngClass]="{
+                    'bg-neon-yellow text-dark-950 shadow-neon-yellow-lg': i === 0,
+                    'bg-gray-300 text-dark-900': i === 1,
+                    'bg-orange-500 text-white': i === 2,
+                    'bg-dark-800 text-gray-300': i > 2
+                  }"
+                >
+                  {{ i + 1 }}
+                </div>
+
+                <!-- Info jugador -->
+                <div class="flex-1 min-w-0">
+                  <p class="text-white font-semibold text-sm truncate">
+                    {{ jugador.nombre || ('Jugador ' + jugador.id) }}
+                  </p>
+                  <p
+                    class="text-gray-300 text-xs font-mono mt-1"
+                    *ngIf="jugador.mejorTiempo != null"
+                  >
+                    ⏱ {{ formatearTiempo(jugador.mejorTiempo) }}
+                  </p>
+                  <p
+                    class="text-gray-500 text-xs mt-1"
+                    *ngIf="jugador.mejorTiempo == null"
+                  >
+                    Sin tiempo
+                  </p>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #sinDatos>
+            <p class="text-gray-500 text-sm">
+              Aún no hay resultados para mostrar en el ranking.
+            </p>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="flex flex-col sm:flex-row gap-4 mt-6">
+        <button
+          (click)="volverAlInicio()"
+          class="flex-1 px-6 py-3 bg-dark-700 text-gray-200 rounded-lg font-medium text-sm border border-dark-500 hover:border-neon-blue hover:scale-105 transition-all"
+        >
+          ← Volver al inicio
+        </button>
+        <button
+          (click)="finalizarTorneo()"
+          class="flex-1 px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-display font-bold text-sm sm:text-base shadow-neon-yellow-lg hover:scale-105 transition-all"
+        >
+          Finalizar torneo
+        </button>
+      </div>
+    </div>
+
+
+  </div>
+</div>
