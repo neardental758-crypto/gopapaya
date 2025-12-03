@@ -122,6 +122,29 @@ export class BleEsp32Service {
     });
   }
 
+  // Helper específico para botones: devuelve 1..4
+  async subscribeButtons(
+    bike: BikeKey,
+    callback: (boton: number) => void
+  ) {
+    await this.subscribeRaw(bike, 'btns', (dataView: DataView) => {
+      // un solo byte enviado desde el ESP32
+      const boton = dataView.getUint8(0);
+      callback(boton);
+    });
+  }
+
+  // (Opcional) helper para velocidad en texto
+  async subscribeVelocidad(
+    bike: BikeKey,
+    callback: (velocidadKph: number) => void
+  ) {
+    await this.subscribe(bike, 'vel', (text) => {
+      const v = parseFloat(text);
+      if (!isNaN(v)) callback(v);
+    });
+  }
+
   // ------------------------
   //     DISCONNECT ONE
   // ------------------------

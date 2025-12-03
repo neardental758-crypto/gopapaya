@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, interval, Subscription, Subject } from 'rxjs';
-
+export type BikeKey = 'bici1' | 'bici2';
 export interface ParticipanteJuego {
   id: number;
   idBrainBike: number;
@@ -25,6 +25,7 @@ export interface ParticipanteJuego {
   botonesActivos: boolean;
   alertaVelocidad: boolean;
   sexo?: 'M' | 'F';
+  bikeKey?: BikeKey;
 }
 
 export interface RespuestaParticipante {

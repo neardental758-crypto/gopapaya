@@ -102,6 +102,30 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
   private player: any;
   private playerReady = false;
 
+  paso: 1 | 2 = 1; // 1 = conexión BLE, 2 = juego (video+trivia+podio)
+
+  bicis = [
+    {
+      key: 'bici1' as BikeKey,
+      label: 'Bici 1',
+      conectado: false,
+      status: 'Desconectado',
+      deviceId: ''
+    },
+    {
+      key: 'bici2' as BikeKey,
+      label: 'Bici 2',
+      conectado: false,
+      status: 'Desconectado',
+      deviceId: ''
+    }
+  ];
+
+  bikeToParticipante: Record<BikeKey, ParticipanteJuego | null> = {
+    bici1: null,
+    bici2: null,
+  };
+
   constructor(
     private brainBikeService: BrainBikeService,
     private participanteService: BrainBikeParticipanteService,
@@ -112,7 +136,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     private historialService: HistorialService,
     private audioService: BrainBikeAudioService,
     private gameService: BrainBikeGameService,
-    private bleService: BleEsp32Service,  
+    private bleService: BleEsp32Service 
   ) {}
 
   ngOnInit(): void {
@@ -148,16 +172,151 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     this.participantesSubscription = this.gameService.participantes.subscribe(
       (p) => {
         this.participantes = p;
+
+        // 🔗 Asignamos participantes a bicis (ejemplo simple: 1er → bici1, 2do → bici2)
+        this.bikeToParticipante.bici1 = p[0] || null;
+        this.bikeToParticipante.bici2 = p[1] || null;
+
+        // Si luego decides otra lógica, la cambias aquí.
       }
     );
 
     this.iniciarSesionJuego();
-    this.cargarDatos();
+    //this.cargarDatos();
 
     history.pushState(null, '', location.href);
     window.addEventListener('popstate', this.prevenirRetroceso);
     this.cargarRankingGeneral();
   }
+
+
+
+  ////////////////////////
+  //// CONEXION BLE //////
+  ////////////////////////
+  todasBicisNecesariasConectadas(): boolean {
+    // Si quieres que sea obligatorio conectar las dos:
+    return this.bicis.every(b => b.conectado);
+  }
+
+  async buscarBici(key: BikeKey): Promise<void> {
+    const bici = this.bicis.find(b => b.key === key);
+    if (!bici) return;
+
+    bici.status = 'Buscando dispositivo...';
+
+    try {
+      const device = await this.bleService.requestDevice(key);
+      bici.deviceId = device.id || '';
+      bici.status = 'Dispositivo seleccionado';
+    } catch (e) {
+      console.error('Error al buscar bici', key, e);
+      bici.status = 'Desconectado';
+    }
+  }
+
+  async conectarBici(key: BikeKey): Promise<void> {
+    const bici = this.bicis.find(b => b.key === key);
+    if (!bici) return;
+
+    bici.status = 'Conectando...';
+
+    try {
+      await this.bleService.connect(key);
+      bici.conectado = true;
+      bici.status = 'Conectado';
+
+      // 🔘 BOTONES
+      await this.bleService.subscribeButtons(key, (boton) => {
+        this.onBotonFisicoDesdeBle(key, boton);
+      });
+
+      // 🚴 VELOCIDAD
+      await this.bleService.subscribeVelocidad(key, (velocidadKph) => {
+        this.onVelocidadDesdeBle(key, velocidadKph);
+      });
+
+    } catch (e) {
+      console.error('Error al conectar bici', key, e);
+      bici.conectado = false;
+      bici.status = 'Error';
+    }
+  }
+
+  onVelocidadDesdeBle(bike: BikeKey, velocidadKph: number): void {
+    const participante = this.bikeToParticipante[bike];
+    if (!participante) return;
+
+    // Actualizamos la velocidad actual
+    participante.velocidadActual = velocidadKph;
+
+    // Actualizar velocidad máxima
+    if (!participante.velocidadMaxima || velocidadKph > participante.velocidadMaxima) {
+      participante.velocidadMaxima = velocidadKph;
+    }
+
+    // (Opcional) puedes hacer un promedio simple incremental si quieres
+    // pero como ya calculas velocidadPromedio a nivel sesión, esto
+    // puede quedarse así si te funciona bien visualmente.
+  }
+
+  desconectarBici(key: BikeKey): void {
+    const bici = this.bicis.find(b => b.key === key);
+    if (!bici) return;
+
+    this.bleService.disconnect(key);
+    bici.conectado = false;
+    bici.status = 'Desconectado';
+  }
+
+  irAIniciarJuego(): void {
+    if (!this.todasBicisNecesariasConectadas()) return;
+
+    this.paso = 2;
+    // Ahora sí arrancamos el flujo que antes estaba en ngOnInit
+    this.cargarDatos(); // 👉 esto internamente llama cargarVideo, cargarParticipantes, cargarPreguntas
+  }
+
+  onBotonFisicoDesdeBle(bike: BikeKey, boton: number): void {
+    // Solo aceptamos respuestas cuando la pregunta está activa
+    if (!this.mostrandoRespuestas || !this.preguntaActualData) return;
+    if (boton < 1 || boton > 4) return; // seguridad
+
+    // 🔗 Tomar participante asignado a esa bici
+    const participante = this.bikeToParticipante[bike];
+
+    if (!participante) {
+      console.warn('No se encontró participante asignado para', bike);
+      return;
+    }
+
+    // Evitar que responda dos veces la misma pregunta
+    if (this.participantesQueRespondieron.has(participante.id)) return;
+
+    const indiceRespuesta = boton - 1;
+    const respuestas = this.preguntaActualData.respuestas;
+    const respuesta = respuestas[indiceRespuesta];
+
+    if (!respuesta) {
+      console.warn('No existe respuesta en índice', indiceRespuesta);
+      return;
+    }
+
+    const esCorrecta = !!respuesta.es_correcta;
+    const tiempoRespuesta = 15 - this.tiempoRestante;
+
+    this.procesarRespuestaParticipante({
+      participante,
+      respuesta,
+      tiempoRespuesta,
+      esCorrecta,
+    });
+  }
+  ////////////////////////
+  ////////////////////////
+
+
+
 
   cargarRankingGeneral(): void {
     this.participanteService.getRankingSesion(this.sesion.id).subscribe({
@@ -533,17 +692,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     this.tiempoRestante = segundos;
     this.timerSubscription?.unsubscribe();
 
-    const nadieResponde = Math.random() < 0.15;
-
-    if (!nadieResponde) {
-      const tiempoRespuestaSimulado =
-        Math.floor(Math.random() * (segundos - 4)) + 2;
-      this.respuestaTimeout = setTimeout(() => {
-        if (this.mostrandoRespuestas) {
-          this.simularRespuesta();
-        }
-      }, tiempoRespuestaSimulado * 1000);
-    }
+    // ❌ Quitamos toda la lógica de "nadieResponde" y timeouts simulados
 
     this.timerSubscription = timer(0, 1000)
       .pipe(take(segundos + 1))
@@ -640,8 +789,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       if (todosRespondieron) {
         this.timerSubscription?.unsubscribe();
         this.manejarTodosRespondieroMal();
-      } else {
-        this.programarSiguienteRespuestaSimulada();
       }
     }
   }
