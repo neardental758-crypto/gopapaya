@@ -24,6 +24,8 @@ export interface Sesion {
   nota?: string;
   juego_asignado?: string;
   parametros_juego?: any;
+  cronograma?: string;
+  secuencia?: string;
   estadoSesion: string;
   empresa?: {
     _id: string;
@@ -36,6 +38,19 @@ export interface Admin {
   _id: string;
   nombre: string;
   email: string;
+}
+
+export interface Evidencia {
+  id: number;
+  sesion_id: number;
+  tipo: 'foto' | 'texto';
+  seccion?: string;
+  orden?: number;
+  contenido?: string;
+  url_archivo?: string;
+  nombre_archivo?: string;
+  creado_por: string;
+  fecha_creacion: Date;
 }
 
 @Injectable({
@@ -139,5 +154,118 @@ export class SesionService {
     console.log('Limpiando sesión');
     this.sesionSeleccionada$.next(null);
     localStorage.removeItem('sesion_seleccionada');
+  }
+
+  getEvidencias(sesionId: number): Observable<Evidencia[]> {
+    return this.http
+      .get<{ data: Evidencia[] }>(
+        `${environment.apiUrl}/sesionEvidencia/${sesionId}`
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  crearEvidenciaTexto(
+    sesionId: number,
+    contenido: string,
+    seccion: string
+  ): Observable<Evidencia> {
+    return this.http
+      .post<{ data: Evidencia }>(
+        `${environment.apiUrl}/sesionEvidencia/${sesionId}`,
+        {
+          tipo: 'texto',
+          contenido: contenido,
+          seccion: seccion,
+        }
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  crearEvidenciaFoto(
+    sesionId: number,
+    archivo: File,
+    seccion: string,
+    orden?: number
+  ): Observable<Evidencia> {
+    const formData = new FormData();
+    formData.append('tipo', 'foto');
+    formData.append('archivo', archivo);
+    formData.append('seccion', seccion);
+    if (orden !== undefined) formData.append('orden', orden.toString());
+
+    return this.http
+      .post<{ data: Evidencia }>(
+        `${environment.apiUrl}/sesionEvidencia/${sesionId}`,
+        formData
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  descargarInformePDF(sesionId: number): Observable<Blob> {
+    return this.http.get(
+      `${environment.apiUrl}/sesionEvidencia/${sesionId}/informe-pdf`,
+      {
+        responseType: 'blob',
+      }
+    );
+  }
+
+  eliminarEvidencia(id: number): Observable<void> {
+    return this.http.delete<void>(
+      `${environment.apiUrl}/sesionEvidencia/${id}`
+    );
+  }
+
+  crearPlanilla(sesionId: number, archivo: File): Observable<Evidencia> {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+
+    return this.http
+      .post<{ data: Evidencia }>(
+        `${environment.apiUrl}/sesionEvidencia/${sesionId}/planilla`,
+        formData
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  getPlanilla(sesionId: number): Observable<Evidencia | null> {
+    return this.http
+      .get<{ data: Evidencia | null }>(
+        `${environment.apiUrl}/sesionEvidencia/${sesionId}/planilla`
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  enviarCorreoSesion(
+    sesionId: number,
+    destinatarios: string[],
+    tiposEnvio: string[],
+    archivos: { tipo: string; blob: Blob; nombre: string }[],
+    asunto?: string,
+    mensaje?: string
+  ): Observable<any> {
+    const formData = new FormData();
+
+    formData.append('destinatarios', JSON.stringify(destinatarios));
+    formData.append('tiposEnvio', JSON.stringify(tiposEnvio));
+    if (asunto) formData.append('asunto', asunto);
+    if (mensaje) formData.append('mensaje', mensaje);
+
+    archivos.forEach((archivo, index) => {
+      formData.append(`archivo_${archivo.tipo}`, archivo.blob, archivo.nombre);
+    });
+
+    return this.http.post(
+      `${environment.apiUrl}/sesionEvidencia/${sesionId}/enviar-correo`,
+      formData
+    );
+  }
+
+  getDestinatariosSesion(sesionId: number): Observable<any[]> {
+    return this.http
+      .get<{ data: any[] }>(
+        `${environment.apiUrl}/sesionEvidencia/${sesionId}/destinatarios`
+      )
+      .pipe(map((response) => response.data));
   }
 }

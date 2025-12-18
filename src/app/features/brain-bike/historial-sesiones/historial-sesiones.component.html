@@ -1,10 +1,10 @@
-<div class="min-h-screen bg-dark-950 p-4 sm:p-6">
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6 pb-20">
   <div class="max-w-7xl mx-auto">
 
     <div class="bg-dark-900 border border-dark-700 rounded-card p-6 mb-6">
       <div class="flex items-center justify-between mb-6">
         <div class="flex items-center gap-4">
-          <button (click)="volver()" class="p-2 bg-dark-800 text-neon-blue rounded-lg hover:bg-dark-700 transition-all">
+          <button *ngIf="!isViewer()" (click)="volver()" class="p-2 bg-dark-800 text-neon-blue rounded-lg hover:bg-dark-700 transition-all">
             ← Volver
           </button>
           <div>
@@ -94,10 +94,10 @@
       <p class="text-gray-400">No hay sesiones finalizadas</p>
     </div>
 
-    <div *ngIf="!cargando && sesionesAgrupadas.length > 0" class="space-y-4">
+    <div *ngIf="!cargando && sesionesAgrupadas.length > 0" class="space-y-4 mb-8">
       <div *ngFor="let grupo of sesionesAgrupadas" class="bg-dark-900 border border-dark-700 rounded-card overflow-hidden">
 
-        <div (click)="toggleSesion(grupo.sesion_id)"
+        <div (click)="onToggleSesion(grupo.sesion_id)"
           class="p-4 cursor-pointer hover:bg-dark-850 transition-all flex items-center justify-between">
           <div class="flex items-center gap-4">
             <img *ngIf="grupo.sesion?.empresa?.logo" [src]="grupo.sesion.empresa.logo"
@@ -124,7 +124,22 @@
               (click)="exportarExcel(grupo); $event.stopPropagation()"
               class="px-4 py-2 bg-neon-green text-dark-950 rounded-lg font-bold text-sm hover:scale-105 transition-all flex items-center gap-2"
               style="box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);">
-              📥 Descargar Excel
+              📥 Descargar Estadísticas
+            </button>
+
+            <button
+              (click)="descargarInforme(grupo.sesion_id); $event.stopPropagation()"
+              class="px-4 py-2 bg-neon-green text-white rounded-lg font-bold hover:shadow-neon-green transition-all text-sm"
+            >
+              📄 Informe PDF
+            </button>
+            <button
+              (click)="abrirModalCorreo(grupo)"
+              class="flex items-center gap-2 px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white rounded-lg font-medium transition-all">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <span>Enviar Correo</span>
             </button>
             <div class="text-2xl text-neon-blue transition-transform" [class.rotate-180]="isSesionExpandida(grupo.sesion_id)">▼</div>
           </div>
@@ -180,6 +195,73 @@
                 <div *ngIf="getDistribucionSexoGrupo(grupo).sinEspecificar > 0" class="flex items-center gap-2 bg-gray-600/10 border border-gray-500/30 rounded-lg px-3 py-2">
                   <span class="text-gray-400 font-bold">{{ getDistribucionSexoGrupo(grupo).sinEspecificar }}</span>
                   <span class="text-xs text-gray-500">N/E</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-dark-850 border-b border-dark-700">
+            <p class="text-sm text-gray-400 font-bold mb-3">📋 Planilla</p>
+
+            <div *ngIf="isCargandoPlanilla(grupo.sesion_id)" class="text-center py-4">
+              <div class="animate-spin w-6 h-6 border-4 border-neon-blue border-t-transparent rounded-full mx-auto"></div>
+              <p class="text-gray-400 text-xs mt-2">Cargando...</p>
+            </div>
+
+            <div *ngIf="!isCargandoPlanilla(grupo.sesion_id)" class="flex items-center gap-3">
+              <div *ngIf="!getPlanilla(grupo.sesion_id)" class="flex-1">
+              <input
+                type="file"
+                (change)="onPlanillaSelected($event, grupo.sesion_id)"
+                accept=".xls,.xlsx,.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                class="hidden"
+                [id]="'planilla-replace-' + grupo.sesion_id">
+
+                <label
+                  [for]="'planilla-' + grupo.sesion_id"
+                  [class.opacity-50]="isSubiendoPlanilla(grupo.sesion_id)"
+                  [class.cursor-not-allowed]="isSubiendoPlanilla(grupo.sesion_id)"
+                  class="flex items-center justify-center gap-2 px-4 py-3 bg-neon-blue/10 border-2 border-dashed border-neon-blue/50 rounded-lg hover:bg-neon-blue/20 hover:border-neon-blue transition-all cursor-pointer">
+                  <span class="text-2xl" *ngIf="!isSubiendoPlanilla(grupo.sesion_id)">📤</span>
+                  <div *ngIf="isSubiendoPlanilla(grupo.sesion_id)" class="animate-spin w-5 h-5 border-3 border-neon-blue border-t-transparent rounded-full"></div>
+                  <span class="text-sm font-bold text-neon-blue">
+                    {{ isSubiendoPlanilla(grupo.sesion_id) ? 'Subiendo...' : 'Subir Planilla (Excel, PDF, Word, Imagen)' }}
+                  </span>
+                </label>
+              </div>
+
+              <div *ngIf="getPlanilla(grupo.sesion_id)" class="flex-1 flex items-center justify-between bg-neon-green/10 border border-neon-green/30 rounded-lg p-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-lg bg-neon-green/20 flex items-center justify-center">
+                    <span class="text-xl">✓</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-neon-green">Planilla cargada</p>
+                    <p class="text-xs text-gray-400">{{ getPlanilla(grupo.sesion_id)?.nombre_archivo }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button
+                    (click)="descargarPlanilla(grupo.sesion_id); $event.stopPropagation()"
+                    class="px-3 py-2 bg-neon-green text-dark-950 rounded-lg font-bold text-xs hover:scale-105 transition-all">
+                    📥 Descargar
+                  </button>
+
+                  <input
+                  type="file"
+                  (change)="onPlanillaSelected($event, grupo.sesion_id)"
+                  accept=".xls,.xlsx,.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+                  class="hidden"
+                  [id]="'planilla-replace-' + grupo.sesion_id">
+
+                  <label
+                    [for]="'planilla-replace-' + grupo.sesion_id"
+                    [class.opacity-50]="isSubiendoPlanilla(grupo.sesion_id)"
+                    [class.cursor-not-allowed]="isSubiendoPlanilla(grupo.sesion_id)"
+                    class="px-3 py-2 bg-dark-800 text-gray-400 rounded-lg font-bold text-xs hover:text-white hover:bg-dark-700 transition-all cursor-pointer">
+                    🔄 Reemplazar
+                  </label>
                 </div>
               </div>
             </div>
@@ -246,25 +328,40 @@
       </div>
 
       <div *ngIf="paginacionSesiones && paginacionSesiones.totalPaginas > 1"
-           class="flex items-center justify-center gap-4 py-6 bg-dark-900 border border-dark-700 rounded-card">
-        <button (click)="cambiarPaginaSesiones(paginacionSesiones.paginaActual - 1)"
-                [disabled]="paginacionSesiones.paginaActual === 1"
-                class="px-6 py-3 bg-dark-800 text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-dark-700 hover:border-neon-blue disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold">
-          ← Anterior
-        </button>
+          class="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-4 bg-dark-900 border border-dark-700 rounded-card">
 
-        <div class="text-center">
-          <p class="text-2xl font-bold text-neon-blue">{{ paginacionSesiones.paginaActual }} / {{ paginacionSesiones.totalPaginas }}</p>
-          <p class="text-xs text-gray-400 mt-1">{{ paginacionSesiones.totalSesiones }} sesiones totales</p>
+        <div class="text-center sm:text-left">
+          <p class="text-sm text-gray-400">
+            Página <span class="text-neon-blue font-bold">{{ paginacionSesiones.paginaActual }}</span>
+            de <span class="text-white font-bold">{{ paginacionSesiones.totalPaginas }}</span>
+            <span class="hidden sm:inline">({{ paginacionSesiones.totalSesiones }} sesiones)</span>
+          </p>
         </div>
 
-        <button (click)="cambiarPaginaSesiones(paginacionSesiones.paginaActual + 1)"
-                [disabled]="paginacionSesiones.paginaActual === paginacionSesiones.totalPaginas"
-                class="px-6 py-3 bg-dark-800 text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-dark-700 hover:border-neon-blue disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold">
-          Siguiente →
-        </button>
+        <div class="flex items-center gap-2">
+          <button (click)="cambiarPaginaSesiones(paginacionSesiones.paginaActual - 1)"
+                  [disabled]="paginacionSesiones.paginaActual === 1"
+                  class="px-4 py-2 text-sm bg-dark-800 text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-dark-700 hover:border-neon-blue disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold">
+            ← Anterior
+          </button>
+
+          <button (click)="cambiarPaginaSesiones(paginacionSesiones.paginaActual + 1)"
+                  [disabled]="paginacionSesiones.paginaActual === paginacionSesiones.totalPaginas"
+                  class="px-4 py-2 text-sm bg-dark-800 text-neon-blue border border-neon-blue/30 rounded-lg hover:bg-dark-700 hover:border-neon-blue disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold">
+            Siguiente →
+          </button>
+        </div>
       </div>
     </div>
 
   </div>
+<app-enviar-correo-modal
+  *ngIf="mostrarModalCorreo && sesionIdParaCorreo && grupoParaCorreo"
+  [sesionId]="sesionIdParaCorreo"
+  [empresaId]="empresaIdParaCorreo || ''"
+  [grupoSesion]="grupoParaCorreo"
+  (closed)="cerrarModalCorreo()"
+  (enviado)="onCorreoEnviado()">
+</app-enviar-correo-modal>
+
 </div>

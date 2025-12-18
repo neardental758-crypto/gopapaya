@@ -63,35 +63,59 @@
       </div>
 
       <div *ngIf="tabActiva === 'resumen'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-   <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
-  <h2 class="text-xl font-display font-bold text-neon-yellow mb-6">🏆 Puntos</h2>
+        <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+          <h2 class="text-xl font-display font-bold text-neon-yellow mb-4">🏆 Podio</h2>
+          <div class="flex justify-center items-end gap-4 mb-6 h-48">
+            <div *ngIf="historial.ranking_final && historial.ranking_final[1]" class="text-center">
+              <div class="w-20 h-24 bg-gradient-to-t from-gray-600 to-gray-500 rounded-t-lg flex items-end justify-center pb-2">
+                <span class="text-4xl">🥈</span>
+              </div>
+              <div class="bg-dark-800 rounded-b-lg p-2">
+                <p class="text-white font-bold text-sm truncate w-20">{{ historial.ranking_final[1].nombreParticipante }}</p>
+                <p class="text-neon-blue text-xs">{{ historial.ranking_final[1].puntosCarrera }} pts</p>
+              </div>
+            </div>
+            <div *ngIf="historial.ranking_final && historial.ranking_final[0]" class="text-center">
+              <div class="w-24 h-32 bg-gradient-to-t from-yellow-600 to-yellow-400 rounded-t-lg flex items-end justify-center pb-2">
+                <span class="text-5xl">🥇</span>
+              </div>
+              <div class="bg-dark-800 rounded-b-lg p-2 border border-neon-yellow/30">
+                <p class="text-neon-yellow font-bold text-sm truncate w-24">{{ historial.ranking_final[0].nombreParticipante }}</p>
+                <p class="text-white text-xs">{{ historial.ranking_final[0].puntosCarrera }} pts</p>
+              </div>
+            </div>
+            <div *ngIf="historial.ranking_final && historial.ranking_final[2]" class="text-center">
+              <div class="w-20 h-20 bg-gradient-to-t from-orange-700 to-orange-500 rounded-t-lg flex items-end justify-center pb-2">
+                <span class="text-3xl">🥉</span>
+              </div>
+              <div class="bg-dark-800 rounded-b-lg p-2">
+                <p class="text-white font-bold text-sm truncate w-20">{{ historial.ranking_final[2].nombreParticipante }}</p>
+                <p class="text-neon-orange text-xs">{{ historial.ranking_final[2].puntosCarrera }} pts</p>
+              </div>
+            </div>
+          </div>
 
-  <div class="bg-gradient-to-br from-neon-yellow/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-yellow/50 mb-4">
-    <p class="text-xs text-gray-400 mb-2">Puntos Ganados</p>
-    <p class="text-5xl font-bold text-neon-yellow mb-1">{{ getPuntosTotal() }}</p>
-    <p class="text-xs text-gray-500">Totales</p>
-  </div>
+          <div class="space-y-2">
+            <div *ngFor="let participante of historial.ranking_final; let i = index"
+              class="bg-dark-800 rounded-lg p-3 flex items-center gap-3 border border-transparent hover:border-neon-yellow/30 transition-all"
+              [class.border-neon-yellow50]="i === 0">
+              <div class="text-2xl w-8">{{ getMedalEmoji(participante.posicion || i + 1) }}</div>
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white"
+                [style.background-color]="participante.colorBicicleta">
+                {{ participante.numeroBicicleta }}
+              </div>
+              <div class="flex-1">
+                <p class="text-white font-bold">{{ participante.nombreParticipante }}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-neon-yellow font-bold">{{ participante.puntosCarrera || 0 }}</p>
+                <p class="text-xs text-gray-500">puntos</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  <div class="bg-dark-800 border-2 border-neon-blue/40 rounded-lg p-4 text-center mb-3">
-    <p class="text-xs text-gray-400 mb-1">Preguntas Respondidas</p>
-    <p class="text-4xl font-bold text-neon-blue">{{ getTotalRespuestasCorrectas() + getTotalRespuestasIncorrectas() }}</p>
-  </div>
-
-  <div class="grid grid-cols-2 gap-3">
-    <div class="bg-neon-green/10 border border-neon-green/30 rounded-lg p-3 text-center">
-      <p class="text-neon-green font-bold text-2xl">{{ getTotalRespuestasCorrectas() }}</p>
-      <p class="text-xs text-gray-400 mb-1">Correctas</p>
-      <p class="text-neon-green/70 text-xs">{{ getPorcentajeCorrectas() }}%</p>
-    </div>
-    <div class="bg-neon-red/10 border border-neon-red/30 rounded-lg p-3 text-center">
-      <p class="text-neon-red font-bold text-2xl">{{ getTotalRespuestasIncorrectas() }}</p>
-      <p class="text-xs text-gray-400 mb-1">Incorrectas</p>
-      <p class="text-neon-red/70 text-xs">{{ getPorcentajeIncorrectas() }}%</p>
-    </div>
-  </div>
-</div>
-
-       <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+              <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
   <h2 class="text-xl font-display font-bold text-white mb-4">ℹ️ Información de la Sesión</h2>
   <div class="space-y-4">
     <div class="bg-dark-800 rounded-lg p-4">

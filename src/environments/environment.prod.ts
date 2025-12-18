@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://tu-servidor-produccion.com/api',
+  apiUrl: 'https://backend-papaya.onrender.com/api',
 };

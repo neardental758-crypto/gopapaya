@@ -6,7 +6,7 @@
     <header class="bg-dark-900 border-b border-dark-700 shadow-neon-yellow/10">
       <div class="px-6 py-4 flex items-center justify-between">
         <h1 class="text-2xl font-display font-bold text-white">
-           Actividades de<span class="text-neon-yellow">  Binestar</span> <span class="text-gray-500 text-lg ml-2">🎮</span>
+           Actividades de<span class="text-neon-yellow">  Bienestar</span> <span class="text-gray-500 text-lg ml-2">🎮</span>
         </h1>
 
         <div class="flex items-center gap-4">
@@ -36,4 +36,33 @@
     <router-outlet></router-outlet>
   </main>
 
-<app-admin-floating-menu *ngIf="!isInGame()"></app-admin-floating-menu></div>
+  <app-admin-floating-menu *ngIf="!isInGame()"></app-admin-floating-menu>
+</div>
+
+<!-- Layout para Viewer (simple, solo contenido) -->
+<div *ngIf="isViewer()" class="h-screen bg-dark-950 overflow-hidden">
+  <header class="bg-dark-900 border-b border-dark-700 shadow-neon-green/10">
+    <div class="px-6 py-4 flex items-center justify-between">
+      <h1 class="text-2xl font-display font-bold text-white">
+        Historial de <span class="text-neon-green">Sesiones</span>
+      </h1>
+
+      <div class="flex items-center gap-4">
+        <div class="text-right">
+          <p class="text-sm font-semibold text-white">{{ usuario?.nombre }}</p>
+          <p class="text-xs text-gray-400">{{ getRolLabel(usuario?.rol) }}</p>
+        </div>
+        <button
+          (click)="logout()"
+          class="px-4 py-2 bg-dark-700 text-gray-300 rounded-lg font-semibold hover:bg-dark-600 border border-dark-600 hover:text-neon-red transition-all"
+        >
+          🚪 Salir
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="h-full overflow-y-auto">
+    <router-outlet></router-outlet>
+  </main>
+</div>

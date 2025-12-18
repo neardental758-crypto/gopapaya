@@ -48,6 +48,9 @@ export class CrearSesionComponent implements OnInit {
   cargando = false;
   errorMensaje = '';
 
+  cronograma: string = '';
+  secuencia: string = '';
+
   constructor(
     private sesionService: SesionService,
     private empresaService: EmpresaService,
@@ -305,6 +308,8 @@ export class CrearSesionComponent implements OnInit {
       fecha_sesion: fechaSesionFinal,
       admins_asignados: this.adminsSeleccionados,
       nota: this.nota,
+      cronograma: this.cronograma,
+      secuencia: this.secuencia,
       juego_asignado: this.juegoAsignado,
       parametros_juego:
         this.juegoAsignado === 'brain-bike' ? this.parametrosBrainBike : null,

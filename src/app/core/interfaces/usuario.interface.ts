@@ -3,7 +3,7 @@ export interface Usuario {
   empresa_id: string;
   nombre: string;
   email: string;
-  rol: 'super_admin' | 'admin';
+  rol: 'super_admin' | 'admin' | 'viewer';
   empresa_ids: string[];
 }
 

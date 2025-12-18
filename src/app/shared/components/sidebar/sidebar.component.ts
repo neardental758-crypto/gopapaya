@@ -48,7 +48,7 @@ export class SidebarComponent {
       expanded: false,
       subItems: [
         { label: 'Usuarios', icon: '👥', route: '/admin/usuarios' },
-        { label: 'Empresas', icon: '🏢', route: '/admin/empresas' },
+        { label: 'Aliados', icon: '🤝', route: '/admin/aliados' },
       ],
     },
     {

@@ -338,7 +338,7 @@ export class BrainBikeAudioService {
     oscillator3.stop(now + 1.2);
   }
 
-  private reproducirSonidoSintetico(tipo: string): void {
+  reproducirSonidoSintetico(tipo: string): void {
     if (!this.audioContext) return;
 
     const now = this.audioContext.currentTime;
@@ -477,6 +477,140 @@ export class BrainBikeAudioService {
         gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
         oscillator.stop(now + 0.6);
         break;
+
+      case 'motor':
+        oscillator.type = 'sawtooth';
+        const oscillator2 = this.audioContext.createOscillator();
+        oscillator2.type = 'square';
+        oscillator2.connect(filter);
+
+        oscillator.frequency.setValueAtTime(80, now);
+        oscillator.frequency.exponentialRampToValueAtTime(180, now + 0.3);
+        oscillator.frequency.exponentialRampToValueAtTime(120, now + 0.6);
+
+        oscillator2.frequency.setValueAtTime(160, now);
+        oscillator2.frequency.exponentialRampToValueAtTime(360, now + 0.3);
+        oscillator2.frequency.exponentialRampToValueAtTime(240, now + 0.6);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(400, now);
+        filter.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+        filter.frequency.exponentialRampToValueAtTime(600, now + 0.6);
+
+        gainNode.gain.setValueAtTime(this.volumenEfectos * 0.6, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+
+        oscillator.stop(now + 0.7);
+        oscillator2.start(now);
+        oscillator2.stop(now + 0.7);
+        break;
+
+      case 'victoria':
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(523.25, now);
+        oscillator.frequency.setValueAtTime(659.25, now + 0.15);
+        oscillator.frequency.setValueAtTime(783.99, now + 0.3);
+        oscillator.frequency.setValueAtTime(1046.5, now + 0.45);
+        oscillator.frequency.setValueAtTime(1318.51, now + 0.6);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(2000, now);
+        filter.Q.value = 3;
+
+        gainNode.gain.setValueAtTime(this.volumenEfectos * 0.7, now);
+        gainNode.gain.setValueAtTime(this.volumenEfectos * 0.8, now + 0.3);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+        oscillator.stop(now + 1.0);
+        break;
+
+      case 'banderaCarrera':
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(600, now);
+        oscillator.frequency.setValueAtTime(800, now + 0.1);
+        oscillator.frequency.setValueAtTime(600, now + 0.2);
+        oscillator.frequency.setValueAtTime(800, now + 0.3);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1200, now);
+
+        gainNode.gain.setValueAtTime(this.volumenEfectos * 0.5, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        oscillator.stop(now + 0.4);
+        break;
+
+      case 'sirenaLargada':
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(800, now);
+        oscillator.frequency.exponentialRampToValueAtTime(1200, now + 0.5);
+        oscillator.frequency.exponentialRampToValueAtTime(800, now + 1.0);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1500, now);
+        filter.Q.value = 2;
+
+        gainNode.gain.setValueAtTime(0, now);
+        gainNode.gain.linearRampToValueAtTime(
+          this.volumenEfectos * 0.6,
+          now + 0.1
+        );
+        gainNode.gain.linearRampToValueAtTime(
+          this.volumenEfectos * 0.4,
+          now + 0.5
+        );
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+        oscillator.stop(now + 1.0);
+        break;
+
+      case 'podio':
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(1046.5, now);
+        oscillator.frequency.setValueAtTime(1318.51, now + 0.2);
+        oscillator.frequency.setValueAtTime(1567.98, now + 0.4);
+        oscillator.frequency.setValueAtTime(2093.0, now + 0.6);
+
+        gainNode.gain.setValueAtTime(this.volumenEfectos * 0.6, now);
+        gainNode.gain.setValueAtTime(this.volumenEfectos * 0.7, now + 0.3);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.9);
+        oscillator.stop(now + 0.9);
+        break;
+
+      case 'cambioLlave':
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(400, now);
+        oscillator.frequency.setValueAtTime(600, now + 0.1);
+        oscillator.frequency.setValueAtTime(800, now + 0.2);
+
+        filter.type = 'highpass';
+        filter.frequency.setValueAtTime(300, now);
+
+        gainNode.gain.setValueAtTime(this.volumenEfectos * 0.4, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        oscillator.stop(now + 0.3);
+        break;
     }
+  }
+
+  reproducirSonidoMotor(): void {
+    this.reproducirSonidoSintetico('motor');
+  }
+
+  reproducirSonidoVictoria(): void {
+    this.reproducirSonidoSintetico('victoria');
+  }
+
+  reproducirSonidoBanderaCarrera(): void {
+    this.reproducirSonidoSintetico('banderaCarrera');
+  }
+
+  reproducirSonidoSirenaLargada(): void {
+    this.reproducirSonidoSintetico('sirenaLargada');
+  }
+
+  reproducirSonidoPodio(): void {
+    this.reproducirSonidoSintetico('podio');
+  }
+
+  reproducirSonidoCambioLlave(): void {
+    this.reproducirSonidoSintetico('cambioLlave');
   }
 }

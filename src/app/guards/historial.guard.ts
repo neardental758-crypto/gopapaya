@@ -12,7 +12,11 @@ export const historialGuard: CanActivateFn = (route, state) => {
 
   try {
     const usuario = JSON.parse(usuarioString);
-    if (usuario.rol === 'super_admin' || usuario.rol === 'admin') {
+    if (
+      usuario.rol === 'super_admin' ||
+      usuario.rol === 'admin' ||
+      usuario.rol === 'viewer'
+    ) {
       return true;
     }
     router.navigate(['/unauthorized']);

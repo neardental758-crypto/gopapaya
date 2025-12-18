@@ -1,0 +1,583 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6 space-y-6">
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8 shadow-neon-yellow">
+    <h1 class="text-2xl sm:text-4xl font-display font-bold text-white mb-2">
+      🤝 Gestión de <span class="text-neon-yellow">Aliados</span>
+    </h1>
+    <p class="text-gray-400 font-body text-sm sm:text-base">Administra aliados, AGRs y empresas del sistema</p>
+  </div>
+
+  <div *ngIf="showForm" class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6">
+    <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-4">
+      {{ editMode ? '✏️ Editar' : '➕ Crear' }}
+      {{ currentEntityType === 'aliado' ? 'Aliado' : currentEntityType === 'agr' ? 'AGR' : 'Empresa' }}
+    </h3>
+
+    <form (ngSubmit)="onSubmit()" class="space-y-4">
+      <div *ngIf="currentEntityType === 'aliado'" class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Nombre *</label>
+          <input
+            type="text"
+            [(ngModel)]="aliadoForm.nombre"
+            name="nombre"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="Nombre del aliado"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">URL del Logo</label>
+          <input
+            type="text"
+            [(ngModel)]="aliadoForm.logo"
+            name="logo"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="https://ejemplo.com/logo.png"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Nombre del POC</label>
+          <input
+            type="text"
+            [(ngModel)]="aliadoForm.nombre_poc"
+            name="nombre_poc"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="Nombre del punto de contacto"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Email del POC</label>
+          <input
+            type="email"
+            [(ngModel)]="aliadoForm.email_poc"
+            name="email_poc"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="poc@ejemplo.com"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Teléfono</label>
+          <input
+            type="text"
+            [(ngModel)]="aliadoForm.telefono"
+            name="telefono"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="+57 300 123 4567"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Notas</label>
+          <textarea
+            [(ngModel)]="aliadoForm.notas"
+            name="notas"
+            rows="3"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="Notas adicionales..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div *ngIf="currentEntityType === 'agr'" class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Nombre *</label>
+          <input
+            type="text"
+            [(ngModel)]="agrForm.nombre"
+            name="nombre"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="Nombre del AGR"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Email *</label>
+          <input
+            type="email"
+            [(ngModel)]="agrForm.email"
+            name="email"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="agr@ejemplo.com"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Teléfono</label>
+          <input
+            type="text"
+            [(ngModel)]="agrForm.telefono"
+            name="telefono"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="+57 300 123 4567"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Notas</label>
+          <textarea
+            [(ngModel)]="agrForm.notas"
+            name="notas"
+            rows="3"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="Notas adicionales..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div *ngIf="currentEntityType === 'empresa'" class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Nombre *</label>
+          <input
+            type="text"
+            [(ngModel)]="empresaForm.nombre"
+            name="nombre"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="Nombre de la empresa"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">URL del Logo</label>
+          <input
+            type="text"
+            [(ngModel)]="empresaForm.logo"
+            name="logo"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="https://ejemplo.com/logo.png"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Email</label>
+          <input
+            type="email"
+            [(ngModel)]="empresaForm.email"
+            name="email"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="empresa@ejemplo.com"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Teléfono</label>
+          <input
+            type="text"
+            [(ngModel)]="empresaForm.telefono"
+            name="telefono"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="+57 300 123 4567"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-2">Notas</label>
+          <textarea
+            [(ngModel)]="empresaForm.notas"
+            name="notas"
+            rows="3"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+            placeholder="Notas adicionales..."
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 justify-end pt-2">
+        <button
+          type="button"
+          (click)="cancelForm()"
+          class="w-full sm:w-auto px-6 py-2 bg-dark-700 text-gray-300 rounded-lg font-semibold hover:bg-dark-600 border border-dark-600 transition-all"
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          class="w-full sm:w-auto px-6 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+        >
+          {{ editMode ? 'Actualizar' : 'Crear' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="showDetails" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" (click)="closeDetails()">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+      <div class="flex justify-between items-start mb-6">
+        <h2 class="text-2xl font-display font-bold text-white">
+          {{ currentEntityType === 'aliado' ? '🤝' : currentEntityType === 'agr' ? '📋' : '🏢' }}
+          Detalles
+        </h2>
+        <button
+          (click)="closeDetails()"
+          class="text-gray-400 hover:text-white text-2xl leading-none"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div *ngIf="currentEntityType === 'aliado' && detailsItem" class="space-y-4">
+        <div *ngIf="detailsItem.logo" class="flex justify-center mb-6">
+          <img [src]="detailsItem.logo" [alt]="detailsItem.nombre" class="max-w-xs max-h-48 object-contain rounded-lg border border-dark-600" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold text-gray-400 uppercase">Nombre</label>
+            <p class="text-white font-semibold mt-1">{{ detailsItem.nombre }}</p>
+          </div>
+
+          <div *ngIf="detailsItem.nombre_poc">
+            <label class="text-xs font-bold text-gray-400 uppercase">Nombre POC</label>
+            <p class="text-white font-semibold mt-1">{{ detailsItem.nombre_poc }}</p>
+          </div>
+
+          <div *ngIf="detailsItem.email_poc">
+            <label class="text-xs font-bold text-gray-400 uppercase">Email POC</label>
+            <p class="text-white font-semibold mt-1">{{ detailsItem.email_poc }}</p>
+          </div>
+
+          <div *ngIf="detailsItem.telefono">
+            <label class="text-xs font-bold text-gray-400 uppercase">Teléfono</label>
+            <p class="text-white font-semibold mt-1">{{ detailsItem.telefono }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="detailsItem.notas">
+          <label class="text-xs font-bold text-gray-400 uppercase">Notas</label>
+          <p class="text-gray-300 mt-1">{{ detailsItem.notas }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-dark-700">
+          <div>
+            <label class="text-xs font-bold text-gray-400 uppercase">Creado</label>
+            <p class="text-gray-300 text-sm mt-1">{{ detailsItem.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-400 uppercase">Actualizado</label>
+            <p class="text-gray-300 text-sm mt-1">{{ detailsItem.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="currentEntityType === 'agr' && detailsItem" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold text-gray-400 uppercase">Nombre</label>
+            <p class="text-white font-semibold mt-1">{{ detailsItem.nombre }}</p>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-gray-400 uppercase">Email</label>
+            <p class="text-white font-semibold mt-1">{{ detailsItem.email }}</p>
+          </div>
+
+          <div *ngIf="detailsItem.telefono">
+            <label class="text-xs font-bold text-gray-400 uppercase">Teléfono</label>
+            <p class="text-white font-semibold mt-1">{{ detailsItem.telefono }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="detailsItem.notas">
+          <label class="text-xs font-bold text-gray-400 uppercase">Notas</label>
+          <p class="text-gray-300 mt-1">{{ detailsItem.notas }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-dark-700">
+          <div>
+            <label class="text-xs font-bold text-gray-400 uppercase">Creado</label>
+            <p class="text-gray-300 text-sm mt-1">{{ detailsItem.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-400 uppercase">Actualizado</label>
+            <p class="text-gray-300 text-sm mt-1">{{ detailsItem.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="currentEntityType === 'empresa' && detailsItem" class="space-y-4">
+        <div *ngIf="detailsItem.logo" class="flex justify-center mb-6">
+          <img [src]="detailsItem.logo" [alt]="detailsItem.nombre" class="max-w-xs max-h-48 object-contain rounded-lg border border-dark-600" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold text-gray-400 uppercase">Nombre</label>
+            <p class="text-white font-semibold mt-1">{{ detailsItem.nombre }}</p>
+          </div>
+
+          <div *ngIf="detailsItem.email">
+            <label class="text-xs font-bold text-gray-400 uppercase">Email</label>
+            <p class="text-white font-semibold mt-1">{{ detailsItem.email }}</p>
+          </div>
+
+          <div *ngIf="detailsItem.telefono">
+            <label class="text-xs font-bold text-gray-400 uppercase">Teléfono</label>
+            <p class="text-white font-semibold mt-1">{{ detailsItem.telefono }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="detailsItem.notas">
+          <label class="text-xs font-bold text-gray-400 uppercase">Notas</label>
+          <p class="text-gray-300 mt-1">{{ detailsItem.notas }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-dark-700">
+          <div>
+            <label class="text-xs font-bold text-gray-400 uppercase">Creado</label>
+            <p class="text-gray-300 text-sm mt-1">{{ detailsItem.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-400 uppercase">Actualizado</label>
+            <p class="text-gray-300 text-sm mt-1">{{ detailsItem.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-display font-bold text-white">🤝 Aliados</h2>
+        <button
+          (click)="toggleForm('aliado')"
+          class="px-4 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold text-sm shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+        >
+          ➕
+        </button>
+      </div>
+
+      <div class="mb-4">
+        <input
+          type="text"
+          [(ngModel)]="searchAliado"
+          (ngModelChange)="filterAliados()"
+          placeholder="🔍 Buscar aliado..."
+          class="w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white text-sm placeholder-gray-500"
+        />
+      </div>
+
+      <div class="space-y-2 max-h-[500px] overflow-y-auto">
+        <div
+          *ngFor="let aliado of filteredAliados"
+          (click)="selectAliado(aliado)"
+          class="p-3 bg-dark-800 border border-dark-600 rounded-lg cursor-pointer hover:bg-dark-700 transition-all"
+          [class.border-neon-yellow]="selectedAliado?._id === aliado._id"
+          [class.bg-dark-700]="selectedAliado?._id === aliado._id"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div *ngIf="aliado.logo" class="w-10 h-10 rounded overflow-hidden bg-dark-700 flex-shrink-0">
+                <img [src]="aliado.logo" [alt]="aliado.nombre" class="w-full h-full object-cover" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-semibold truncate">{{ aliado.nombre }}</p>
+                <p *ngIf="aliado.nombre_poc" class="text-gray-400 text-xs truncate">{{ aliado.nombre_poc }}</p>
+              </div>
+            </div>
+            <div class="flex gap-1 flex-shrink-0">
+              <button
+                (click)="showDetailsModal('aliado', aliado); $event.stopPropagation()"
+                class="p-1.5 bg-dark-700 text-neon-yellow rounded hover:bg-dark-600 transition-all text-sm"
+                title="Ver detalles"
+              >
+                👁️
+              </button>
+              <button
+                (click)="toggleForm('aliado', aliado); $event.stopPropagation()"
+                class="p-1.5 bg-dark-700 text-neon-blue rounded hover:bg-dark-600 transition-all text-sm"
+                title="Editar"
+              >
+                ✏️
+              </button>
+              <button
+                (click)="deleteAliado(aliado); $event.stopPropagation()"
+                class="p-1.5 bg-dark-700 text-neon-red rounded hover:bg-dark-600 transition-all text-sm"
+                title="Desactivar"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="filteredAliados.length === 0 && aliados.length > 0" class="text-center py-8 text-gray-500">
+          <p class="text-4xl mb-2 opacity-30">🔍</p>
+          <p class="text-sm">No se encontraron resultados</p>
+        </div>
+
+        <div *ngIf="aliados.length === 0" class="text-center py-8 text-gray-500">
+          <p class="text-4xl mb-2 opacity-30">🤝</p>
+          <p class="text-sm">No hay aliados registrados</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-display font-bold text-white">📋 AGRs</h2>
+        <button
+          (click)="toggleForm('agr')"
+          [disabled]="!selectedAliado"
+          class="px-4 py-2 bg-neon-blue text-dark-950 rounded-lg font-bold text-sm shadow-neon-blue hover:shadow-neon-blue-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          ➕
+        </button>
+      </div>
+
+      <div *ngIf="selectedAliado" class="mb-4">
+        <input
+          type="text"
+          [(ngModel)]="searchAGR"
+          (ngModelChange)="filterAGRs()"
+          placeholder="🔍 Buscar AGR..."
+          class="w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg focus:border-neon-blue focus:ring-1 focus:ring-neon-blue focus:outline-none text-white text-sm placeholder-gray-500"
+        />
+      </div>
+
+      <div *ngIf="!selectedAliado" class="text-center py-16 text-gray-500">
+        <p class="text-4xl mb-2 opacity-30">👈</p>
+        <p class="text-sm">Selecciona un aliado</p>
+      </div>
+
+      <div *ngIf="selectedAliado" class="space-y-2 max-h-[500px] overflow-y-auto">
+        <div
+          *ngFor="let agr of filteredAGRs"
+          (click)="selectAGR(agr)"
+          class="p-3 bg-dark-800 border border-dark-600 rounded-lg cursor-pointer hover:bg-dark-700 transition-all"
+          [class.border-neon-blue]="selectedAGR?._id === agr._id"
+          [class.bg-dark-700]="selectedAGR?._id === agr._id"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0">
+              <p class="text-white font-semibold truncate">{{ agr.nombre }}</p>
+              <p class="text-gray-400 text-xs truncate">{{ agr.email }}</p>
+            </div>
+            <div class="flex gap-1 flex-shrink-0">
+              <button
+                (click)="showDetailsModal('agr', agr); $event.stopPropagation()"
+                class="p-1.5 bg-dark-700 text-neon-yellow rounded hover:bg-dark-600 transition-all text-sm"
+                title="Ver detalles"
+              >
+                👁️
+              </button>
+              <button
+                (click)="toggleForm('agr', agr); $event.stopPropagation()"
+                class="p-1.5 bg-dark-700 text-neon-blue rounded hover:bg-dark-600 transition-all text-sm"
+                title="Editar"
+              >
+                ✏️
+              </button>
+              <button
+                (click)="deleteAGR(agr); $event.stopPropagation()"
+                class="p-1.5 bg-dark-700 text-neon-red rounded hover:bg-dark-600 transition-all text-sm"
+                title="Desactivar"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="filteredAGRs.length === 0 && agrs.length > 0" class="text-center py-8 text-gray-500">
+          <p class="text-4xl mb-2 opacity-30">🔍</p>
+          <p class="text-sm">No se encontraron resultados</p>
+        </div>
+
+        <div *ngIf="agrs.length === 0" class="text-center py-8 text-gray-500">
+          <p class="text-4xl mb-2 opacity-30">📋</p>
+          <p class="text-sm">No hay AGRs para este aliado</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-display font-bold text-white">🏢 Empresas</h2>
+        <button
+          (click)="toggleForm('empresa')"
+          [disabled]="!selectedAGR"
+          class="px-4 py-2 bg-neon-green text-dark-950 rounded-lg font-bold text-sm shadow-neon-green hover:shadow-neon-green hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          ➕
+        </button>
+      </div>
+
+      <div *ngIf="selectedAGR" class="mb-4">
+        <input
+          type="text"
+          [(ngModel)]="searchEmpresa"
+          (ngModelChange)="filterEmpresas()"
+          placeholder="🔍 Buscar empresa..."
+          class="w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg focus:border-neon-green focus:ring-1 focus:ring-neon-green focus:outline-none text-white text-sm placeholder-gray-500"
+        />
+      </div>
+
+      <div *ngIf="!selectedAGR" class="text-center py-16 text-gray-500">
+        <p class="text-4xl mb-2 opacity-30">👈</p>
+        <p class="text-sm">Selecciona un AGR</p>
+      </div>
+
+      <div *ngIf="selectedAGR" class="space-y-2 max-h-[500px] overflow-y-auto">
+        <div
+          *ngFor="let empresa of filteredEmpresas"
+          (click)="selectEmpresa(empresa)"
+          class="p-3 bg-dark-800 border border-dark-600 rounded-lg cursor-pointer hover:bg-dark-700 transition-all"
+          [class.border-neon-green]="selectedEmpresa?._id === empresa._id"
+          [class.bg-dark-700]="selectedEmpresa?._id === empresa._id"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <div *ngIf="empresa.logo" class="w-10 h-10 rounded overflow-hidden bg-dark-700 flex-shrink-0">
+                <img [src]="empresa.logo" [alt]="empresa.nombre" class="w-full h-full object-cover" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-white font-semibold truncate">{{ empresa.nombre }}</p>
+                <p *ngIf="empresa.email" class="text-gray-400 text-xs truncate">{{ empresa.email }}</p>
+              </div>
+            </div>
+            <div class="flex gap-1 flex-shrink-0">
+              <button
+                (click)="showDetailsModal('empresa', empresa); $event.stopPropagation()"
+                class="p-1.5 bg-dark-700 text-neon-yellow rounded hover:bg-dark-600 transition-all text-sm"
+                title="Ver detalles"
+              >
+                👁️
+              </button>
+              <button
+                (click)="toggleForm('empresa', empresa); $event.stopPropagation()"
+                class="p-1.5 bg-dark-700 text-neon-blue rounded hover:bg-dark-600 transition-all text-sm"
+                title="Editar"
+              >
+                ✏️
+              </button>
+              <button
+                (click)="deleteEmpresa(empresa); $event.stopPropagation()"
+                class="p-1.5 bg-dark-700 text-neon-red rounded hover:bg-dark-600 transition-all text-sm"
+                title="Desactivar"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="filteredEmpresas.length === 0 && empresas.length > 0" class="text-center py-8 text-gray-500">
+          <p class="text-4xl mb-2 opacity-30">🔍</p>
+          <p class="text-sm">No se encontraron resultados</p>
+        </div>
+
+        <div *ngIf="empresas.length === 0" class="text-center py-8 text-gray-500">
+          <p class="text-4xl mb-2 opacity-30">🏢</p>
+          <p class="text-sm">No hay empresas para este AGR</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,345 +1,303 @@
-<div class="min-h-screen bg-dark-950 p-4 sm:p-6 lg:p-8">
-  <div class="max-w-7xl mx-auto">
-    <!-- Header -->
-    <div class="bg-dark-900/90 border border-dark-700  p-4 sm:p-6 mb-6 sm:mb-8 shadow-2xl">
-      <div class="flex items-center justify-between flex-wrap gap-4">
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6">
+  <div class="max-w-6xl mx-auto">
+
+    <div *ngIf="loading" class="fixed inset-0 bg-dark-950/95 backdrop-blur-sm z-50 flex items-center justify-center animate-fadeIn">
+      <div class="text-center space-y-4">
+        <div class="text-7xl animate-bounce">⏳</div>
+        <p class="text-white text-xl font-display">Cargando configuración...</p>
+      </div>
+    </div>
+
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6 mb-6 shadow-lg">
+      <div class="flex items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-          <div class="text-4xl sm:text-5xl drop-shadow-lg">🚴</div>
+          <div class="text-5xl drop-shadow-lg">🏁</div>
           <div>
-            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-white">
-              <span class="text-neon-blue">Biketona</span> - Configuración
+            <h1 class="text-2xl sm:text-3xl font-display font-bold text-white">
+              <span class="text-neon-blue">Biketona</span> Setup
             </h1>
             <p class="text-gray-400 text-sm sm:text-base mt-1">
-              Paso {{ paso }} de 2:
-              <span class="text-neon-yellow font-medium">
-                {{ paso === 1 ? 'Selecciona el tipo de pista' : 'Configura la carrera' }}
-              </span>
+              Paso <span class="text-neon-yellow font-bold">{{ paso }}</span> de <span class="text-neon-blue font-bold">2</span>
             </p>
           </div>
         </div>
 
         <button
-          (click)="volver()"
-          class="px-5 sm:px-6 py-2.5 sm:py-3 bg-dark-800 text-gray-300 rounded-xl border-2 border-dark-600 hover:border-neon-blue hover:text-neon-blue hover:shadow-neon-blue duration-300 text-sm sm:text-base font-medium"
-        >
+          (click)="volver(); audioService.reproducirSonidoClick()"
+          class="px-4 py-2 bg-dark-800 text-gray-300 rounded-lg border border-dark-600 hover:border-neon-blue hover:text-neon-blue transition-all font-medium">
           {{ paso > 1 ? '← Anterior' : '← Volver' }}
         </button>
       </div>
     </div>
 
-    <!-- Indicador de progreso -->
-    <div class="mb-8 sm:mb-10">
-      <div class="flex items-center justify-center gap-6 sm:gap-8">
-        <!-- Paso 1 -->
+    <div class="mb-8">
+      <div class="flex items-center justify-center gap-4 sm:gap-8">
         <div class="flex items-center gap-3">
           <div
-            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg duration-300"
-            [ngClass]="paso === 1 
-              ? 'bg-neon-blue text-dark-900 shadow-neon-blue scale-110' 
-              : 'bg-dark-700 text-gray-500'"
-          >
+            class="w-12 h-12 rounded-full flex items-center justify-center font-display font-bold text-lg transition-all duration-300"
+            [class.bg-neon-blue]="paso === 1"
+            [class.text-dark-950]="paso === 1"
+            [class.shadow-neon-blue]="paso === 1"
+            [class.scale-110]="paso === 1"
+            [class.bg-dark-700]="paso !== 1"
+            [class.text-gray-500]="paso !== 1">
             1
           </div>
           <span
-            class="hidden sm:inline text-sm sm:text-base font-medium transition-colors"
-            [ngClass]="paso >= 1 ? 'text-white' : 'text-gray-500'"
-          >
+            class="hidden sm:inline text-sm font-medium transition-colors"
+            [class.text-white]="paso >= 1"
+            [class.text-gray-500]="paso < 1">
             Tipo de Pista
           </span>
         </div>
 
-        <!-- Línea conectora -->
-        <div class="relative w-20 sm:w-32 h-1 bg-dark-800 rounded-full overflow-hidden">
+        <div class="relative w-20 sm:w-32 h-2 bg-dark-800 rounded-full overflow-hidden">
           <div
-            class="absolute inset-0 bg-gradient-to-r from-neon-blue to-neon-yellow duration-500"
-            [style.width]="paso >= 2 ? '100%' : '0%'"
-          ></div>
+            class="absolute inset-0 bg-gradient-to-r from-neon-blue to-neon-yellow transition-all duration-500"
+            [style.width]="paso >= 2 ? '100%' : '0%'"></div>
         </div>
 
-        <!-- Paso 2 -->
         <div class="flex items-center gap-3">
           <div
-            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-bold text-base sm:text-lg duration-300"
-            [ngClass]="paso >= 2 
-              ? 'bg-neon-yellow text-dark-900 shadow-neon-yellow scale-110' 
-              : 'bg-dark-700 text-gray-500'"
-          >
+            class="w-12 h-12 rounded-full flex items-center justify-center font-display font-bold text-lg transition-all duration-300"
+            [class.bg-neon-yellow]="paso >= 2"
+            [class.text-dark-950]="paso >= 2"
+            [class.shadow-neon-yellow]="paso >= 2"
+            [class.scale-110]="paso >= 2"
+            [class.bg-dark-700]="paso < 2"
+            [class.text-gray-500]="paso < 2">
             2
           </div>
           <span
-            class="hidden sm:inline text-sm sm:text-base font-medium transition-colors"
-            [ngClass]="paso >= 2 ? 'text-white' : 'text-gray-500'"
-          >
+            class="hidden sm:inline text-sm font-medium transition-colors"
+            [class.text-white]="paso >= 2"
+            [class.text-gray-500]="paso < 2">
             Configuración
           </span>
         </div>
       </div>
     </div>
 
-    <!-- PASO 1: Selección de tipo de pista -->
-    <div *ngIf="paso === 1" class="animate-fadeIn">
-      <div class="bg-dark-900 border border-dark-700  p-6 sm:p-8 lg:p-10 shadow-2xl">
-        <!-- Título de sección -->
-        <div class="mb-8 sm:mb-10 text-center">
+    <div *ngIf="paso === 1" class="space-y-6 animate-fadeIn">
+      <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8 shadow-lg">
+        <div class="text-center mb-8">
           <h2 class="text-3xl sm:text-4xl font-display font-bold text-white mb-3">
-            🏁 Selecciona el Tipo de Pista
+            🏁 Tipo de Pista
           </h2>
           <p class="text-gray-400 text-base sm:text-lg">
-            Elige cómo se llevará a cabo la competencia
+            Selecciona cómo se realizará la competencia
           </p>
         </div>
 
-        <!-- Opciones de pista -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto mb-10">
-          <!-- Pista Digital -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           <button
-            (click)="seleccionarTipoPista('digital')"
-            class="group relative bg-dark-800 rounded-xl border-4 p-8 sm:p-10 duration-300 overflow-hidden"
-            [class.border-2]="configuracion.tipoPista === 'digital'"
-            [class.border-neon-yellow]="configuracion.tipoPista === 'digital'"
-            [class.shadow-neon-yellow]="configuracion.tipoPista === 'digital'"
-            [class.border]="configuracion.tipoPista !== 'digital'"
+            (click)="seleccionarTipoPista('digital'); audioService.reproducirSonidoSeleccion()"
+            class="group relative overflow-hidden rounded-xl p-8 border-2 transition-all hover:scale-[1.02]"
+            [class.bg-dark-800]="configuracion.tipoPista !== 'digital'"
             [class.border-dark-700]="configuracion.tipoPista !== 'digital'"
-            [class.hover:border-dark-600]="configuracion.tipoPista !== 'digital'"
-          >
-            <div class="absolute inset-0 bg-gradient-to-br from-neon-yellow/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            
+            [class.border-neon-yellow]="configuracion.tipoPista === 'digital'"
+            [class.shadow-neon-yellow]="configuracion.tipoPista === 'digital'">
+            <div
+              *ngIf="configuracion.tipoPista === 'digital'"
+              class="absolute inset-0 bg-gradient-to-br from-neon-yellow/10 to-transparent"></div>
+            <div
+              *ngIf="configuracion.tipoPista !== 'digital'"
+              class="absolute inset-0 bg-gradient-to-br from-neon-yellow/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
             <div class="relative text-center">
-              <div class="text-6xl sm:text-7xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
-                💻
-              </div>
-              <h3 class="text-2xl sm:text-3xl font-display font-bold text-white mb-3">
-                Pista Digital
-              </h3>
-              <p class="text-gray-400 text-base sm:text-lg mb-6">
-                Módulo simulador de la pista de carritos
-              </p>
-              <div class="inline-flex items-center gap-2 text-sm text-neon-blue px-4 py-2 rounded-full bg-neon-blue/10 border border-neon-blue/40">
+              <div class="text-7xl mb-4 transform group-hover:scale-110 transition-transform">💻</div>
+              <h3 class="text-2xl font-display font-bold text-white mb-3">Pista Digital</h3>
+              <p class="text-gray-400 mb-4">Simulación virtual de carrera</p>
+              <div class="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-neon-blue/10 border border-neon-blue/30 text-neon-blue">
                 <span>💡</span>
-                <span class="font-medium">Simulación virtual</span>
+                <span class="font-medium">Simulador virtual</span>
               </div>
             </div>
           </button>
 
-          <!-- Pista Física -->
           <button
-            (click)="seleccionarTipoPista('fisica')"
-            class="group relative bg-dark-800 rounded-xl border-4 p-8 sm:p-10 duration-300 overflow-hidden"
-            [class.border-2]="configuracion.tipoPista === 'fisica'"
-            [class.border-neon-yellow]="configuracion.tipoPista === 'fisica'"
-            [class.shadow-neon-yellow]="configuracion.tipoPista === 'fisica'"
-            [class.border]="configuracion.tipoPista !== 'fisica'"
+            (click)="seleccionarTipoPista('fisica'); audioService.reproducirSonidoSeleccion()"
+            class="group relative overflow-hidden rounded-xl p-8 border-2 transition-all hover:scale-[1.02]"
+            [class.bg-dark-800]="configuracion.tipoPista !== 'fisica'"
             [class.border-dark-700]="configuracion.tipoPista !== 'fisica'"
-            [class.hover:border-dark-600]="configuracion.tipoPista !== 'fisica'"
-          >
-            <div class="absolute inset-0 bg-gradient-to-br from-neon-green/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            
+            [class.border-neon-green]="configuracion.tipoPista === 'fisica'"
+            [class.shadow-neon-green]="configuracion.tipoPista === 'fisica'">
+            <div
+              *ngIf="configuracion.tipoPista === 'fisica'"
+              class="absolute inset-0 bg-gradient-to-br from-neon-green/10 to-transparent"></div>
+            <div
+              *ngIf="configuracion.tipoPista !== 'fisica'"
+              class="absolute inset-0 bg-gradient-to-br from-neon-green/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
             <div class="relative text-center">
-              <div class="text-6xl sm:text-7xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
-                🚴‍♂️
-              </div>
-              <h3 class="text-2xl sm:text-3xl font-display font-bold text-white mb-3">
-                Pista Física
-              </h3>
-              <p class="text-gray-400 text-base sm:text-lg mb-6">
-                Módulo interactivo con hardware
-              </p>
-              <div class="inline-flex items-center gap-2 text-sm text-neon-green px-4 py-2 rounded-full bg-neon-green/10 border border-neon-green/40">
+              <div class="text-7xl mb-4 transform group-hover:scale-110 transition-transform">🚴‍♂️</div>
+              <h3 class="text-2xl font-display font-bold text-white mb-3">Pista Física</h3>
+              <p class="text-gray-400 mb-4">Interacción con hardware real</p>
+              <div class="inline-flex items-center gap-2 text-sm px-4 py-2 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green">
                 <span>🏃</span>
                 <span class="font-medium">Actividad física</span>
               </div>
             </div>
           </button>
         </div>
+      </div>
 
-        <!-- Botón siguiente -->
-        <div class="flex justify-center">
-          <button
-            (click)="siguiente()"
-            [disabled]="!puedeAvanzarPaso1()"
-            class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-yellow text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
-            [ngClass]="
-              puedeAvanzarPaso1()
-                ? 'bg-neon-blue text-dark-900 shadow-neon-blue-lg hover:shadow-neon-blue'
-                : 'bg-dark-700 text-gray-500 border border-dark-600 cursor-not-allowed opacity-60'
-            "
-          >
-            Siguiente →
-          </button>
-        </div>
+      <div class="flex justify-end">
+        <button
+          (click)="siguiente(); audioService.reproducirSonidoCambioLlave()"
+          [disabled]="!puedeAvanzarPaso1()"
+          class="px-8 py-4 rounded-lg font-display font-bold text-lg shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          [class.bg-neon-blue]="puedeAvanzarPaso1()"
+          [class.text-white]="puedeAvanzarPaso1()"
+          [class.border-2]="puedeAvanzarPaso1()"
+          [class.border-neon-blue]="puedeAvanzarPaso1()"
+          [class.shadow-neon-blue-lg]="puedeAvanzarPaso1()"
+          [class.bg-dark-700]="!puedeAvanzarPaso1()"
+          [class.text-gray-500]="!puedeAvanzarPaso1()"
+          [class.border]="!puedeAvanzarPaso1()"
+          [class.border-dark-600]="!puedeAvanzarPaso1()">
+          Siguiente → Parámetros
+        </button>
       </div>
     </div>
 
-    <!-- PASO 2: Configuración de carrera -->
-    <div *ngIf="paso === 2" class="animate-fadeIn space-y-6 sm:space-y-8">
-      <div class="bg-dark-900 border border-dark-700  p-6 sm:p-8 lg:p-10 shadow-2xl">
-        <!-- Título de sección -->
-        <div class="mb-8 sm:mb-10 text-center">
-          <h2 class="text-3xl sm:text-4xl font-display font-bold text-white mb-3">
-            ⚙️ Configura la Carrera
-          </h2>
-          <p class="text-gray-400 text-base sm:text-lg">
-            Define los parámetros de la competencia
-          </p>
-        </div>
-
-        <!-- Controles numéricos -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-8">
-          <!-- Número de bicicletas -->
-          <div class="bg-gradient-to-br from-dark-800 via-dark-900 to-dark-800 rounded-xl border-4 border-neon-yellow p-6 sm:p-8 shadow-xl hover:shadow-neon-yellow/30 duration-300">
-            <div class="flex justify-center mb-4">
-              <div class="text-5xl sm:text-6xl">🚴</div>
-            </div>
-            
-            <div class="text-center mb-6">
-              <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-2">
-                Número de Bicicletas
-              </h3>
-              <p class="text-gray-400 text-xs sm:text-sm">
-                Cantidad de bicicletas físicas disponibles
-              </p>
+    <div *ngIf="paso === 2" class="space-y-6 animate-fadeIn">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="relative overflow-hidden rounded-card border-2 border-neon-yellow/40 shadow-lg">
+          <div class="absolute inset-0 bg-gradient-to-br from-neon-yellow/10 via-neon-yellow/5 to-transparent"></div>
+          <div class="absolute inset-0 bg-dark-900"></div>
+          <div class="relative p-6">
+            <div class="text-center mb-4">
+              <div class="text-5xl mb-3">🚴</div>
+              <h3 class="text-lg font-display font-bold text-white mb-2">Bicicletas</h3>
+              <p class="text-xs text-gray-400 mb-4">Cantidad de bicis físicas</p>
             </div>
 
-            <div class="flex items-center justify-center gap-3">
+            <div class="flex items-center justify-center gap-3 mb-4">
               <button
-                (click)="ajustarBicicletas(configuracion.numeroBicicletas - 1)"
-                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-yellow to-yellow-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-yellow/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
-              >
-                
-                <span class="relative z-10">-</span>
+                (click)="ajustarBicicletas(configuracion.numeroBicicletas - 1); audioService.reproducirSonidoClick()"
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-neon-yellow to-yellow-600 text-dark-950 font-black text-xl shadow-lg hover:shadow-neon-yellow hover:scale-110 active:scale-95 transition-all">
+                −
               </button>
 
-              <div class="relative flex-1 max-w-[110px]">
+              <div class="flex-1 max-w-[100px]">
                 <input
                   type="number"
                   [(ngModel)]="configuracion.numeroBicicletas"
                   (change)="ajustarBicicletas(configuracion.numeroBicicletas)"
+                  (input)="audioService.reproducirSonidoSintetico('input')"
                   min="1"
                   max="10"
-                  class="w-full bg-gradient-to-br from-dark-700 to-dark-800 border-2 border-neon-yellow/60 text-white text-center text-3xl font-black rounded-xl py-3 focus:outline-none focus:border-neon-yellow focus:shadow-lg focus:shadow-neon-yellow/40 duration-300"
-                />
+                  class="w-full bg-dark-800 border-2 border-neon-yellow/40 text-white text-center text-3xl font-black rounded-xl py-3 focus:outline-none focus:border-neon-yellow focus:shadow-lg transition-all" />
               </div>
 
               <button
-                (click)="ajustarBicicletas(configuracion.numeroBicicletas + 1)"
-                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-yellow to-yellow-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-yellow/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
-              >
-                <span class="relative z-10">+</span>
-              </button>
-            </div>
-          </div> 
-
-          <!-- Número de participantes -->
-          <div class="bg-gradient-to-br from-dark-800 via-dark-900 to-dark-800 rounded-xl border-4 border-neon-blue  p-6 sm:p-8 shadow-xl hover:shadow-neon-blue/30 duration-300">
-            <div class="flex justify-center mb-4">
-              <div class="text-5xl sm:text-6xl">👥</div>
-            </div>
-            
-            <div class="text-center mb-6">
-              <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-2">
-                Número de Participantes
-              </h3>
-              <p class="text-gray-400 text-xs sm:text-sm">
-                Cantidad total de jugadores que competirán
-              </p>
-            </div>
-
-            <div class="flex items-center justify-center gap-3">
-              <button
-                (click)="ajustarParticipantes(configuracion.numeroParticipantes - 1)"
-                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-blue to-blue-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-blue/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
-              >
-                
-                <span class="relative z-10">-</span>
-              </button>
-
-              <div class="relative flex-1 max-w-[110px]">
-                <input
-                  type="number"
-                  [(ngModel)]="configuracion.numeroParticipantes"
-                  (change)="ajustarParticipantes(configuracion.numeroParticipantes)"
-                  [min]="configuracion.numeroBicicletas"
-                  max="50"
-                  class="w-full bg-gradient-to-br from-dark-700 to-dark-800 border-2 border-neon-blue/60 text-white text-center text-3xl font-black rounded-xl py-3 focus:outline-none focus:border-neon-blue focus:shadow-lg focus:shadow-neon-blue/40 duration-300"
-                />
-              </div>
-
-              <button
-                (click)="ajustarParticipantes(configuracion.numeroParticipantes + 1)"
-                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-blue to-blue-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-blue/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
-              >
-                
-                <span class="relative z-10">+</span>
-              </button>
-            </div>
-          </div> 
-
-          <!-- Número de vueltas -->
-          <div class="bg-gradient-to-br from-dark-800 via-dark-900 to-dark-800 rounded-xl border-4 border-neon-green  p-6 sm:p-8 shadow-xl hover:shadow-neon-green/30 duration-300">
-            <div class="flex justify-center mb-4">
-              <div class="text-5xl sm:text-6xl">🔄</div>
-            </div>
-            
-            <div class="text-center mb-6">
-              <h3 class="text-lg sm:text-xl font-display font-bold text-white mb-2">
-                Número de Vueltas
-              </h3>
-              <p class="text-gray-400 text-xs sm:text-sm">
-                Vueltas totales de la carrera
-              </p>
-            </div>
-
-            <div class="flex items-center justify-center gap-3">
-              <button
-                (click)="ajustarVueltas(configuracion.numeroVueltas - 1)"
-                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-green to-green-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-green/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
-              >
-                
-                <span class="relative z-10">-</span>
-              </button>
-
-              <div class="relative flex-1 max-w-[110px]">
-                <input
-                  type="number"
-                  [(ngModel)]="configuracion.numeroVueltas"
-                  (change)="ajustarVueltas(configuracion.numeroVueltas)"
-                  min="1"
-                  max="20"
-                  class="w-full bg-gradient-to-br from-dark-700 to-dark-800 border-2 border-neon-green/60 text-white text-center text-3xl font-black rounded-xl py-3 focus:outline-none focus:border-neon-green focus:shadow-lg focus:shadow-neon-green/40 duration-300"
-                />
-              </div>
-
-              <button
-                (click)="ajustarVueltas(configuracion.numeroVueltas + 1)"
-                class="group relative w-11 h-11 sm:w-13 sm:h-13 bg-gradient-to-br from-neon-green to-green-600 text-dark-900 rounded-full font-black text-xl shadow-lg hover:shadow-neon-green/50 hover:scale-110 active:scale-95 duration-200 flex items-center justify-center"
-              >
-                
-                <span class="relative z-10">+</span>
+                (click)="ajustarBicicletas(configuracion.numeroBicicletas + 1); audioService.reproducirSonidoClick()"
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-neon-yellow to-yellow-600 text-dark-950 font-black text-xl shadow-lg hover:shadow-neon-yellow hover:scale-110 active:scale-95 transition-all">
+                +
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Tipo de competencia -->
-        <div class="bg-dark-800/50 border border-dark-700  p-6 sm:p-8 mb-8 rounded-xl border-4 border-neon-pink">
-          <h3 class="text-xl sm:text-2xl font-display font-bold text-white mb-6 text-center">
-            🏆 Tipo de Competencia
+        <div class="relative overflow-hidden rounded-card border-2 border-neon-blue/40 shadow-lg">
+          <div class="absolute inset-0 bg-gradient-to-br from-neon-blue/10 via-neon-blue/5 to-transparent"></div>
+          <div class="absolute inset-0 bg-dark-900"></div>
+          <div class="relative p-6">
+            <div class="text-center mb-4">
+              <div class="text-5xl mb-3">👥</div>
+              <h3 class="text-lg font-display font-bold text-white mb-2">Participantes</h3>
+              <p class="text-xs text-gray-400 mb-4">Total de competidores</p>
+            </div>
+
+            <div class="flex items-center justify-center gap-3 mb-4">
+              <button
+                (click)="ajustarParticipantes(configuracion.numeroParticipantes - 1); audioService.reproducirSonidoClick()"
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-neon-blue to-blue-600 text-white font-black text-xl shadow-lg hover:shadow-neon-blue hover:scale-110 active:scale-95 transition-all">
+                −
+              </button>
+
+              <div class="flex-1 max-w-[100px]">
+                <input
+                  type="number"
+                  [(ngModel)]="configuracion.numeroParticipantes"
+                  (change)="ajustarParticipantes(configuracion.numeroParticipantes)"
+                  (input)="audioService.reproducirSonidoSintetico('input')"
+                  [min]="configuracion.numeroBicicletas"
+                  max="50"
+                  class="w-full bg-dark-800 border-2 border-neon-blue/40 text-white text-center text-3xl font-black rounded-xl py-3 focus:outline-none focus:border-neon-blue focus:shadow-lg transition-all" />
+              </div>
+
+              <button
+                (click)="ajustarParticipantes(configuracion.numeroParticipantes + 1); audioService.reproducirSonidoClick()"
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-neon-blue to-blue-600 text-white font-black text-xl shadow-lg hover:shadow-neon-blue hover:scale-110 active:scale-95 transition-all">
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative overflow-hidden rounded-card border-2 border-neon-green/40 shadow-lg">
+          <div class="absolute inset-0 bg-gradient-to-br from-neon-green/10 via-neon-green/5 to-transparent"></div>
+          <div class="absolute inset-0 bg-dark-900"></div>
+          <div class="relative p-6">
+            <div class="text-center mb-4">
+              <div class="text-5xl mb-3">🔄</div>
+              <h3 class="text-lg font-display font-bold text-white mb-2">Vueltas</h3>
+              <p class="text-xs text-gray-400 mb-4">Vueltas por carrera</p>
+            </div>
+
+            <div class="flex items-center justify-center gap-3 mb-4">
+              <button
+                (click)="ajustarVueltas(configuracion.numeroVueltas - 1); audioService.reproducirSonidoClick()"
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-neon-green to-green-600 text-dark-950 font-black text-xl shadow-lg hover:shadow-neon-green hover:scale-110 active:scale-95 transition-all">
+                −
+              </button>
+
+              <div class="flex-1 max-w-[100px]">
+                <input
+                  type="number"
+                  [(ngModel)]="configuracion.numeroVueltas"
+                  (change)="ajustarVueltas(configuracion.numeroVueltas)"
+                  (input)="audioService.reproducirSonidoSintetico('input')"
+                  min="1"
+                  max="20"
+                  class="w-full bg-dark-800 border-2 border-neon-green/40 text-white text-center text-3xl font-black rounded-xl py-3 focus:outline-none focus:border-neon-green focus:shadow-lg transition-all" />
+              </div>
+
+              <button
+                (click)="ajustarVueltas(configuracion.numeroVueltas + 1); audioService.reproducirSonidoClick()"
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-neon-green to-green-600 text-dark-950 font-black text-xl shadow-lg hover:shadow-neon-green hover:scale-110 active:scale-95 transition-all">
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative overflow-hidden rounded-card border-2 border-neon-orange/40 shadow-lg">
+        <div class="absolute inset-0 bg-gradient-to-br from-neon-orange/10 via-neon-orange/5 to-transparent"></div>
+        <div class="absolute inset-0 bg-dark-900"></div>
+        <div class="relative p-6">
+          <h3 class="text-xl font-display font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
+            <span class="text-2xl">🏆</span> Tipo de Competencia
           </h3>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <!-- 1 vs 1 -->
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button
-              (click)="seleccionarTipoCompetencia('1v1')"
-              class="group relative bg-dark-700 rounded-xl p-6 duration-300 hover:scale-105"
-              [class.border-2]="configuracion.tipoCompetencia === '1v1'"
-              [class.border-neon-yellow]="configuracion.tipoCompetencia === '1v1'"
-              [class.shadow-neon-yellow]="configuracion.tipoCompetencia === '1v1'"
-              [class.border]="configuracion.tipoCompetencia !== '1v1'"
+              (click)="seleccionarTipoCompetencia('1v1'); audioService.reproducirSonidoSeleccion()"
+              class="group relative rounded-xl p-6 border-2 transition-all hover:scale-[1.02]"
+              [class.bg-dark-700]="configuracion.tipoCompetencia !== '1v1'"
               [class.border-dark-600]="configuracion.tipoCompetencia !== '1v1'"
-            >
-              <div class="text-center">
-                <div class="text-4xl mb-3">⚔️</div>
-                <h4 class="text-white font-bold text-base sm:text-lg mb-2">1 vs 1</h4>
+              [class.bg-dark-700]="configuracion.tipoCompetencia === '1v1'"
+              [class.border-neon-yellow]="configuracion.tipoCompetencia === '1v1'"
+              [class.shadow-lg]="configuracion.tipoCompetencia === '1v1'">
+              <div
+                *ngIf="configuracion.tipoCompetencia === '1v1'"
+                class="absolute inset-0 bg-neon-yellow/5 rounded-xl"></div>
+              <div class="relative text-center">
+                <div class="text-5xl mb-3">⚔️</div>
+                <h4 class="text-white font-bold text-lg mb-2">1 vs 1</h4>
                 <p class="text-gray-400 text-sm">Duelo directo</p>
                 <div *ngIf="configuracion.tipoCompetencia === '1v1'" class="mt-3 text-neon-yellow text-sm font-bold">
                   ✓ Seleccionado
@@ -347,19 +305,20 @@
               </div>
             </button>
 
-            <!-- Campeonato -->
             <button
-              (click)="seleccionarTipoCompetencia('campeonato')"
-              class="group relative bg-dark-700 rounded-xl p-6 duration-300 hover:scale-105"
-              [class.border-2]="configuracion.tipoCompetencia === 'campeonato'"
-              [class.border-neon-blue]="configuracion.tipoCompetencia === 'campeonato'"
-              [class.shadow-neon-blue]="configuracion.tipoCompetencia === 'campeonato'"
-              [class.border]="configuracion.tipoCompetencia !== 'campeonato'"
+              (click)="seleccionarTipoCompetencia('campeonato'); audioService.reproducirSonidoSeleccion()"
+              class="group relative rounded-xl p-6 border-2 transition-all hover:scale-[1.02]"
+              [class.bg-dark-700]="configuracion.tipoCompetencia !== 'campeonato'"
               [class.border-dark-600]="configuracion.tipoCompetencia !== 'campeonato'"
-            >
-              <div class="text-center">
-                <div class="text-4xl mb-3">🏅</div>
-                <h4 class="text-white font-bold text-base sm:text-lg mb-2">Campeonato</h4>
+              [class.bg-dark-700]="configuracion.tipoCompetencia === 'campeonato'"
+              [class.border-neon-blue]="configuracion.tipoCompetencia === 'campeonato'"
+              [class.shadow-lg]="configuracion.tipoCompetencia === 'campeonato'">
+              <div
+                *ngIf="configuracion.tipoCompetencia === 'campeonato'"
+                class="absolute inset-0 bg-neon-blue/5 rounded-xl"></div>
+              <div class="relative text-center">
+                <div class="text-5xl mb-3">🏅</div>
+                <h4 class="text-white font-bold text-lg mb-2">Campeonato</h4>
                 <p class="text-gray-400 text-sm">Individual</p>
                 <div *ngIf="configuracion.tipoCompetencia === 'campeonato'" class="mt-3 text-neon-blue text-sm font-bold">
                   ✓ Seleccionado
@@ -367,19 +326,20 @@
               </div>
             </button>
 
-            <!-- Campeonato por equipos -->
             <button
-              (click)="seleccionarTipoCompetencia('campeonato-equipos')"
-              class="group relative bg-dark-700 rounded-xl p-6 duration-300 hover:scale-105"
-              [class.border-2]="configuracion.tipoCompetencia === 'campeonato-equipos'"
-              [class.border-neon-green]="configuracion.tipoCompetencia === 'campeonato-equipos'"
-              [class.shadow-neon-green]="configuracion.tipoCompetencia === 'campeonato-equipos'"
-              [class.border]="configuracion.tipoCompetencia !== 'campeonato-equipos'"
+              (click)="seleccionarTipoCompetencia('campeonato-equipos'); audioService.reproducirSonidoSeleccion()"
+              class="group relative rounded-xl p-6 border-2 transition-all hover:scale-[1.02]"
+              [class.bg-dark-700]="configuracion.tipoCompetencia !== 'campeonato-equipos'"
               [class.border-dark-600]="configuracion.tipoCompetencia !== 'campeonato-equipos'"
-            >
-              <div class="text-center">
-                <div class="text-4xl mb-3">👥</div>
-                <h4 class="text-white font-bold text-base sm:text-lg mb-2">Campeonato</h4>
+              [class.bg-dark-700]="configuracion.tipoCompetencia === 'campeonato-equipos'"
+              [class.border-neon-green]="configuracion.tipoCompetencia === 'campeonato-equipos'"
+              [class.shadow-lg]="configuracion.tipoCompetencia === 'campeonato-equipos'">
+              <div
+                *ngIf="configuracion.tipoCompetencia === 'campeonato-equipos'"
+                class="absolute inset-0 bg-neon-green/5 rounded-xl"></div>
+              <div class="relative text-center">
+                <div class="text-5xl mb-3">👥</div>
+                <h4 class="text-white font-bold text-lg mb-2">Campeonato</h4>
                 <p class="text-gray-400 text-sm">Por equipos</p>
                 <div *ngIf="configuracion.tipoCompetencia === 'campeonato-equipos'" class="mt-3 text-neon-green text-sm font-bold">
                   ✓ Seleccionado
@@ -388,22 +348,46 @@
             </button>
           </div>
         </div>
+      </div>
 
-        <!-- Botón finalizar -->
-        <div class="flex justify-center">
-          <button
-            (click)="siguiente()"
-            [disabled]="!puedeAvanzarPaso2()"
-            class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-yellow text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
-            [ngClass]="
-              puedeAvanzarPaso2()
-                ? 'bg-neon-green text-dark-900 shadow-neon-green-lg hover:shadow-neon-green'
-                : 'bg-dark-700 text-gray-500 border border-dark-600 cursor-not-allowed opacity-60'
-            "
-          >
-            🎯 Continuar
-          </button>
+      <div *ngIf="requiereTurnos()" class="relative overflow-hidden rounded-card border-2 border-yellow-400/30 shadow-lg animate-fadeIn">
+        <div class="absolute inset-0 bg-gradient-to-br from-yellow-400/10 via-orange-400/5 to-transparent"></div>
+        <div class="absolute inset-0 bg-dark-900"></div>
+        <div class="relative p-4">
+          <div class="flex items-center gap-3">
+            <div class="text-3xl">⚠️</div>
+            <div>
+              <p class="text-white font-bold">Se requieren turnos</p>
+              <p class="text-sm text-gray-300">
+                Con {{ configuracion.numeroParticipantes }} participantes y {{ configuracion.numeroBicicletas }} bicicletas,
+                se necesitan <span class="text-yellow-300 font-bold">{{ obtenerNumeroTurnos() }} turnos</span>
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="flex gap-4">
+        <button
+          (click)="anterior(); audioService.reproducirSonidoClick()"
+          class="flex-1 px-6 py-4 bg-dark-700 text-gray-300 rounded-lg font-display font-bold border border-dark-600 hover:border-neon-blue hover:text-neon-blue transition-all">
+          ← Anterior
+        </button>
+        <button
+          (click)="finalizarConfiguracion(); audioService.reproducirSonidoVictoria()"
+          [disabled]="!puedeAvanzarPaso2()"
+          class="flex-1 px-6 py-4 rounded-lg font-display font-bold text-lg shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          [class.bg-neon-green]="puedeAvanzarPaso2()"
+          [class.text-dark-950]="puedeAvanzarPaso2()"
+          [class.border-2]="puedeAvanzarPaso2()"
+          [class.border-neon-green]="puedeAvanzarPaso2()"
+          [class.shadow-neon-green-lg]="puedeAvanzarPaso2()"
+          [class.bg-dark-700]="!puedeAvanzarPaso2()"
+          [class.text-gray-500]="!puedeAvanzarPaso2()"
+          [class.border]="!puedeAvanzarPaso2()"
+          [class.border-dark-600]="!puedeAvanzarPaso2()">
+          🏁 Iniciar Configuración
+        </button>
       </div>
     </div>
   </div>

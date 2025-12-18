@@ -27,6 +27,7 @@ import { BiketonaSplashComponent } from './features/biketona/splash/splash.compo
 import { PistaDigital1v1Component } from './features/biketona/pista-digital-unovsuno/pista-digital-unovsuno.component';
 import { PistaDigitalCampeonatoComponent } from './features/biketona/pista-digital-campeonato/pista-digital-campeonato.component';
 import { PistaDigitalEquiposComponent } from './features/biketona/pista-digital-equipos/pista-digital-equipos.component';
+import { GestionAliadosComponent } from './features/aliados/gestion-aliados.component';
 
 export const routes: Routes = [
   {
@@ -52,49 +53,58 @@ export const routes: Routes = [
         data: { roles: ['super_admin'] },
       },
       {
-        path: 'admin/empresas',
-        component: GestionEmpresasComponent,
+        path: 'admin/aliados',
+        component: GestionAliadosComponent,
         canActivate: [rolGuard],
-        data: { roles: ['super_admin'] },
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'sesion/crear',
         component: CrearSesionComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'sesion/seleccionar-juego/:id',
         component: SeleccionarJuegoComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'brain-bike/splash',
         component: BrainBikeSplashComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'brain-bike/parametros',
         component: BrainBikeParametrosComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'brain-bike/registro',
         component: BrainBikeRegistroComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'brain-bike/reglas',
         component: BrainBikeReglasComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'brain-bike/countdown',
         component: BrainBikeCountdownComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'brain-bike/juego',
         component: BrainBikeJuegoComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'sesion/editar-parametros/:id',
@@ -105,47 +115,51 @@ export const routes: Routes = [
       {
         path: 'calendario',
         component: CalendarioSesionesComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['super_admin', 'admin', 'viewer'] },
       },
       {
         path: 'historial',
         component: HistorialSesionesComponent,
-        canActivate: [historialGuard],
+        canActivate: [rolGuard],
+        data: { roles: ['super_admin', 'admin', 'viewer'] },
       },
       {
         path: 'historial/:id',
         component: HistorialDetalleComponent,
-        canActivate: [historialGuard],
+        canActivate: [rolGuard],
+        data: { roles: ['super_admin', 'admin', 'viewer'] },
       },
       {
         path: 'biketona/splash',
         component: BiketonaSplashComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'biketona/setup',
         component: SetupComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'biketona/pista-digital-unovsuno',
         component: PistaDigital1v1Component,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'biketona/pista-digital-campeonato',
         component: PistaDigitalCampeonatoComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'biketona/pista-digital-equipos',
         component: PistaDigitalEquiposComponent,
-        canActivate: [sesionActivaGuard],
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
-      /*{
-        path: 'ble-esp32',
-        component: BleEsp32Component,
-        canActivate: [sesionActivaGuard],
-      }*/
     ],
   },
   { path: '**', redirectTo: 'home' },

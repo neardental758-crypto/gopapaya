@@ -4,39 +4,39 @@ export type BikeKey = 'bici1' | 'bici2';
 
 @Injectable({ providedIn: 'root' })
 export class BleEsp32Service {
-
   private devices: Record<BikeKey, BluetoothDevice | null> = {
     bici1: null,
-    bici2: null
+    bici2: null,
   };
 
   private servers: Record<BikeKey, BluetoothRemoteGATTServer | null> = {
     bici1: null,
-    bici2: null
+    bici2: null,
   };
 
   SERVICE_UUID = '0000a001-0000-1000-8000-00805f9b34fb';
-  CHAR_ID      = '0000a002-0000-1000-8000-00805f9b34fb';
-  CHAR_VEL     = '0000a003-0000-1000-8000-00805f9b34fb';
-  CHAR_BTNS    = '0000a004-0000-1000-8000-00805f9b34fb';
+  CHAR_ID = '0000a002-0000-1000-8000-00805f9b34fb';
+  CHAR_VEL = '0000a003-0000-1000-8000-00805f9b34fb';
+  CHAR_BTNS = '0000a004-0000-1000-8000-00805f9b34fb';
 
   // Characteristics por bici
-  characteristics: Record<BikeKey, Record<string, BluetoothRemoteGATTCharacteristic>> = {
+  characteristics: Record<
+    BikeKey,
+    Record<string, BluetoothRemoteGATTCharacteristic>
+  > = {
     bici1: {},
-    bici2: {}
+    bici2: {},
   };
 
   // ------------------------
   //     REQUEST DEVICE
   // ------------------------
   async requestDevice(bike: BikeKey) {
-    console.log(`🔍 Pidiendo dispositivo BLE para ${bike}...`);
     const device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: 'Bici_' }],
+      filters: [{ name: 'BIKETONA_BLE' }], // ✅ Nombre actualizado
       optionalServices: [this.SERVICE_UUID],
     });
 
-    console.log(`✅ Dispositivo seleccionado para ${bike}:`, device);
     this.devices[bike] = device;
     return device;
   }
@@ -54,8 +54,8 @@ export class BleEsp32Service {
     const service = await server.getPrimaryService(this.SERVICE_UUID);
 
     const map: Record<string, string> = {
-      id:   this.CHAR_ID,
-      vel:  this.CHAR_VEL,
+      id: this.CHAR_ID,
+      vel: this.CHAR_VEL,
       btns: this.CHAR_BTNS,
     };
 
@@ -65,9 +65,11 @@ export class BleEsp32Service {
       try {
         const ch = await service.getCharacteristic(uuid);
         chars[key] = ch;
-        console.log(`✔ [${bike}] Characteristic ${key} ok: ${uuid}`);
       } catch (e) {
-        console.error(`❌ [${bike}] NO se encontró characteristic ${key} (${uuid})`, e);
+        console.error(
+          `❌ [${bike}] NO se encontró characteristic ${key} (${uuid})`,
+          e
+        );
       }
     }
 
@@ -122,29 +124,6 @@ export class BleEsp32Service {
     });
   }
 
-  // Helper específico para botones: devuelve 1..4
-  async subscribeButtons(
-    bike: BikeKey,
-    callback: (boton: number) => void
-  ) {
-    await this.subscribeRaw(bike, 'btns', (dataView: DataView) => {
-      // un solo byte enviado desde el ESP32
-      const boton = dataView.getUint8(0);
-      callback(boton);
-    });
-  }
-
-  // (Opcional) helper para velocidad en texto
-  async subscribeVelocidad(
-    bike: BikeKey,
-    callback: (velocidadKph: number) => void
-  ) {
-    await this.subscribe(bike, 'vel', (text) => {
-      const v = parseFloat(text);
-      if (!isNaN(v)) callback(v);
-    });
-  }
-
   // ------------------------
   //     DISCONNECT ONE
   // ------------------------
@@ -165,5 +144,13 @@ export class BleEsp32Service {
   disconnectAll() {
     this.disconnect('bici1');
     this.disconnect('bici2');
+  }
+
+  // ------------------------
+  //   GET BIKE ID (siempre retorna "3")
+  // ------------------------
+  async getBikeId(bike: BikeKey): Promise<string> {
+    // El ESP32 ahora siempre retorna "3" como ID fijo
+    return await this.readValue(bike, 'id');
   }
 }

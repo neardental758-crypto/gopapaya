@@ -25,7 +25,12 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     const token = localStorage.getItem('token');
     if (token) {
-      this.router.navigate(['/home']);
+      const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+      if (usuario.rol === 'viewer') {
+        this.router.navigate(['/historial']);
+      } else {
+        this.router.navigate(['/home']);
+      }
     }
   }
 
@@ -42,7 +47,13 @@ export class LoginComponent implements OnInit {
       .subscribe({
         next: () => {
           this.loading = false;
-          this.router.navigate(['/home']);
+          const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+          if (usuario.rol === 'viewer') {
+            this.router.navigate(['/historial']);
+          } else {
+            console.log('Redirigiendo a home...');
+            this.router.navigate(['/home']);
+          }
         },
         error: (error) => {
           this.loading = false;

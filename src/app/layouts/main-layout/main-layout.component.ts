@@ -36,6 +36,10 @@ export class MainLayoutComponent implements OnInit {
     return this.usuario?.rol === 'admin';
   }
 
+  isViewer(): boolean {
+    return this.usuario?.rol === 'viewer';
+  }
+
   isInGame(): boolean {
     const url = this.router.url;
     return (
@@ -52,6 +56,8 @@ export class MainLayoutComponent implements OnInit {
 
   getRolLabel(rol?: string): string {
     if (!rol) return '';
-    return rol === 'super_admin' ? 'Super Admin' : 'Admin';
+    if (rol === 'super_admin') return 'Super Admin';
+    if (rol === 'viewer') return 'Viewer';
+    return 'Admin';
   }
 }

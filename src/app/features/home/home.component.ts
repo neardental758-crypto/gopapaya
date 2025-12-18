@@ -1,18 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Usuario } from '../../core/interfaces/usuario.interface';
 import { AuthService } from '../../core/services/auth.service';
 import { Sesion, SesionService } from '../services/sesion.service';
 import { FormsModule } from '@angular/forms';
+import { EvidenciasModalComponent } from './evidencias/evidencias-modal.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EvidenciasModalComponent],
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {
+  @ViewChild('evidenciasModal') evidenciasModal!: EvidenciasModalComponent;
+
   usuario: Usuario | null = null;
   sesionesActivas: Sesion[] = [];
   sesionesAgrupadas: any[] = [];
@@ -33,9 +36,14 @@ export class HomeComponent implements OnInit {
     private sesionService: SesionService,
     private router: Router
   ) {}
-
   ngOnInit(): void {
     this.usuario = this.authService.getUsuario();
+
+    if (this.usuario?.rol === 'viewer') {
+      this.router.navigate(['/historial']);
+      return;
+    }
+
     this.cargarSesionesActivas();
   }
 
@@ -259,8 +267,8 @@ export class HomeComponent implements OnInit {
     alert(`🚧 ${modulo} - Módulo en desarrollo`);
   }
 
-  irAEmpresas(): void {
-    this.router.navigate(['/admin/empresas']);
+  irAAliados(): void {
+    this.router.navigate(['/admin/aliados']);
   }
 
   puedeEditarSesion(sesion: Sesion): boolean {
@@ -297,8 +305,12 @@ export class HomeComponent implements OnInit {
       0
     );
   }
-
   logout(): void {
     this.authService.logout();
+  }
+
+  abrirEvidencias(sesion: Sesion, event: Event): void {
+    event.stopPropagation();
+    this.evidenciasModal.open(sesion.id, sesion.nombreCliente);
   }
 }

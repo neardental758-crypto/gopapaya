@@ -78,32 +78,28 @@
           </div>
 
           <!-- Página 2: Puntuación -->
-          <div *ngIf="reglasActuales === 2" class="animate-fadeIn">
-            <div class="bg-dark-800 border-2 border-neon-blue rounded-card p-6 sm:p-8 shadow-neon-blue">
-              <div class="text-center mb-4">
-                <div class="text-5xl sm:text-6xl mb-3">⚡</div>
-                <h3 class="text-xl sm:text-2xl font-display font-bold text-neon-blue mb-4">Puntuación</h3>
-              </div>
-              <div class="grid grid-cols-2 gap-3 sm:gap-4">
-                <div class="bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-green/30">
-                  <p class="text-2xl sm:text-3xl font-display font-bold text-neon-green mb-1">+2</p>
-                  <p class="text-xs sm:text-sm font-body text-gray-400">Respuesta correcta</p>
-                </div>
-                <div class="bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-green/30">
-                  <p class="text-2xl sm:text-3xl font-display font-bold text-neon-green mb-1">+1</p>
-                  <p class="text-xs sm:text-sm font-body text-gray-400">Mantener velocidad</p>
-                </div>
-                <div class="bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-green/30">
-                  <p class="text-2xl sm:text-3xl font-display font-bold text-neon-green mb-1">+2</p>
-                  <p class="text-xs sm:text-sm font-body text-gray-400">Velocidad más alta</p>
-                </div>
-                <div class="bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-red/30">
-                  <p class="text-2xl sm:text-3xl font-display font-bold text-neon-red mb-1">-1</p>
-                  <p class="text-xs sm:text-sm font-body text-gray-400">Bajar de velocidad</p>
-                </div>
-              </div>
-            </div>
-          </div>
+<div *ngIf="reglasActuales === 2" class="animate-fadeIn">
+  <div class="bg-dark-800 border-2 border-neon-blue rounded-card p-6 sm:p-8 shadow-neon-blue">
+    <div class="text-center mb-4">
+      <div class="text-5xl sm:text-6xl mb-3">⚡</div>
+      <h3 class="text-xl sm:text-2xl font-display font-bold text-neon-blue mb-4">Puntuación</h3>
+    </div>
+    <div class="grid grid-cols-2 gap-3 sm:gap-4">
+      <div class="bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-green/30">
+        <p class="text-2xl sm:text-3xl font-display font-bold text-neon-green mb-1">+2</p>
+        <p class="text-xs sm:text-sm font-body text-gray-400">Respuesta correcta</p>
+      </div>
+      <div class="bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-green/30">
+        <p class="text-2xl sm:text-3xl font-display font-bold text-neon-green mb-1">+1</p>
+        <p class="text-xs sm:text-sm font-body text-gray-400">Mantener velocidad</p>
+      </div>
+      <div class="col-span-2 bg-dark-900 rounded-card p-3 sm:p-4 text-center border border-neon-green/30">
+        <p class="text-2xl sm:text-3xl font-display font-bold text-neon-green mb-1">+2</p>
+        <p class="text-xs sm:text-sm font-body text-gray-400">Velocidad más alta</p>
+      </div>
+    </div>
+  </div>
+</div>
 
           <!-- Página 3: Bonificaciones -->
           <div *ngIf="reglasActuales === 3" class="animate-fadeIn">
@@ -121,14 +117,14 @@
                   </div>
                   <span class="text-xl sm:text-2xl font-display font-bold text-neon-green">+1</span>
                 </div>
-                <div class="bg-dark-900 rounded-card p-4 flex items-center gap-4 border border-neon-green/20">
-                  <span class="text-2xl sm:text-3xl">🚀</span>
-                  <div class="flex-1">
-                    <p class="font-bold text-white text-sm sm:text-base font-display">Reto de velocidad</p>
-                    <p class="text-xs sm:text-sm font-body text-gray-400">Entre pregunta 3 y 4: llega a 30 km/h primero</p>
-                  </div>
-                  <span class="text-xl sm:text-2xl font-display font-bold text-neon-green">+1</span>
+              <div class="bg-dark-900 rounded-card p-4 flex items-center gap-4 border border-neon-green/20">
+                <span class="text-2xl sm:text-3xl">🚀</span>
+                <div class="flex-1">
+                  <p class="font-bold text-white text-sm sm:text-base font-display">Reto de velocidad</p>
+                  <p class="text-xs sm:text-sm font-body text-gray-400">Durante el juego aparecerá un reto para alcanzar 30 km/h</p>
                 </div>
+                <span class="text-xl sm:text-2xl font-display font-bold text-neon-green">+1</span>
+              </div>
                 <div class="bg-dark-900 rounded-card p-4 flex items-center gap-4 border border-neon-green/20">
                   <span class="text-2xl sm:text-3xl">🔥</span>
                   <div class="flex-1">

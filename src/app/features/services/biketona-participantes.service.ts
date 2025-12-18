@@ -10,13 +10,13 @@ export interface BiketonaParticipante {
   genero: string;
   equipo?: string | null;
   puntos?: number;
-  tiempo?: string;      
-  velocidadPromedio?: string;  // km/h
-  velocidadMax?: string;       // km/h
-  calorias?: string;           // kcal
-  vatios?: string;             // W
-  distanciaReal?: string;      // km (por ejemplo)
-  tiempoTotal?: string;        // mm:ss
+  tiempo?: string;
+  velocidadPromedio?: string;
+  velocidadMax?: string;
+  calorias?: string; // kcal
+  vatios?: string; // W
+  distanciaReal?: string; // km (por ejemplo)
+  tiempoTotal?: string; // mm:ss
   posicion?: number;
   llave: number;
   estadoLlave: string;
@@ -34,22 +34,36 @@ interface BiketonaParticipantesListResponse {
 
 @Injectable({ providedIn: 'root' })
 export class BiketonaParticipantesService {
-  // Queda: http://192.168.1.2:3306/api/biketona-participantes
-  // ⚠️ Ajusta este path al que tengas en tu backend
   private apiUrl = `${environment.apiUrl}/biketonaParticipantes`;
 
   constructor(private http: HttpClient) {}
 
-  crearParticipante(participante: BiketonaParticipante): Observable<BiketonaParticipante> {
+  crearParticipante(
+    participante: BiketonaParticipante
+  ): Observable<BiketonaParticipante> {
     return this.http
-      .post<BiketonaParticipanteApiResponse>(`${this.apiUrl}/registrar`, participante)
-      .pipe(map(res => res.data));
+      .post<BiketonaParticipanteApiResponse>(
+        `${this.apiUrl}/registrar`,
+        participante
+      )
+      .pipe(map((res) => res.data));
   }
 
-  // obtener todos los participantes de una biketona
   getByBiketona(idBiketona: string): Observable<BiketonaParticipante[]> {
     return this.http
-      .get<BiketonaParticipantesListResponse>(`${this.apiUrl}/participantes/${idBiketona}`)
-      .pipe(map(res => res.data));
+      .get<BiketonaParticipantesListResponse>(
+        `${this.apiUrl}/participantes/${idBiketona}`
+      )
+      .pipe(map((res) => res.data));
+  }
+  crearBulk(
+    participantes: BiketonaParticipante[]
+  ): Observable<BiketonaParticipante[]> {
+    return this.http
+      .post<{ data: BiketonaParticipante[] }>(
+        `${this.apiUrl}/bulk`,
+        participantes
+      )
+      .pipe(map((res) => res.data));
   }
 }

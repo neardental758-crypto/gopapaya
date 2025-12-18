@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 
 export interface Biketona {
   id: string;
-  idSesion: string; // la API lo devuelve como string
+  idSesion: string;
   tipoPista: 'digital' | 'fisica';
   nBicicletas: number;
   nParticipantes: number;
@@ -17,7 +17,7 @@ export interface Biketona {
 }
 
 export interface BiketonaCreatePayload {
-  id?: string; 
+  id?: string;
   idSesion: string | number;
   tipoPista: 'digital' | 'fisica';
   nBicicletas: number;
@@ -37,7 +37,6 @@ interface BiketonaApiResponse {
 
 @Injectable({ providedIn: 'root' })
 export class BiketonaService {
-  // Queda: http://192.168.1.2:3306/api/biketona
   private apiUrl = `${environment.apiUrl}/biketona`;
 
   constructor(private http: HttpClient) {}
@@ -45,26 +44,42 @@ export class BiketonaService {
   createConfig(payload: BiketonaCreatePayload): Observable<Biketona> {
     return this.http
       .post<BiketonaApiResponse>(`${this.apiUrl}/registrar`, payload)
-      .pipe(map((res) => res.data));
+      .pipe(
+        map((res) => {
+          localStorage.setItem('biketonaId', res.data.id.toString());
+          localStorage.setItem('sesionId', res.data.idSesion.toString());
+
+          return res.data;
+        })
+      );
   }
 
   getBySesion(idSesion: number): Observable<Biketona | null> {
     return this.http
       .get<{ data: Biketona }>(`${this.apiUrl}/sesion/${idSesion}`)
       .pipe(
-        map(res => res.data),
-        catchError(err => {
+        map((res) => res.data),
+        catchError((err) => {
           console.error('Error al obtener biketona por sesión:', err);
-          // Si hay 404 u otro error, devolvemos null para que el setup siga normal
           return of(null);
         })
       );
   }
 
-  actualizarEstado(idBiketona: string, nuevoEstado: 'activa' | 'finalizada'): Observable<Biketona> {
-    // ⚠️ Ajusta esta ruta si tu backend expone otro endpoint
+  actualizarEstado(
+    idBiketona: string,
+    nuevoEstado: 'activa' | 'finalizada'
+  ): Observable<Biketona> {
     return this.http
-      .put<BiketonaApiResponse>(`${this.apiUrl}/${idBiketona}`, { estado: nuevoEstado })
-      .pipe(map(res => res.data));
+      .put<BiketonaApiResponse>(`${this.apiUrl}/${idBiketona}`, {
+        estado: nuevoEstado,
+      })
+      .pipe(map((res) => res.data));
+  }
+  guardarHistorialSesion(historial: any): Observable<any> {
+    return this.http.post(
+      `${environment.apiUrl}/biketona/registrarHistorial`,
+      historial
+    );
   }
 }

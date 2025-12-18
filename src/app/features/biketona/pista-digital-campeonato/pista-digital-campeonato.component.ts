@@ -3,8 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BleEsp32Service } from '../../services/ble-esp32.service';
-import { BiketonaParticipantesService, BiketonaParticipante } from '../../services/biketona-participantes.service';
+import {
+  BiketonaParticipantesService,
+  BiketonaParticipante,
+} from '../../services/biketona-participantes.service';
 import { BiketonaService } from '../../services/biketona.service';
+import { BrainBikeAudioService } from '../../services/audio/brain-bike-audio.service';
 
 type BikeKey = 'bici1' | 'bici2';
 
@@ -12,11 +16,11 @@ interface Jugador {
   id: number;
   nombre: string;
   genero: 'masculino' | 'femenino' | 'otro';
-  velocidad: number;          // velocidad actual km/h
-  velocidadMaxima: number;    // máxima del heat
+  velocidad: number; // velocidad actual km/h
+  velocidadMaxima: number; // máxima del heat
   vueltaActual: number;
   distanciaRecorrida: number; // % de la vuelta para la UI
-  distanciaReal: number;      // metros reales recorridos
+  distanciaReal: number; // metros reales recorridos
   posicion: number;
   color: string;
   icono: string;
@@ -29,6 +33,7 @@ interface ConfiguracionCarrera {
   numeroVueltas: number;
   tipoCompetencia: string;
   tipoPista: string;
+  numeroLlaves?: number;
 }
 
 interface LlaveCampeonato {
@@ -40,7 +45,7 @@ interface LlaveCampeonato {
 }
 
 interface RondaCampeonato {
-  numero: number;            // 1 = primera ronda, 2 = cuartos, etc
+  numero: number; // 1 = primera ronda, 2 = cuartos, etc
   llaves: LlaveCampeonato[];
 }
 
@@ -57,10 +62,10 @@ interface BiciUI {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './pista-digital-campeonato.component.html',
-  styleUrl: './pista-digital-campeonato.component.css'
+  styleUrl: './pista-digital-campeonato.component.css',
 })
 export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
-  paso = 1; // 1: BLE, 2: registro primera ronda, 3: carrera, 4: ranking final
+  paso = 4; // 1: BLE, 2: registro primera ronda, 3: carrera, 4: ranking final
 
   participantes: Jugador[] = [];
   jugadores: Jugador[] = []; // jugadores de la llave actual
@@ -69,9 +74,11 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     numeroParticipantes: 4,
     numeroVueltas: 3,
     tipoCompetencia: 'campeonato',
-    tipoPista: 'digital'
+    tipoPista: 'digital',
+    numeroLlaves: 1,
   };
 
+  Math = Math;
   rondas: RondaCampeonato[] = [];
   currentRondaIndex = 0;
   currentLlaveIndex = 0;
@@ -96,19 +103,44 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
 
   idBiketona: string | null = null;
 
-  coloresVehiculos = ['#fbbf24', '#ef4444', '#22c55e', '#f97316', '#eab308', '#dc2626', '#10b981', '#fb923c'];
-  iconosVehiculos = ['🏎️', '🚗', '🚙', '🚕', '🏁', '🚓', '🚑', '🚐'];
+  coloresVehiculos = [
+    '#fbbf24',
+    '#ef4444',
+    '#22c55e',
+    '#3b82f6',
+    '#f97316',
+    '#a855f7',
+    '#ec4899',
+    '#14b8a6',
+  ];
+
+  iconosVehiculos = ['🏎️', '🏎️', '🏎️', '🏎️', '🏎️', '🏎️', '🏎️', '🏎️'];
 
   bicis: BiciUI[] = [
-    { key: 'bici1', label: 'Bici 1', status: 'Desconectado', conectado: false, deviceId: '' },
-    { key: 'bici2', label: 'Bici 2', status: 'Desconectado', conectado: false, deviceId: '' },
+    {
+      key: 'bici1',
+      label: 'Bici 1',
+      status: 'Desconectado',
+      conectado: false,
+      deviceId: '',
+    },
+    {
+      key: 'bici2',
+      label: 'Bici 2',
+      status: 'Desconectado',
+      conectado: false,
+      deviceId: '',
+    },
   ];
+
+  audioService!: BrainBikeAudioService;
 
   constructor(
     private router: Router,
     private ble: BleEsp32Service,
     private biketonaParticipantesService: BiketonaParticipantesService,
-    private biketonaService: BiketonaService
+    private biketonaService: BiketonaService,
+    audioService: BrainBikeAudioService
   ) {}
 
   // ================== INIT ==================
@@ -119,6 +151,7 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     this.generarCuadroCampeonato();
 
     this.idBiketona = localStorage.getItem('biketonaId') || null;
+    this.audioService.iniciarMusicaFondo('juego');
 
     if (this.idBiketona) {
       // Aquí podrías cargar progreso desde DB como hicimos con 1vs1
@@ -129,6 +162,7 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.detenerCarrera();
     this.ble.disconnectAll();
+    this.audioService.detenerTodo();
   }
 
   cargarConfiguracion(): void {
@@ -160,7 +194,7 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
         posicion: i + 1,
         color: this.coloresVehiculos[i % this.coloresVehiculos.length],
         icono: this.iconosVehiculos[i % this.iconosVehiculos.length],
-        mejorTiempo: null
+        mejorTiempo: null,
       });
     }
 
@@ -169,6 +203,10 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     this.tiempoTranscurrido = 0;
     this.carreraIniciada = false;
     this.carreraPausada = false;
+  }
+
+  onInputChange(): void {
+    this.audioService.reproducirSonidoHover();
   }
 
   // ================== CUADRO / RONDAS ==================
@@ -188,7 +226,7 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
           indexEnRonda: i,
           ronda: rondaNumero,
           jugadores: [], // se llenan abajo para la primera ronda o con ganadores luego
-          estado: 'pendiente'
+          estado: 'pendiente',
         });
       }
 
@@ -244,16 +282,16 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     const ronda = this.rondaActual;
     if (!ronda) return;
 
-    // ¿queda otra llave en esta misma ronda?
     if (this.currentLlaveIndex < ronda.llaves.length - 1) {
       this.currentLlaveIndex++;
+      this.audioService.reproducirSonidoCambioLlave();
       return;
     }
 
-    // si no, pasamos a la siguiente ronda
     if (this.currentRondaIndex < this.rondas.length - 1) {
       this.currentRondaIndex++;
       this.currentLlaveIndex = 0;
+      this.audioService.reproducirSonidoCambioLlave();
     }
   }
 
@@ -261,21 +299,24 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
 
   abrirSelectSexo(jugadorId: number): void {
     this.modalSexoJugadorId = jugadorId;
+    this.audioService.reproducirSonidoAbrirModal();
   }
 
   cerrarSelectSexo(): void {
     this.modalSexoJugadorId = null;
+    this.audioService.reproducirSonidoCerrarModal();
   }
 
   seleccionarGenero(jugador: Jugador, genero: Jugador['genero']): void {
     jugador.genero = genero;
     this.modalSexoJugadorId = null;
+    this.audioService.reproducirSonidoSeleccion();
   }
 
   // ================== BLE ==================
 
   private getBiciUI(key: BikeKey): BiciUI {
-    const b = this.bicis.find(x => x.key === key)!;
+    const b = this.bicis.find((x) => x.key === key)!;
     return b;
   }
 
@@ -284,14 +325,16 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
   }
 
   todasBicisNecesariasConectadas(): boolean {
-    return this.bicis.every(b => b.conectado);
+    return this.bicis.every((b) => b.conectado);
   }
 
   async buscarBici(key: BikeKey) {
     const biciUI = this.getBiciUI(key);
     try {
       const device = await this.ble.requestDevice(key);
-      biciUI.status = `Dispositivo seleccionado: ${device.name ?? 'sin nombre'}`;
+      biciUI.status = `Dispositivo seleccionado: ${
+        device.name ?? 'sin nombre'
+      }`;
       biciUI.deviceId = device.id;
     } catch (e: any) {
       console.error(`Error buscando dispositivo para ${key}`, e);
@@ -308,12 +351,13 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
       biciUI.status = 'Conectado a ESP32';
       biciUI.conectado = true;
 
-      this.ble.readValue(key, 'id')
-        .then(id => biciUI.deviceId = id)
+      this.ble
+        .readValue(key, 'id')
+        .then((id) => (biciUI.deviceId = id))
         .catch(() => {});
 
       const indexJugador = key === 'bici1' ? 0 : 1;
-      await this.ble.subscribe(key, 'vel', v => {
+      await this.ble.subscribe(key, 'vel', (v) => {
         const velNum = parseFloat(v);
         const vel = isNaN(velNum) ? 0 : velNum;
         const jugadorHardware = this.jugadores[indexJugador];
@@ -321,7 +365,6 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
           jugadorHardware.velocidad = vel;
         }
       });
-
     } catch (e: any) {
       console.error(`Error al conectar BLE (${key})`, e);
       biciUI.status = 'Error al conectar';
@@ -353,7 +396,11 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     } else if (this.paso === 2) {
       this.paso = 1;
     } else if (this.paso === 3) {
-      if (confirm('¿Estás seguro de volver? Se perderá el progreso de la carrera actual')) {
+      if (
+        confirm(
+          '¿Estás seguro de volver? Se perderá el progreso de la carrera actual'
+        )
+      ) {
         this.paso = 2;
       }
     } else if (this.paso === 4) {
@@ -367,27 +414,30 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     if (llave.estado === 'finalizado') return false;
     if (!this.todasBicisNecesariasConectadas()) return false;
     if (llave.jugadores.length !== 2) return false;
-    return llave.jugadores.every(j => j.nombre && j.nombre.trim() !== '');
+    return llave.jugadores.every((j) => j.nombre && j.nombre.trim() !== '');
   }
 
   iniciarCarreraLlave(llave: LlaveCampeonato): void {
     if (!this.puedeIniciarLlave(llave)) {
-      alert('Debes tener las bicis conectadas y los nombres de los dos participantes para iniciar.');
+      this.audioService.reproducirSonidoError();
+      alert(
+        'Debes tener las bicis conectadas y los nombres de los dos participantes para iniciar.'
+      );
       return;
     }
 
-    // sincronizar índices actuales
     const ronda = this.rondaActual;
     if (!ronda) return;
 
-    const idxLlave = ronda.llaves.findIndex(l => l.idGlobal === llave.idGlobal);
+    const idxLlave = ronda.llaves.findIndex(
+      (l) => l.idGlobal === llave.idGlobal
+    );
     if (idxLlave !== -1) {
       this.currentLlaveIndex = idxLlave;
     }
 
     this.jugadores = llave.jugadores;
     this.llaveActual = llave;
-
     this.tiempoTranscurrido = 0;
     this.carreraPausada = false;
     this.carreraIniciada = false;
@@ -404,6 +454,7 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     llave.estado = 'en_curso';
     this.ganadorActual = null;
     this.paso = 3;
+    this.audioService.reproducirSonidoBanderaCarrera();
 
     this.abrirModalHeat(
       `Ronda ${llave.ronda} - Llave ${llave.indexEnRonda + 1}`,
@@ -414,7 +465,11 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
 
   // ================== MODAL HEAT ==================
 
-  abrirModalHeat(titulo: string, texto: string, modo: 'inicio' | 'fin' = 'inicio'): void {
+  abrirModalHeat(
+    titulo: string,
+    texto: string,
+    modo: 'inicio' | 'fin' = 'inicio'
+  ): void {
     this.tituloModalHeat = titulo;
     this.textoModalHeat = texto;
     this.modoModalHeat = modo;
@@ -457,6 +512,7 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
 
   iniciarHeat(): void {
     this.cerrarModalHeat();
+    this.audioService.reproducirSonidoSirenaLargada();
     this.iniciarCuentaRegresiva();
   }
 
@@ -469,10 +525,15 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     const intervaloCuenta = setInterval(() => {
       this.numeroCuentaRegresiva--;
 
+      if (this.numeroCuentaRegresiva >= 0) {
+        this.audioService.reproducirSonidoCuentaRegresiva();
+      }
+
       if (this.numeroCuentaRegresiva < 0) {
         clearInterval(intervaloCuenta);
         this.mostrarCuentaRegresiva = false;
         this.carreraIniciada = true;
+        this.audioService.reproducirSonidoMotor();
         this.iniciarSimulacion();
       }
     }, 1000);
@@ -496,7 +557,8 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
 
         jugador.distanciaReal += distanciaMetros;
 
-        const porcentajeVuelta = (distanciaMetros / this.longitudPistaMetros) * 100;
+        const porcentajeVuelta =
+          (distanciaMetros / this.longitudPistaMetros) * 100;
         jugador.distanciaRecorrida += porcentajeVuelta;
 
         if (jugador.distanciaRecorrida >= 100) {
@@ -525,7 +587,7 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
   reiniciarCarrera(): void {
     this.detenerCarrera();
     this.tiempoTranscurrido = 0;
-    this.jugadores.forEach(j => {
+    this.jugadores.forEach((j) => {
       j.velocidad = 0;
       j.velocidadMaxima = 0;
       j.vueltaActual = 1;
@@ -544,7 +606,7 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     });
 
     ordenados.forEach((jugador, index) => {
-      const original = this.jugadores.find(j => j.id === jugador.id);
+      const original = this.jugadores.find((j) => j.id === jugador.id);
       if (original) {
         original.posicion = index + 1;
       }
@@ -552,16 +614,21 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
   }
 
   verificarFinCarrera(): void {
-    const ganador = this.jugadores.find(j => j.vueltaActual > this.configuracion.numeroVueltas);
+    const ganador = this.jugadores.find(
+      (j) => j.vueltaActual > this.configuracion.numeroVueltas
+    );
     if (!ganador) return;
 
     this.detenerCarrera();
     this.ganadorActual = ganador;
+    this.audioService.reproducirSonidoVictoria();
 
-    // actualizar mejor tiempo global
-    const global = this.participantes.find(p => p.id === ganador.id);
+    const global = this.participantes.find((p) => p.id === ganador.id);
     if (global) {
-      if (global.mejorTiempo == null || this.tiempoTranscurrido < global.mejorTiempo) {
+      if (
+        global.mejorTiempo == null ||
+        this.tiempoTranscurrido < global.mejorTiempo
+      ) {
         global.mejorTiempo = this.tiempoTranscurrido;
       }
     }
@@ -573,6 +640,10 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     }
 
     const torneoTerminado = !this.hayMasHeatsPendientes();
+
+    if (torneoTerminado) {
+      this.audioService.reproducirSonidoPodio();
+    }
 
     this.abrirModalHeat(
       'Carrera finalizada',
@@ -601,8 +672,11 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
 
   // ================== AVANCE DE RONDAS ==================
 
-  avanzarGanadorASiguienteRonda(llave: LlaveCampeonato, ganador: Jugador): void {
-    const rondaIndex = this.rondas.findIndex(r => r.numero === llave.ronda);
+  avanzarGanadorASiguienteRonda(
+    llave: LlaveCampeonato,
+    ganador: Jugador
+  ): void {
+    const rondaIndex = this.rondas.findIndex((r) => r.numero === llave.ronda);
     if (rondaIndex === -1) return;
 
     // si esta es la última ronda, no hay a dónde avanzar
@@ -631,7 +705,10 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
 
   // ================== REGISTRO EN DB ==================
 
-  private registrarResultadosLlave(llave: LlaveCampeonato, ganador: Jugador): void {
+  private registrarResultadosLlave(
+    llave: LlaveCampeonato,
+    ganador: Jugador
+  ): void {
     const idBiketona = this.idBiketona;
     if (!idBiketona) {
       console.error('No hay idBiketona. No se pueden registrar resultados.');
@@ -646,7 +723,7 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
     const pesoKg = 70;
     const caloriasFactor = 0.0175 * MET * pesoKg;
 
-    this.jugadores.forEach(jugador => {
+    this.jugadores.forEach((jugador) => {
       const distanciaMetros = jugador.distanciaReal;
       const distanciaKm = distanciaMetros / 1000;
 
@@ -678,12 +755,22 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
         estadoLlave: 'finalizada',
       };
 
-      console.log('📤 Enviando resultados de participante (campeonato):', JSON.stringify(participante, null, 2));
+      console.log(
+        '📤 Enviando resultados de participante (campeonato):',
+        JSON.stringify(participante, null, 2)
+      );
 
-      this.biketonaParticipantesService.crearParticipante(participante).subscribe({
-        next: (p) => console.log('✔ Participante registrado en DB (campeonato):', p),
-        error: (err) => console.error('❌ Error registrando participante (campeonato):', err),
-      });
+      this.biketonaParticipantesService
+        .crearParticipante(participante)
+        .subscribe({
+          next: (p) =>
+            console.log('✔ Participante registrado en DB (campeonato):', p),
+          error: (err) =>
+            console.error(
+              '❌ Error registrando participante (campeonato):',
+              err
+            ),
+        });
     });
   }
 
@@ -701,7 +788,9 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
   formatearTiempo(segundos: number): string {
     const mins = Math.floor(segundos / 60);
     const secs = segundos % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs
+      .toString()
+      .padStart(2, '0')}`;
   }
 
   // ================== FINALIZAR TORNEO ==================
@@ -709,7 +798,9 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
   finalizarTorneo(): void {
     const idBiketona = this.idBiketona || localStorage.getItem('biketonaId');
     if (!idBiketona) {
-      alert('No se encontró el ID de la biketona. No se puede finalizar el torneo.');
+      alert(
+        'No se encontró el ID de la biketona. No se puede finalizar el torneo.'
+      );
       return;
     }
 
@@ -724,7 +815,32 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error al finalizar campeonato:', err);
         alert('Ocurrió un error al finalizar el campeonato.');
-      }
+      },
     });
+  }
+
+  mostrarCelebracionFinal: boolean = false;
+
+  nuevaCarrera(): void {
+    this.audioService.reproducirSonidoSeleccion();
+    // Resetear todo para nueva carrera
+    this.paso = 2;
+    this.siguienteLlave();
+  }
+
+  volverInicio(): void {
+    this.audioService.reproducirSonidoPodio();
+    this.paso = 1;
+    // Reset completo
+  }
+  seleccionarGeneroModal(genero: 'masculino' | 'femenino'): void {
+    if (this.llaveEnPantalla && this.modalSexoJugadorId !== null) {
+      const jugador = this.llaveEnPantalla.jugadores.find(
+        (j) => j.id === this.modalSexoJugadorId
+      );
+      if (jugador) {
+        this.seleccionarGenero(jugador, genero);
+      }
+    }
   }
 }

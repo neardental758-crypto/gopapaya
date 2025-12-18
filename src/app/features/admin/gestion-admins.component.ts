@@ -27,16 +27,12 @@ export class GestionAdminsComponent implements OnInit {
     nombre: '',
     email: '',
     password: '',
-    rol: 'admin' as 'admin' | 'super_admin',
+    rol: 'admin' as 'admin' | 'super_admin' | 'viewer',
     empresa_ids: [] as string[],
   };
 
   passwordRequirements = {
     minLength: false,
-    hasUpperCase: false,
-    hasLowerCase: false,
-    hasNumber: false,
-    hasSpecialChar: false,
   };
 
   constructor(
@@ -123,24 +119,10 @@ export class GestionAdminsComponent implements OnInit {
     this.resetPasswordRequirements();
   }
 
-  resetPasswordRequirements(): void {
-    this.passwordRequirements = {
-      minLength: false,
-      hasUpperCase: false,
-      hasLowerCase: false,
-      hasNumber: false,
-      hasSpecialChar: false,
-    };
-  }
-
   onPasswordChange(): void {
     const password = this.usuarioForm.password;
     this.passwordRequirements = {
-      minLength: password.length >= 8,
-      hasUpperCase: /[A-Z]/.test(password),
-      hasLowerCase: /[a-z]/.test(password),
-      hasNumber: /[0-9]/.test(password),
-      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+      minLength: password.length >= 6,
     };
   }
 
@@ -148,7 +130,13 @@ export class GestionAdminsComponent implements OnInit {
     if (this.editMode && !this.usuarioForm.password) {
       return true;
     }
-    return Object.values(this.passwordRequirements).every((req) => req);
+    return this.usuarioForm.password.length >= 6;
+  }
+
+  resetPasswordRequirements(): void {
+    this.passwordRequirements = {
+      minLength: false,
+    };
   }
 
   toggleEmpresa(empresaId: string): void {
@@ -174,11 +162,11 @@ export class GestionAdminsComponent implements OnInit {
     this.errorMessage = '';
 
     if (
-      this.usuarioForm.rol === 'admin' &&
+      (this.usuarioForm.rol === 'admin' || this.usuarioForm.rol === 'viewer') &&
       this.usuarioForm.empresa_ids.length === 0
     ) {
       this.errorMessage =
-        'Los usuarios Admin deben tener al menos una empresa asignada';
+        'Los usuarios Admin y Viewer deben tener al menos una empresa asignada';
       return;
     }
 
@@ -249,7 +237,9 @@ export class GestionAdminsComponent implements OnInit {
   }
 
   getRolLabel(rol: string): string {
-    return rol === 'super_admin' ? 'Super Admin' : 'Admin';
+    if (rol === 'super_admin') return 'Super Admin';
+    if (rol === 'viewer') return 'Viewer';
+    return 'Admin';
   }
 
   getEmpresasNombres(empresaIds: string[] | string): string {

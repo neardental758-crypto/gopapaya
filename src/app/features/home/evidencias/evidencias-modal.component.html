@@ -1,0 +1,160 @@
+<div *ngIf="isOpen" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+  <div class="bg-dark-900 border border-dark-700 rounded-card max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="sticky top-0 bg-dark-900 border-b border-dark-700 p-6 flex justify-between items-center">
+      <h2 class="text-2xl font-display font-bold text-white">
+        📸 Evidencias - <span class="text-neon-yellow">{{ sesionNombre }}</span>
+      </h2>
+      <button
+        (click)="close()"
+        class="text-gray-400 hover:text-white text-2xl"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="p-6 space-y-6">
+      <div class="bg-dark-850 border border-dark-700 rounded-lg p-4">
+        <div class="mb-4">
+          <label class="block text-gray-400 text-sm mb-2">Sección del informe</label>
+          <select
+            [(ngModel)]="seccionSeleccionada"
+            class="w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Selecciona una sección</option>
+            <option *ngFor="let seccion of secciones" [value]="seccion.valor">
+              {{ seccion.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex gap-3 mb-4">
+          <button
+            (click)="seleccionarTipo('texto')"
+            [class.bg-neon-yellow]="tipoNueva === 'texto'"
+            [class.text-dark-950]="tipoNueva === 'texto'"
+            [class.bg-dark-800]="tipoNueva !== 'texto'"
+            [class.text-gray-300]="tipoNueva !== 'texto'"
+            class="flex-1 px-4 py-2 rounded-lg font-bold transition-all"
+          >
+            📝 Texto
+          </button>
+          <button
+            (click)="seleccionarTipo('foto')"
+            [class.bg-neon-blue]="tipoNueva === 'foto'"
+            [class.text-white]="tipoNueva === 'foto'"
+            [class.bg-dark-800]="tipoNueva !== 'foto'"
+            [class.text-gray-300]="tipoNueva !== 'foto'"
+            class="flex-1 px-4 py-2 rounded-lg font-bold transition-all"
+          >
+            📷 Fotos
+          </button>
+        </div>
+
+        <div *ngIf="tipoNueva === 'texto'">
+          <textarea
+            [(ngModel)]="contenidoTexto"
+            placeholder="Escribe una nota o descripción..."
+            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white placeholder-gray-500 focus:border-neon-yellow focus:outline-none resize-none"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <div *ngIf="tipoNueva === 'foto'">
+          <input
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            multiple
+            (change)="onFileSelected($event)"
+            class="hidden"
+            #fileInput
+          />
+
+          <div *ngIf="previsualizaciones.length === 0"
+            (click)="fileInput.click()"
+            class="border-2 border-dashed border-dark-600 rounded-lg p-8 text-center cursor-pointer hover:border-neon-blue transition-all"
+          >
+            <div class="text-6xl mb-3">📸</div>
+            <p class="text-gray-400 mb-2">Click para seleccionar fotos</p>
+            <p class="text-gray-500 text-sm">JPG, PNG o WEBP - Máx 5MB c/u - Múltiples archivos</p>
+          </div>
+
+          <div *ngIf="previsualizaciones.length > 0" class="space-y-3">
+            <div *ngFor="let preview of previsualizaciones; let i = index" class="relative">
+              <img [src]="preview" class="w-full h-48 object-cover rounded-lg">
+              <button
+                (click)="eliminarPreview(i)"
+                class="absolute top-2 right-2 bg-neon-red text-white px-3 py-1 rounded-lg font-bold"
+              >
+                ✕
+              </button>
+            </div>
+            <button
+              (click)="fileInput.click()"
+              class="w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg text-gray-300 hover:border-neon-blue transition-all"
+            >
+              ➕ Agregar más fotos
+            </button>
+          </div>
+        </div>
+
+        <button
+          (click)="guardarEvidencia()"
+          [disabled]="subiendoArchivo || !seccionSeleccionada"
+          class="w-full mt-4 px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg transition-all disabled:opacity-50"
+        >
+          {{ subiendoArchivo ? '⏳ Guardando...' : '💾 Guardar Evidencia' }}
+        </button>
+      </div>
+
+      <div *ngIf="cargando" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-neon-yellow border-t-transparent"></div>
+      </div>
+
+      <div *ngIf="!cargando && evidencias.length === 0" class="text-center py-8">
+        <p class="text-gray-400">No hay evidencias registradas</p>
+      </div>
+
+      <div *ngIf="!cargando && evidencias.length > 0" class="space-y-6">
+        <h3 class="text-lg font-bold text-white">Evidencias Registradas</h3>
+
+        <div *ngFor="let seccionGrupo of evidenciasAgrupadas">
+          <div class="bg-dark-800 border border-neon-yellow rounded-lg p-3 mb-3">
+            <h4 class="text-neon-yellow font-bold">
+              📋 {{ obtenerNombreSeccion(seccionGrupo.seccion) }}
+            </h4>
+          </div>
+
+          <div class="space-y-3 pl-4">
+            <div *ngFor="let evidencia of seccionGrupo.evidencias" class="bg-dark-850 border border-dark-700 rounded-lg p-4">
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center gap-2">
+                  <span *ngIf="evidencia.tipo === 'texto'" class="text-2xl">📝</span>
+                  <span *ngIf="evidencia.tipo === 'foto'" class="text-2xl">📷</span>
+                  <div>
+                    <p class="text-gray-400 text-sm">
+                      {{ evidencia.fecha_creacion | date: 'dd/MM/yyyy HH:mm' }}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  (click)="eliminarEvidencia(evidencia)"
+                  class="text-neon-red hover:text-red-400 font-bold"
+                >
+                  🗑️
+                </button>
+              </div>
+
+              <div *ngIf="evidencia.tipo === 'texto'" class="text-gray-300">
+                {{ evidencia.contenido }}
+              </div>
+
+              <div *ngIf="evidencia.tipo === 'foto' && evidencia.url_archivo">
+                <img [src]="evidencia.url_archivo" class="w-full h-48 object-cover rounded-lg">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

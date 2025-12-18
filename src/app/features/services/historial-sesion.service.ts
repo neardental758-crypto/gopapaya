@@ -27,7 +27,7 @@ export interface EstadisticaPregunta {
 export interface HistorialSesion {
   id: number;
   sesion_id: number;
-  brain_bike_id?: number;
+  juego_id?: string;
   fecha_inicio: string;
   fecha_fin: string;
   duracion_minutos: number;

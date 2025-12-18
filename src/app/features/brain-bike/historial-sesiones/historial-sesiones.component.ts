@@ -10,11 +10,15 @@ import {
   SesionAgrupada,
 } from '../../services/historial-sesion.service';
 import { ExcelExporthistorialService } from './services/excel-export-historial.service';
+import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+import { Evidencia, SesionService } from '../../services/sesion.service';
+import { EnviarCorreoModalComponent } from './correos/enviar-correo-modal.component';
 
 @Component({
   selector: 'app-historial-sesiones',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EnviarCorreoModalComponent],
   templateUrl: './historial-sesiones.component.html',
 })
 export class HistorialSesionesComponent implements OnInit {
@@ -34,23 +38,26 @@ export class HistorialSesionesComponent implements OnInit {
     new Map();
   cargandoCarreras: Set<number> = new Set();
 
+  planillasCache: Map<number, Evidencia | null> = new Map();
+  cargandoPlanillas: Set<number> = new Set();
+  subiendoPlanillas: Set<number> = new Set();
+
+  mostrarModalCorreo = false;
+  sesionIdParaCorreo: number | null = null;
+  empresaIdParaCorreo: string | null = null;
+  grupoParaCorreo: any = null;
+
   constructor(
     private historialService: HistorialService,
     private authService: AuthService,
     private router: Router,
-    private excelExporthistorialService: ExcelExporthistorialService
+    private excelExporthistorialService: ExcelExporthistorialService,
+    private sesionService: SesionService
   ) {}
 
   ngOnInit(): void {
     this.cargarEmpresas();
     this.cargarHistorial();
-  }
-
-  cargarEmpresas(): void {
-    this.historialService.getEmpresas().subscribe({
-      next: (data) => (this.empresas = data),
-      error: (error) => console.error('Error al cargar empresas:', error),
-    });
   }
 
   cargarHistorial(): void {
@@ -70,11 +77,41 @@ export class HistorialSesionesComponent implements OnInit {
           this.cargando = false;
         },
         error: (error) => {
-          console.error('Error al cargar historial:', error);
+          console.error('❌ Error al cargar historial:', error);
           this.cargando = false;
         },
       });
   }
+
+  cargarEmpresas(): void {
+    this.historialService.getEmpresas().subscribe({
+      next: (data) => (this.empresas = data),
+      error: (error) => console.error('Error al cargar empresas:', error),
+    });
+  }
+
+  // cargarHistorial(): void {
+  //   this.cargando = true;
+  //   const empresaId = this.empresaSeleccionada || undefined;
+  //   const fechaIni = this.fechaInicio || undefined;
+  //   const fechaFn = this.fechaFin || undefined;
+
+  //   this.historialService
+  //     .getHistorial(empresaId, fechaIni, fechaFn, 1, 10)
+  //     .subscribe({
+  //       next: (response) => {
+  //         this.sesionesAgrupadas = response.agrupado;
+  //         this.indicadores = response.indicadores;
+  //         this.paginacionSesiones = response.paginacion;
+  //         this.aplicarFiltros();
+  //         this.cargando = false;
+  //       },
+  //       error: (error) => {
+  //         console.error('Error al cargar historial:', error);
+  //         this.cargando = false;
+  //       },
+  //     });
+  // }
 
   cambiarPaginaSesiones(pagina: number): void {
     if (pagina < 1 || pagina > this.paginacionSesiones.totalPaginas) return;
@@ -247,6 +284,11 @@ export class HistorialSesionesComponent implements OnInit {
     return usuario?.rol === 'super_admin';
   }
 
+  isViewer(): boolean {
+    const usuario = this.authService.getUsuario();
+    return usuario?.rol === 'viewer';
+  }
+
   volver(): void {
     this.router.navigate(['/home']);
   }
@@ -346,7 +388,139 @@ export class HistorialSesionesComponent implements OnInit {
     return { hombres, mujeres, sinEspecificar };
   }
 
+  descargarInforme(sesionId: number): void {
+    this.sesionService.descargarInformePDF(sesionId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const sesion = this.sesionesAgrupadas.find(
+          (s) => s.sesion_id === sesionId
+        );
+        a.download = `Informe_${
+          sesion?.sesion?.nombreCliente || 'Sesion'
+        }_${Date.now()}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        alert('Error al descargar el informe');
+      },
+    });
+  }
+
   exportarExcel(grupo: SesionAgrupada): void {
     this.excelExporthistorialService.exportarHistorialSesion(grupo);
+  }
+
+  cargarPlanilla(sesionId: number): void {
+    if (this.planillasCache.has(sesionId)) return;
+
+    this.cargandoPlanillas.add(sesionId);
+    this.sesionService.getPlanilla(sesionId).subscribe({
+      next: (planilla) => {
+        this.planillasCache.set(sesionId, planilla);
+        this.cargandoPlanillas.delete(sesionId);
+      },
+      error: () => {
+        this.cargandoPlanillas.delete(sesionId);
+      },
+    });
+  }
+
+  getPlanilla(sesionId: number): Evidencia | null | undefined {
+    return this.planillasCache.get(sesionId);
+  }
+
+  isCargandoPlanilla(sesionId: number): boolean {
+    return this.cargandoPlanillas.has(sesionId);
+  }
+
+  isSubiendoPlanilla(sesionId: number): boolean {
+    return this.subiendoPlanillas.has(sesionId);
+  }
+
+  onPlanillaSelected(event: any, sesionId: number): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = [
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert(
+        'Solo se permiten archivos Excel, PDF, Word o imágenes (JPG, PNG, WEBP)'
+      );
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('El archivo no debe superar 10MB');
+      return;
+    }
+
+    const planillaExistente = this.getPlanilla(sesionId);
+    if (planillaExistente) {
+      if (!confirm('Ya existe una planilla. ¿Deseas reemplazarla?')) {
+        event.target.value = '';
+        return;
+      }
+    }
+
+    this.subiendoPlanillas.add(sesionId);
+    this.sesionService.crearPlanilla(sesionId, file).subscribe({
+      next: (planilla) => {
+        this.planillasCache.set(sesionId, planilla);
+        this.subiendoPlanillas.delete(sesionId);
+        event.target.value = '';
+        alert('Planilla cargada exitosamente');
+      },
+      error: () => {
+        this.subiendoPlanillas.delete(sesionId);
+        event.target.value = '';
+        alert('Error al cargar la planilla');
+      },
+    });
+  }
+
+  descargarPlanilla(sesionId: number): void {
+    const planilla = this.getPlanilla(sesionId);
+    if (!planilla || !planilla.url_archivo) return;
+
+    window.open(planilla.url_archivo, '_blank');
+  }
+
+  onToggleSesion(sesionId: number): void {
+    this.toggleSesion(sesionId);
+    if (this.isSesionExpandida(sesionId)) {
+      this.cargarPlanilla(sesionId);
+    }
+  }
+
+  abrirModalCorreo(grupo: SesionAgrupada): void {
+    this.sesionIdParaCorreo = grupo.sesion_id;
+    this.empresaIdParaCorreo = grupo.sesion?.empresa_id || '';
+    this.grupoParaCorreo = grupo;
+    this.mostrarModalCorreo = true;
+  }
+
+  cerrarModalCorreo(): void {
+    this.mostrarModalCorreo = false;
+    this.sesionIdParaCorreo = null;
+    this.empresaIdParaCorreo = null;
+    this.grupoParaCorreo = null;
+  }
+
+  onCorreoEnviado(): void {
+    this.cerrarModalCorreo();
   }
 }
