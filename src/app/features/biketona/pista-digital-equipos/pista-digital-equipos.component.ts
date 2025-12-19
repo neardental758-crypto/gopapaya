@@ -69,7 +69,7 @@ interface BiciUI {
   styleUrl: './pista-digital-equipos.component.css',
 })
 export class PistaDigitalEquiposComponent implements OnInit, OnDestroy {
-  paso = 5;
+  paso = 2;
 
   modalSexoJugadorId: number | null = null;
   modalEquipoJugadorId: number | null = null;

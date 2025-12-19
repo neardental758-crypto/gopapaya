@@ -30,20 +30,26 @@
         <div class="flex gap-3 mb-4">
           <button
             (click)="seleccionarTipo('texto')"
+            [disabled]="seccionSeleccionada !== 'observaciones' && seccionSeleccionada !== ''"
             [class.bg-neon-yellow]="tipoNueva === 'texto'"
             [class.text-dark-950]="tipoNueva === 'texto'"
             [class.bg-dark-800]="tipoNueva !== 'texto'"
             [class.text-gray-300]="tipoNueva !== 'texto'"
+            [class.opacity-50]="seccionSeleccionada !== 'observaciones' && seccionSeleccionada !== ''"
+            [class.cursor-not-allowed]="seccionSeleccionada !== 'observaciones' && seccionSeleccionada !== ''"
             class="flex-1 px-4 py-2 rounded-lg font-bold transition-all"
           >
             📝 Texto
           </button>
           <button
             (click)="seleccionarTipo('foto')"
+            [disabled]="!['resumen', 'metricas', 'galeria', ''].includes(seccionSeleccionada)"
             [class.bg-neon-blue]="tipoNueva === 'foto'"
             [class.text-white]="tipoNueva === 'foto'"
             [class.bg-dark-800]="tipoNueva !== 'foto'"
             [class.text-gray-300]="tipoNueva !== 'foto'"
+            [class.opacity-50]="!['resumen', 'metricas', 'galeria', ''].includes(seccionSeleccionada)"
+            [class.cursor-not-allowed]="!['resumen', 'metricas', 'galeria', ''].includes(seccionSeleccionada)"
             class="flex-1 px-4 py-2 rounded-lg font-bold transition-all"
           >
             📷 Fotos

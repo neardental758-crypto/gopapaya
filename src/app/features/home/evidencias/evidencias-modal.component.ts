@@ -32,7 +32,6 @@ export class EvidenciasModalComponent implements OnInit {
   secciones = [
     { valor: 'resumen', label: 'Resumen de Participación' },
     { valor: 'metricas', label: 'Métricas de la Experiencia' },
-    { valor: 'impacto', label: 'Impacto en Bienestar' },
     { valor: 'galeria', label: 'Galería' },
     { valor: 'observaciones', label: 'Notas y Observaciones' },
   ];
@@ -95,13 +94,59 @@ export class EvidenciasModalComponent implements OnInit {
 
   seleccionarTipo(tipo: 'foto' | 'texto'): void {
     this.tipoNueva = tipo;
+
+    if (tipo === 'texto' && this.seccionSeleccionada !== 'observaciones') {
+      alert(
+        'Solo se pueden agregar textos en la sección "Notas y Observaciones"'
+      );
+      this.tipoNueva = 'foto';
+      return;
+    }
+
+    if (
+      tipo === 'foto' &&
+      !['resumen', 'metricas', 'galeria'].includes(this.seccionSeleccionada)
+    ) {
+      alert(
+        'Solo se pueden agregar fotos en "Resumen de Participación", "Métricas" o "Galería"'
+      );
+      this.tipoNueva = 'texto';
+      return;
+    }
+
     this.resetForm();
   }
 
   onFileSelected(event: any): void {
     const files = Array.from(event.target.files) as File[];
 
-    files.forEach((file) => {
+    const fotosActuales = this.evidencias.filter(
+      (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'foto'
+    ).length;
+
+    let maxFotos = 9;
+    if (this.seccionSeleccionada === 'resumen') maxFotos = 1;
+    if (this.seccionSeleccionada === 'metricas') maxFotos = 1;
+
+    const espacioDisponible =
+      maxFotos - fotosActuales - this.archivosSeleccionados.length;
+
+    files.forEach((file, index) => {
+      if (index >= espacioDisponible) {
+        let mensaje = '';
+        if (this.seccionSeleccionada === 'resumen') {
+          mensaje = 'Solo se permite 1 foto en "Resumen de Participación"';
+        } else if (this.seccionSeleccionada === 'metricas') {
+          mensaje = 'Solo se permite 1 foto en "Métricas"';
+        } else {
+          mensaje = `Solo se permiten máximo 9 fotos en "Galería". Ya tienes ${
+            fotosActuales + this.archivosSeleccionados.length
+          }`;
+        }
+        alert(mensaje);
+        return;
+      }
+
       const allowedTypes = [
         'image/jpeg',
         'image/jpg',
@@ -128,11 +173,6 @@ export class EvidenciasModalComponent implements OnInit {
     });
   }
 
-  eliminarPreview(index: number): void {
-    this.archivosSeleccionados.splice(index, 1);
-    this.previsualizaciones.splice(index, 1);
-  }
-
   guardarEvidencia(): void {
     if (!this.sesionId || !this.seccionSeleccionada) {
       alert('Selecciona una sección');
@@ -140,6 +180,11 @@ export class EvidenciasModalComponent implements OnInit {
     }
 
     if (this.tipoNueva === 'texto') {
+      if (this.seccionSeleccionada !== 'observaciones') {
+        alert('Solo se pueden agregar textos en "Notas y Observaciones"');
+        return;
+      }
+
       if (!this.contenidoTexto.trim()) {
         alert('Ingresa un texto');
         return;
@@ -177,14 +222,58 @@ export class EvidenciasModalComponent implements OnInit {
           },
         });
     } else {
+      if (
+        !['resumen', 'metricas', 'galeria'].includes(this.seccionSeleccionada)
+      ) {
+        alert(
+          'Solo se pueden agregar fotos en "Resumen de Participación", "Métricas" o "Galería"'
+        );
+        return;
+      }
+
       if (this.archivosSeleccionados.length === 0) {
         alert('Selecciona al menos una foto');
+        return;
+      }
+
+      const fotosActuales = this.evidencias.filter(
+        (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'foto'
+      ).length;
+
+      if (
+        this.seccionSeleccionada === 'resumen' &&
+        fotosActuales + this.archivosSeleccionados.length > 1
+      ) {
+        alert('Solo se permite 1 foto en "Resumen de Participación"');
+        return;
+      }
+
+      if (
+        this.seccionSeleccionada === 'metricas' &&
+        fotosActuales + this.archivosSeleccionados.length > 1
+      ) {
+        alert('Solo se permite 1 foto en "Métricas"');
+        return;
+      }
+
+      if (
+        this.seccionSeleccionada === 'galeria' &&
+        fotosActuales + this.archivosSeleccionados.length > 9
+      ) {
+        alert(
+          `Solo se permiten máximo 9 fotos en "Galería". Actualmente tienes ${fotosActuales}`
+        );
         return;
       }
 
       this.subiendoArchivo = true;
       this.subirFotos(0);
     }
+  }
+
+  eliminarPreview(index: number): void {
+    this.archivosSeleccionados.splice(index, 1);
+    this.previsualizaciones.splice(index, 1);
   }
 
   subirFotos(index: number): void {

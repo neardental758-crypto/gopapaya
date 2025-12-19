@@ -63,7 +63,7 @@ export interface IndicadoresGlobales {
   totalSesiones: number;
   totalCarreras: number;
   totalParticipantes: number;
-  duracionTotalMinutos: number;
+  duracionTotalSegundos: number;
   promedioParticipantesPorCarrera: number;
   promedioDuracionMinutos: number;
   totalPreguntasRespondidas: number;
@@ -104,7 +104,8 @@ export class HistorialService {
     fechaInicio?: string,
     fechaFin?: string,
     pagina: number = 1,
-    limite: number = 10
+    limite: number = 10,
+    juegoFiltro?: string
   ): Observable<HistorialResponse & { paginacion: any }> {
     const params: any = {
       pagina: pagina.toString(),
@@ -113,6 +114,7 @@ export class HistorialService {
     if (empresaId && empresaId.trim() !== '') params['empresa_id'] = empresaId;
     if (fechaInicio) params['fecha_inicio'] = fechaInicio;
     if (fechaFin) params['fecha_fin'] = fechaFin;
+    if (juegoFiltro && juegoFiltro.trim() !== '') params['juego'] = juegoFiltro;
 
     return this.http.get<HistorialResponse & { paginacion: any }>(this.apiUrl, {
       params,
@@ -134,12 +136,14 @@ export class HistorialService {
   getHistorialCompleto(
     empresaId?: string,
     fechaInicio?: string,
-    fechaFin?: string
+    fechaFin?: string,
+    juegoFiltro?: string
   ): Observable<HistorialResponse> {
     const params: any = { pagina: '1', limite: '999999' };
     if (empresaId && empresaId.trim() !== '') params['empresa_id'] = empresaId;
     if (fechaInicio) params['fecha_inicio'] = fechaInicio;
     if (fechaFin) params['fecha_fin'] = fechaFin;
+    if (juegoFiltro && juegoFiltro.trim() !== '') params['juego'] = juegoFiltro;
 
     return this.http.get<HistorialResponse>(this.apiUrl, { params });
   }

@@ -464,7 +464,7 @@ export class ExcelExporthistorialService {
       ['Total de Sesiones', indicadores.totalSesiones],
       ['Total de Carreras', indicadores.totalCarreras],
       ['Total de Participaciones', indicadores.totalParticipantes],
-      ['Duración Total (minutos)', indicadores.duracionTotalMinutos],
+      ['Duración Total (minutos)', indicadores.duracionTotalSegundos],
       [
         'Promedio Participantes por Carrera',
         indicadores.promedioParticipantesPorCarrera,

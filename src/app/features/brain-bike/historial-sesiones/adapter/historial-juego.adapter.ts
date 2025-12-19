@@ -1,0 +1,240 @@
+import { Injectable } from '@angular/core';
+import {
+  HistorialSesion,
+  SesionAgrupada,
+} from '../../../services/historial-sesion.service';
+
+interface EstadisticasJuego {
+  tabs: Array<'resumen' | 'preguntas' | 'participantes' | 'estadisticas'>;
+  tienePreguntas: boolean;
+  camposParticipante: string[];
+}
+
+@Injectable({ providedIn: 'root' })
+export class HistorialJuegoAdapter {
+  getConfiguracionJuego(juegoJugado: string): EstadisticasJuego {
+    const configs: { [key: string]: EstadisticasJuego } = {
+      'Brain Bike': {
+        tabs: ['resumen', 'preguntas', 'participantes', 'estadisticas'],
+        tienePreguntas: true,
+        camposParticipante: [
+          'puntosCarrera',
+          'puntosAcumulados',
+          'velocidadPromedio',
+          'velocidadMaxima',
+          'caloriasQuemadas',
+          'vatiosGenerados',
+          'respuestasCorrectas',
+          'respuestasIncorrectas',
+        ],
+      },
+      Biketona: {
+        tabs: ['resumen', 'participantes', 'estadisticas'],
+        tienePreguntas: false,
+        camposParticipante: [
+          'nombre',
+          'velocidadPromedio',
+          'velocidadMaxima',
+          'calorias',
+          'vatios',
+          'mejorTiempo',
+        ],
+      },
+    };
+    return configs[juegoJugado] || configs['Brain Bike'];
+  }
+
+  tienePreguntas(juegoJugado: string): boolean {
+    const config = this.getConfiguracionJuego(juegoJugado);
+    return config.tienePreguntas;
+  }
+
+  grupoTienePreguntas(grupo: SesionAgrupada): boolean {
+    if (!grupo.carreras || grupo.carreras.length === 0) return false;
+    return grupo.carreras.some((c) => this.tienePreguntas(c.juego_jugado));
+  }
+
+  getDistribucionSexoParticipante(participante: any): 'M' | 'F' | 'otro' {
+    if (participante.sexo === 'M') return 'M';
+    if (participante.sexo === 'F') return 'F';
+    if (participante.genero === 'masculino') return 'M';
+    if (participante.genero === 'femenino') return 'F';
+    return 'otro';
+  }
+
+  getCaloriasParticipante(participante: any): number {
+    return Number(participante.caloriasQuemadas || participante.calorias || 0);
+  }
+
+  getVatiosParticipante(participante: any): number {
+    return Number(participante.vatiosGenerados || participante.vatios || 0);
+  }
+
+  adaptarParticipantesBiketona(historial: HistorialSesion): any[] {
+    if (historial.juego_jugado !== 'Biketona')
+      return historial.participantes_data;
+
+    const participantesOrdenados = [...historial.participantes_data]
+      .filter((p) => p.mejorTiempo != null)
+      .sort((a, b) => a.mejorTiempo - b.mejorTiempo);
+
+    return participantesOrdenados.map((p, index) => ({
+      ...p,
+      nombre: p.nombre || 'Sin nombre',
+      puntosCarrera: p.mejorTiempo || 0,
+      velocidadPromedio: p.velocidadPromedio || 0,
+      velocidadMaxima: p.velocidadMaxima || 0,
+      caloriasQuemadas: p.calorias || 0,
+      vatiosGenerados: p.vatios || 0,
+      posicionGeneral: index + 1,
+      totalParticipantesGeneral: participantesOrdenados.length,
+    }));
+  }
+
+  getRankingLabel(juegoJugado: string): string {
+    return juegoJugado === 'Biketona' ? 'Mejor Tiempo' : 'Puntos';
+  }
+
+  formatearPuntos(puntos: number, juegoJugado: string): string {
+    if (puntos === null || puntos === undefined) {
+      return juegoJugado === 'Biketona' ? '0:00' : '0';
+    }
+
+    if (juegoJugado === 'Biketona') {
+      const mins = Math.floor(puntos / 60);
+      const secs = Math.round(puntos % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    return puntos.toString();
+  }
+
+  getEstadisticasResumen(historial: HistorialSesion): any {
+    if (historial.juego_jugado === 'Biketona') {
+      return {
+        totalParticipantes: historial.participantes_data?.length || 0,
+        velocidadPromedio: this.calcularVelocidadPromedioBiketona(historial),
+        velocidadMaxima: this.calcularVelocidadMaximaBiketona(historial),
+        caloriasTotales: this.calcularCaloriasTotalesBiketona(historial),
+        vatiosTotales: this.calcularVatiosTotalesBiketona(historial),
+      };
+    }
+
+    return {
+      totalParticipantes: historial.participantes_data?.length || 0,
+      puntosTotal: this.calcularPuntosTotal(historial),
+      puntosAcumulados: this.calcularPuntosAcumulados(historial),
+      velocidadPromedio: this.calcularVelocidadPromedio(historial),
+      velocidadMaxima: this.calcularVelocidadMaxima(historial),
+      caloriasTotales: this.calcularCaloriasTotales(historial),
+      vatiosTotales: this.calcularVatiosTotales(historial),
+      respuestasCorrectas: this.calcularRespuestasCorrectas(historial),
+      respuestasIncorrectas: this.calcularRespuestasIncorrectas(historial),
+    };
+  }
+
+  private calcularVelocidadPromedioBiketona(
+    historial: HistorialSesion
+  ): number {
+    if (!historial.participantes_data?.length) return 0;
+    const total = historial.participantes_data.reduce(
+      (acc, p) => acc + (Number(p.velocidadPromedio) || 0),
+      0
+    );
+    return Math.round((total / historial.participantes_data.length) * 10) / 10;
+  }
+
+  private calcularVelocidadMaximaBiketona(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    return Math.max(
+      ...historial.participantes_data.map((p) => Number(p.velocidadMaxima) || 0)
+    );
+  }
+
+  private calcularCaloriasTotalesBiketona(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    return Math.round(
+      historial.participantes_data.reduce(
+        (acc, p) => acc + (Number(p.calorias) || 0),
+        0
+      )
+    );
+  }
+
+  private calcularVatiosTotalesBiketona(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    return Math.round(
+      historial.participantes_data.reduce(
+        (acc, p) => acc + (Number(p.vatios) || 0),
+        0
+      )
+    );
+  }
+
+  private calcularPuntosTotal(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    return historial.participantes_data.reduce(
+      (acc, p) => acc + (Number(p.puntosCarrera) || 0),
+      0
+    );
+  }
+
+  private calcularPuntosAcumulados(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    return historial.participantes_data.reduce(
+      (acc, p) => acc + (Number(p.puntosAcumulados) || 0),
+      0
+    );
+  }
+
+  private calcularVelocidadPromedio(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    const total = historial.participantes_data.reduce(
+      (acc, p) => acc + (Number(p.velocidadPromedio) || 0),
+      0
+    );
+    return Math.round((total / historial.participantes_data.length) * 10) / 10;
+  }
+
+  private calcularVelocidadMaxima(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    return Math.max(
+      ...historial.participantes_data.map((p) => Number(p.velocidadMaxima) || 0)
+    );
+  }
+
+  private calcularCaloriasTotales(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    return Math.round(
+      historial.participantes_data.reduce(
+        (acc, p) => acc + (Number(p.caloriasQuemadas) || 0),
+        0
+      )
+    );
+  }
+
+  private calcularVatiosTotales(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    return Math.round(
+      historial.participantes_data.reduce(
+        (acc, p) => acc + (Number(p.vatiosGenerados) || 0),
+        0
+      )
+    );
+  }
+
+  private calcularRespuestasCorrectas(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    return historial.participantes_data.reduce(
+      (acc, p) => acc + (Number(p.respuestasCorrectas) || 0),
+      0
+    );
+  }
+
+  private calcularRespuestasIncorrectas(historial: HistorialSesion): number {
+    if (!historial.participantes_data?.length) return 0;
+    return historial.participantes_data.reduce(
+      (acc, p) => acc + (Number(p.respuestasIncorrectas) || 0),
+      0
+    );
+  }
+}

@@ -61,7 +61,6 @@ export class SesionService {
   private sesionSeleccionada$ = new BehaviorSubject<Sesion | null>(null);
 
   constructor(private http: HttpClient) {
-    // Cargar sesión desde localStorage al iniciar el servicio
     const sesionGuardada = localStorage.getItem('sesion_seleccionada');
     if (sesionGuardada) {
       this.sesionSeleccionada$.next(JSON.parse(sesionGuardada));

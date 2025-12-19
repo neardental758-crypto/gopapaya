@@ -6,7 +6,9 @@ import {
   HistorialService,
 } from '../../../services/historial-sesion.service';
 import { FormsModule } from '@angular/forms';
+import { HistorialJuegoAdapter } from '../adapter/historial-juego.adapter';
 
+type TabHistorial = 'resumen' | 'preguntas' | 'participantes' | 'estadisticas';
 @Component({
   selector: 'app-historial-detalle',
   standalone: true,
@@ -16,8 +18,10 @@ import { FormsModule } from '@angular/forms';
 export class HistorialDetalleComponent implements OnInit {
   historial: HistorialSesion | null = null;
   cargando = true;
-  tabActiva: 'resumen' | 'preguntas' | 'participantes' | 'estadisticas' =
-    'resumen';
+  tabActiva: TabHistorial = 'resumen';
+  configuracionJuego: any;
+  estadisticasResumen: any;
+  participantesAdaptados: any[] = [];
 
   Math = Math;
   Number = Number;
@@ -25,10 +29,14 @@ export class HistorialDetalleComponent implements OnInit {
   constructor(
     private historialService: HistorialService,
     private route: ActivatedRoute,
-    private router: Router
-  ) {}
+    private router: Router,
+    private juegoAdapter: HistorialJuegoAdapter
+  ) {
+    this.tabActiva = 'resumen';
+  }
 
   ngOnInit(): void {
+    this.tabActiva = 'resumen';
     const id = this.route.snapshot.params['id'];
     this.cargarDetalle(id);
   }
@@ -38,6 +46,18 @@ export class HistorialDetalleComponent implements OnInit {
     this.historialService.getHistorialDetalle(id).subscribe({
       next: (data) => {
         this.historial = data;
+        this.configuracionJuego = this.juegoAdapter.getConfiguracionJuego(
+          data.juego_jugado
+        );
+        this.participantesAdaptados =
+          this.juegoAdapter.adaptarParticipantesBiketona(data);
+        this.estadisticasResumen =
+          this.juegoAdapter.getEstadisticasResumen(data);
+
+        if (!this.configuracionJuego.tabs.includes(this.tabActiva)) {
+          this.tabActiva = 'resumen';
+        }
+
         this.cargando = false;
       },
       error: (error) => {
@@ -47,82 +67,24 @@ export class HistorialDetalleComponent implements OnInit {
       },
     });
   }
-
-  cambiarTab(
-    tab: 'resumen' | 'preguntas' | 'participantes' | 'estadisticas'
-  ): void {
+  cambiarTab(tab: TabHistorial): void {
     this.tabActiva = tab;
   }
 
-  getPuntosTotal(): number {
-    if (!this.historial?.participantes_data?.length) return 0;
-    return this.historial.participantes_data.reduce(
-      (acc, p) => acc + (Number(p.puntosCarrera) || 0),
-      0
+  tieneTab(tab: string): boolean {
+    return this.configuracionJuego?.tabs.includes(tab);
+  }
+
+  getRankingLabel(): string {
+    return this.juegoAdapter.getRankingLabel(
+      this.historial?.juego_jugado || ''
     );
   }
 
-  getPuntosAcumuladosTotal(): number {
-    if (!this.historial?.participantes_data?.length) return 0;
-    return this.historial.participantes_data.reduce(
-      (acc, p) => acc + (Number(p.puntosAcumulados) || 0),
-      0
-    );
-  }
-
-  getVelocidadPromedio(): number {
-    if (!this.historial?.participantes_data?.length) return 0;
-    const total = this.historial.participantes_data.reduce(
-      (acc, p) => acc + (Number(p.velocidadPromedio) || 0),
-      0
-    );
-    return (
-      Math.round((total / this.historial.participantes_data.length) * 10) / 10
-    );
-  }
-
-  getVelocidadMaxima(): number {
-    if (!this.historial?.participantes_data?.length) return 0;
-    return Math.max(
-      ...this.historial.participantes_data.map(
-        (p) => Number(p.velocidadMaxima) || 0
-      )
-    );
-  }
-
-  getCaloriasTotales(): number {
-    if (!this.historial?.participantes_data?.length) return 0;
-    return Math.round(
-      this.historial.participantes_data.reduce(
-        (acc, p) => acc + (Number(p.caloriasQuemadas) || 0),
-        0
-      )
-    );
-  }
-
-  getVatiosTotales(): number {
-    if (!this.historial?.participantes_data?.length) return 0;
-    return Math.round(
-      this.historial.participantes_data.reduce(
-        (acc, p) => acc + (Number(p.vatiosGenerados) || 0),
-        0
-      )
-    );
-  }
-
-  getTotalRespuestasCorrectas(): number {
-    if (!this.historial?.participantes_data?.length) return 0;
-    return this.historial.participantes_data.reduce(
-      (acc, p) => acc + (Number(p.respuestasCorrectas) || 0),
-      0
-    );
-  }
-
-  getTotalRespuestasIncorrectas(): number {
-    if (!this.historial?.participantes_data?.length) return 0;
-    return this.historial.participantes_data.reduce(
-      (acc, p) => acc + (Number(p.respuestasIncorrectas) || 0),
-      0
+  formatearPuntos(puntos: number): string {
+    return this.juegoAdapter.formatearPuntos(
+      puntos,
+      this.historial?.juego_jugado || ''
     );
   }
 
@@ -212,7 +174,7 @@ export class HistorialDetalleComponent implements OnInit {
     mujeres: number;
     sinEspecificar: number;
   } {
-    if (!this.historial?.participantes_data?.length) {
+    if (!this.participantesAdaptados?.length) {
       return { hombres: 0, mujeres: 0, sinEspecificar: 0 };
     }
 
@@ -220,10 +182,11 @@ export class HistorialDetalleComponent implements OnInit {
     let mujeres = 0;
     let sinEspecificar = 0;
 
-    this.historial.participantes_data.forEach((p) => {
-      if (p.sexo === 'M') {
+    this.participantesAdaptados.forEach((p) => {
+      const sexo = p.sexo || p.genero;
+      if (sexo === 'M' || sexo === 'masculino') {
         hombres++;
-      } else if (p.sexo === 'F') {
+      } else if (sexo === 'F' || sexo === 'femenino') {
         mujeres++;
       } else {
         sinEspecificar++;
@@ -234,17 +197,19 @@ export class HistorialDetalleComponent implements OnInit {
   }
 
   getPorcentajeCorrectas(): number {
-    const total =
-      this.getTotalRespuestasCorrectas() + this.getTotalRespuestasIncorrectas();
+    const correctas = this.estadisticasResumen.respuestasCorrectas || 0;
+    const incorrectas = this.estadisticasResumen.respuestasIncorrectas || 0;
+    const total = correctas + incorrectas;
     if (total === 0) return 0;
-    return Math.round((this.getTotalRespuestasCorrectas() / total) * 100);
+    return Math.round((correctas / total) * 100);
   }
 
   getPorcentajeIncorrectas(): number {
-    const total =
-      this.getTotalRespuestasCorrectas() + this.getTotalRespuestasIncorrectas();
+    const correctas = this.estadisticasResumen.respuestasCorrectas || 0;
+    const incorrectas = this.estadisticasResumen.respuestasIncorrectas || 0;
+    const total = correctas + incorrectas;
     if (total === 0) return 0;
-    return Math.round((this.getTotalRespuestasIncorrectas() / total) * 100);
+    return Math.round((incorrectas / total) * 100);
   }
 
   volver(): void {

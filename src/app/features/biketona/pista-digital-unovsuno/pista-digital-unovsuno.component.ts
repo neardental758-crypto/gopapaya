@@ -118,6 +118,8 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
 
   participantesRecientes: string[] = [];
 
+  tiempoTotalTorneo = 0;
+
   constructor(
     private router: Router,
     private ble: BleEsp32Service,
@@ -145,9 +147,8 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
 
   private registrarResultadosLlave(llave: Llave1v1): void {
     const idBiketona = this.idBiketona;
-
     if (!idBiketona) {
-      console.error('❌ No hay idBiketona');
+      console.error('⌂ No hay idBiketona');
       return;
     }
 
@@ -157,31 +158,21 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
       JSON.stringify(this.participantesRecientes)
     );
 
-    const tiempoSegundos = this.tiempoTranscurrido;
-    const minutos = tiempoSegundos / 60;
     const MET = 8;
     const pesoKg = 70;
     const caloriasFactor = 0.0175 * MET * pesoKg;
 
-    const participantesAGuardar: any[] = [];
-
-    llave.jugadores.forEach((jugador) => {
-      const distanciaMetros = jugador.distanciaReal;
-      const tiempoIndividualSegundos = jugador.mejorTiempo || tiempoSegundos;
+    const participantesAGuardar: any[] = llave.jugadores.map((jugador) => {
+      const tiempoIndividualSegundos =
+        jugador.mejorTiempo || this.tiempoTranscurrido;
       const minutosIndividual = tiempoIndividualSegundos / 60;
+      const velocidadPromedioKph =
+        tiempoIndividualSegundos > 0
+          ? (jugador.distanciaReal / tiempoIndividualSegundos) * 3.6
+          : 0;
 
-      let velocidadPromedioKph = 0;
-      if (tiempoIndividualSegundos > 0) {
-        const velMps = distanciaMetros / tiempoIndividualSegundos;
-        velocidadPromedioKph = velMps * 3.6;
-      }
-
-      const velocidadMaxKph = jugador.velocidadMaxima;
-      const calorias = caloriasFactor * minutosIndividual;
-      const vatios = velocidadPromedioKph * 10;
-
-      const participante: any = {
-        idBiketona: idBiketona,
+      return {
+        idBiketona,
         nombre: jugador.nombre,
         genero:
           jugador.genero === 'masculino'
@@ -193,29 +184,21 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
         puntos: 0,
         tiempo: this.formatearTiempo(tiempoIndividualSegundos),
         velocidadPromedio: parseFloat(velocidadPromedioKph.toFixed(1)),
-        velocidadMax: parseFloat(velocidadMaxKph.toFixed(1)),
-        calorias: parseFloat(calorias.toFixed(0)),
-        vatios: parseFloat(vatios.toFixed(0)),
+        velocidadMax: parseFloat(jugador.velocidadMaxima.toFixed(1)),
+        calorias: parseFloat((caloriasFactor * minutosIndividual).toFixed(0)),
+        vatios: parseFloat((velocidadPromedioKph * 10).toFixed(0)),
         posicion: jugador.posicion,
         llave: llave.id,
         estadoLlave: 'finalizada',
       };
-
-      participantesAGuardar.push(participante);
     });
 
-    let guardados = 0;
     participantesAGuardar.forEach((participante) => {
       this.biketonaParticipantesService
         .crearParticipante(participante)
         .subscribe({
-          next: (p) => {
-            this.participantesRegistrados.push(p);
-            guardados++;
-          },
-          error: (err) => {
-            console.error('❌ Error guardando participante:', err);
-          },
+          next: (p) => this.participantesRegistrados.push(p),
+          error: (err) => console.error('⌂ Error guardando participante:', err),
         });
     });
   }
@@ -230,36 +213,25 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
     );
     if (!ganador) return;
 
-    console.log('🏁 Carrera finalizada, ganador:', ganador);
-    console.log('👥 Jugadores que corrieron:', this.jugadores);
-
     this.detenerCarrera();
     this.ganadorActual = ganador;
 
-    const ganadorGlobal = this.participantes.find((p) => p.id === ganador.id);
-    if (ganadorGlobal) {
-      if (
-        ganadorGlobal.mejorTiempo == null ||
-        this.tiempoTranscurrido < ganadorGlobal.mejorTiempo
-      ) {
-        ganadorGlobal.mejorTiempo = this.tiempoTranscurrido;
-      }
-    }
+    this.participantes.forEach((p) => {
+      const jugadorEnCarrera = this.jugadores.find((j) => j.id === p.id);
+      if (!jugadorEnCarrera) return;
 
-    this.jugadores.forEach((j) => {
-      const participante = this.participantes.find((p) => p.id === j.id);
-      if (
-        participante &&
-        j.id !== ganador.id &&
-        participante.mejorTiempo == null
-      ) {
-        participante.mejorTiempo = this.tiempoTranscurrido + 5;
+      if (p.id === ganador.id) {
+        if (!p.mejorTiempo || this.tiempoTranscurrido < p.mejorTiempo) {
+          p.mejorTiempo = this.tiempoTranscurrido;
+        }
+      } else if (!p.mejorTiempo) {
+        p.mejorTiempo = this.tiempoTranscurrido + 5;
       }
     });
 
     if (this.llaveActual) {
-      console.log('💾 Guardando llave:', this.llaveActual);
       this.llaveActual.estado = 'finalizado';
+      this.tiempoTotalTorneo += this.tiempoTranscurrido;
       this.registrarResultadosLlave(this.llaveActual);
     }
 
@@ -299,10 +271,9 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
   }
 
   obtenerRanking(): Jugador[] {
-    return [...this.participantes]
-      .filter((p) => p.nombre && p.nombre.trim() !== '')
+    return this.participantes
+      .filter((p) => p.nombre?.trim())
       .sort((a, b) => {
-        if (a.mejorTiempo == null && b.mejorTiempo == null) return 0;
         if (a.mejorTiempo == null) return 1;
         if (b.mejorTiempo == null) return -1;
         return a.mejorTiempo - b.mejorTiempo;
@@ -351,8 +322,7 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
                       alert('Torneo y sesión finalizados correctamente.');
                       this.router.navigate(['/home']);
                     },
-                    error: (err: any) => {
-                      console.error('Error al finalizar sesión:', err);
+                    error: () => {
                       alert(
                         'Torneo finalizado pero hubo error al cerrar la sesión.'
                       );
@@ -360,16 +330,10 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
                     },
                   });
               },
-              error: (err) => {
-                console.error('Error al finalizar la biketona:', err);
-                alert('Ocurrió un error al finalizar el torneo.');
-              },
+              error: () => alert('Ocurrió un error al finalizar el torneo.'),
             });
         },
-        error: (err) => {
-          console.error('Error al guardar historial:', err);
-          alert('Error al guardar el historial de la sesión.');
-        },
+        error: () => alert('Error al guardar el historial de la sesión.'),
       });
     } else {
       this.biketonaService
@@ -379,24 +343,17 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
             alert('Torneo finalizado correctamente.');
             this.router.navigate(['/home']);
           },
-          error: (err) => {
-            console.error('Error al finalizar la biketona:', err);
-            alert('Ocurrió un error al finalizar el torneo.');
-          },
+          error: () => alert('Ocurrió un error al finalizar el torneo.'),
         });
     }
   }
 
   obtenerRankingSesion(): any[] {
-    const ranking = this.participantesRegistrados
-      .slice()
-      .sort((a: any, b: any) => {
-        const tiempoA = this.convertirTiempoASegundos(a.tiempo || '00:00');
-        const tiempoB = this.convertirTiempoASegundos(b.tiempo || '00:00');
-        return tiempoA - tiempoB;
-      });
-
-    return ranking;
+    return this.participantesRegistrados.slice().sort((a: any, b: any) => {
+      const tiempoA = this.convertirTiempoASegundos(a.tiempo || '00:00');
+      const tiempoB = this.convertirTiempoASegundos(b.tiempo || '00:00');
+      return tiempoA - tiempoB;
+    });
   }
 
   private convertirTiempoASegundos(tiempo: string): number {
@@ -416,8 +373,6 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
 
         const jugadoresPorLlave = this.configuracion.numeroBicicletas || 2;
         const ultimosParticipantes = participantesDB.slice(-jugadoresPorLlave);
-
-        // resto del código...
       },
     });
   }
@@ -455,6 +410,7 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
     this.jugadores = [];
     this.llaveActual = null;
     this.tiempoTranscurrido = 0;
+    this.tiempoTotalTorneo = 0;
     this.carreraIniciada = false;
     this.carreraPausada = false;
   }
@@ -624,15 +580,15 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
   }
 
   async conectarBici(key: BikeKey) {
+    const biciUI = this.getBiciUI(key);
+
     if (key === 'bici2') {
-      const bici2UI = this.getBiciUI('bici2');
-      bici2UI.status = 'Conectado (usa datos de Bici 1)';
-      bici2UI.conectado = true;
-      bici2UI.deviceId = '3';
+      biciUI.status = 'Conectado (usa datos de Bici 1)';
+      biciUI.conectado = true;
+      biciUI.deviceId = '3';
       return;
     }
 
-    const biciUI = this.getBiciUI(key);
     try {
       await this.ble.connect(key);
       biciUI.status = 'Conectado a ESP32';
@@ -644,10 +600,7 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
         .catch(() => {});
 
       await this.ble.subscribe(key, 'vel', (v) => {
-        const valores = v.split(',');
-        const vel1 = parseFloat(valores[0]) || 0;
-        const vel2 = parseFloat(valores[1]) || 0;
-
+        const [vel1, vel2] = v.split(',').map((val) => parseFloat(val) || 0);
         if (this.jugadores[0]) this.jugadores[0].velocidad = vel1;
         if (this.jugadores[1]) this.jugadores[1].velocidad = vel2;
       });
@@ -862,10 +815,10 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
     userId: string
   ): any {
     const ranking = this.obtenerRanking();
-    const duracionMinutos = Math.floor(this.tiempoTranscurrido / 60);
+    const duracionMinutos = Math.floor(this.tiempoTotalTorneo / 60);
 
     const participantesData = this.participantes
-      .filter((p) => p.nombre && p.nombre.trim() !== '')
+      .filter((p) => p.nombre?.trim())
       .map((p) => {
         const datosDB = this.participantesRegistrados.find(
           (pDB: any) => pDB.nombre === p.nombre
@@ -890,22 +843,11 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
       puntos: p.mejorTiempo || 0,
     }));
 
-    const velocidadPromedioGeneral = this.calcularVelocidadPromedioGeneral();
-    const distanciaPromedioGeneral = this.calcularDistanciaPromedioGeneral();
-
-    const estadisticasGenerales = {
-      duracionTotal: this.tiempoTranscurrido,
-      totalParticipantes: participantesData.length,
-      totalLlaves: this.llaves.length,
-      velocidadPromedioGeneral,
-      distanciaPromedioGeneral,
-    };
-
     return {
       sesion_id: parseInt(idSesion),
       juego_id: idBiketona,
       fecha_inicio: new Date(
-        Date.now() - this.tiempoTranscurrido * 1000
+        Date.now() - this.tiempoTotalTorneo * 1000
       ).toISOString(),
       fecha_fin: new Date().toISOString(),
       duracion_minutos: duracionMinutos,
@@ -913,7 +855,13 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
       parametros_utilizados: JSON.stringify(this.configuracion),
       participantes_data: JSON.stringify(participantesData),
       ranking_final: JSON.stringify(rankingFinal),
-      estadisticas_generales: JSON.stringify(estadisticasGenerales),
+      estadisticas_generales: JSON.stringify({
+        duracionTotal: this.tiempoTotalTorneo,
+        totalParticipantes: participantesData.length,
+        totalLlaves: this.llaves.length,
+        velocidadPromedioGeneral: this.calcularVelocidadPromedioGeneral(),
+        distanciaPromedioGeneral: this.calcularDistanciaPromedioGeneral(),
+      }),
       creado_por: parseInt(userId),
     };
   }

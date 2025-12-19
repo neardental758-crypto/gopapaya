@@ -14,6 +14,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Evidencia, SesionService } from '../../services/sesion.service';
 import { EnviarCorreoModalComponent } from './correos/enviar-correo-modal.component';
+import { HistorialJuegoAdapter } from './adapter/historial-juego.adapter';
 
 @Component({
   selector: 'app-historial-sesiones',
@@ -52,7 +53,8 @@ export class HistorialSesionesComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private excelExporthistorialService: ExcelExporthistorialService,
-    private sesionService: SesionService
+    private sesionService: SesionService,
+    private juegoAdapter: HistorialJuegoAdapter
   ) {}
 
   ngOnInit(): void {
@@ -65,15 +67,15 @@ export class HistorialSesionesComponent implements OnInit {
     const empresaId = this.empresaSeleccionada || undefined;
     const fechaIni = this.fechaInicio || undefined;
     const fechaFn = this.fechaFin || undefined;
+    const juego = this.filtroJuego || undefined;
 
     this.historialService
-      .getHistorial(empresaId, fechaIni, fechaFn, 1, 10)
+      .getHistorial(empresaId, fechaIni, fechaFn, 1, 10, juego)
       .subscribe({
         next: (response) => {
           this.sesionesAgrupadas = response.agrupado;
           this.indicadores = response.indicadores;
           this.paginacionSesiones = response.paginacion;
-          this.aplicarFiltros();
           this.cargando = false;
         },
         error: (error) => {
@@ -90,29 +92,6 @@ export class HistorialSesionesComponent implements OnInit {
     });
   }
 
-  // cargarHistorial(): void {
-  //   this.cargando = true;
-  //   const empresaId = this.empresaSeleccionada || undefined;
-  //   const fechaIni = this.fechaInicio || undefined;
-  //   const fechaFn = this.fechaFin || undefined;
-
-  //   this.historialService
-  //     .getHistorial(empresaId, fechaIni, fechaFn, 1, 10)
-  //     .subscribe({
-  //       next: (response) => {
-  //         this.sesionesAgrupadas = response.agrupado;
-  //         this.indicadores = response.indicadores;
-  //         this.paginacionSesiones = response.paginacion;
-  //         this.aplicarFiltros();
-  //         this.cargando = false;
-  //       },
-  //       error: (error) => {
-  //         console.error('Error al cargar historial:', error);
-  //         this.cargando = false;
-  //       },
-  //     });
-  // }
-
   cambiarPaginaSesiones(pagina: number): void {
     if (pagina < 1 || pagina > this.paginacionSesiones.totalPaginas) return;
 
@@ -120,14 +99,14 @@ export class HistorialSesionesComponent implements OnInit {
     const empresaId = this.empresaSeleccionada || undefined;
     const fechaIni = this.fechaInicio || undefined;
     const fechaFn = this.fechaFin || undefined;
+    const juego = this.filtroJuego || undefined;
 
     this.historialService
-      .getHistorial(empresaId, fechaIni, fechaFn, pagina, 10)
+      .getHistorial(empresaId, fechaIni, fechaFn, pagina, 10, juego)
       .subscribe({
         next: (response) => {
           this.sesionesAgrupadas = response.agrupado;
           this.paginacionSesiones = response.paginacion;
-          this.aplicarFiltros();
           this.cargando = false;
           window.scrollTo({ top: 0, behavior: 'smooth' });
         },
@@ -186,9 +165,10 @@ export class HistorialSesionesComponent implements OnInit {
     const empresaId = this.empresaSeleccionada || undefined;
     const fechaIni = this.fechaInicio || undefined;
     const fechaFn = this.fechaFin || undefined;
+    const juego = this.filtroJuego || undefined;
 
     this.historialService
-      .getHistorialCompleto(empresaId, fechaIni, fechaFn)
+      .getHistorialCompleto(empresaId, fechaIni, fechaFn, juego)
       .subscribe({
         next: (response) => {
           this.excelExporthistorialService.exportarHistorialCompleto(
@@ -220,21 +200,16 @@ export class HistorialSesionesComponent implements OnInit {
     this.cargarHistorial();
   }
 
-  aplicarFiltros(): void {
-    if (this.filtroJuego) {
-      this.sesionesAgrupadas = this.sesionesAgrupadas
-        .map((grupo) => ({
-          ...grupo,
-          carreras: grupo.carreras.filter(
-            (c) => c.juego_jugado === this.filtroJuego
-          ),
-        }))
-        .filter((grupo) => grupo.carreras.length > 0);
-    }
-  }
-
   onJuegoChange(): void {
     this.cargarHistorial();
+  }
+  juegoFiltradoTienePreguntas(): boolean {
+    if (!this.filtroJuego) return false;
+    return this.juegoAdapter.tienePreguntas(this.filtroJuego);
+  }
+
+  aplicarFiltros(): void {
+    return;
   }
 
   isSesionExpandida(sesionId: number): boolean {
@@ -242,9 +217,12 @@ export class HistorialSesionesComponent implements OnInit {
   }
 
   expandirTodas(): void {
-    this.sesionesAgrupadas.forEach((s) =>
-      this.sesionesExpandidas.add(s.sesion_id)
-    );
+    this.sesionesAgrupadas.forEach((s) => {
+      this.sesionesExpandidas.add(s.sesion_id);
+      if (!this.carrerasCache.has(s.sesion_id)) {
+        this.cargarCarrerasSesion(s.sesion_id, 1);
+      }
+    });
   }
 
   contraerTodas(): void {
@@ -255,11 +233,88 @@ export class HistorialSesionesComponent implements OnInit {
     this.router.navigate(['/historial', id]);
   }
 
-  formatearDuracion(minutos: number): string {
-    //Dejar todo en minutos
-    const horas = Math.floor(minutos / 60);
-    const mins = minutos % 60;
-    return horas > 0 ? `${horas} ${mins}` : `${mins}`;
+  formatearDuracion(segundos: number): string {
+    if (segundos === 0) return '0min';
+
+    const horas = Math.floor(segundos / 3600);
+    const minutos = Math.floor((segundos % 3600) / 60);
+
+    if (horas > 0) {
+      return minutos > 0 ? `${horas}h ${minutos}min` : `${horas}h`;
+    }
+
+    return `${minutos}min`;
+  }
+
+  getDuracionTotalGrupo(grupo: SesionAgrupada): number {
+    let duracionTotalSegundos = 0;
+
+    grupo.carreras.forEach((carrera) => {
+      let estadisticasGenerales = carrera.estadisticas_generales;
+
+      if (typeof estadisticasGenerales === 'string') {
+        try {
+          estadisticasGenerales = JSON.parse(estadisticasGenerales);
+        } catch (e) {
+          estadisticasGenerales = null;
+        }
+      }
+
+      if (estadisticasGenerales?.duracionTotal) {
+        duracionTotalSegundos += Number(estadisticasGenerales.duracionTotal);
+      } else if (carrera.duracion_minutos) {
+        duracionTotalSegundos += carrera.duracion_minutos * 60;
+      }
+    });
+
+    return duracionTotalSegundos;
+  }
+
+  formatearDuracionTexto(segundos: number): string {
+    if (segundos === 0) {
+      return '0';
+    }
+
+    if (segundos < 60) {
+      return segundos.toString();
+    }
+
+    const horas = Math.floor(segundos / 3600);
+    const minutos = Math.floor((segundos % 3600) / 60);
+
+    if (horas > 0) {
+      return minutos > 0
+        ? `${horas}:${minutos.toString().padStart(2, '0')}`
+        : horas.toString();
+    }
+
+    return minutos.toString();
+  }
+
+  getUnidadDuracion(segundos: number): string {
+    if (segundos < 60) {
+      return 'sg';
+    }
+
+    const horas = Math.floor(segundos / 3600);
+    return horas > 0 ? 'hrs' : 'min';
+  }
+  getDuracionCarrera(carrera: HistorialSesion): number {
+    let estadisticasGenerales = carrera.estadisticas_generales;
+
+    if (typeof estadisticasGenerales === 'string') {
+      try {
+        estadisticasGenerales = JSON.parse(estadisticasGenerales);
+      } catch (e) {
+        return carrera.duracion_minutos * 60 || 0;
+      }
+    }
+
+    if (estadisticasGenerales?.duracionTotal) {
+      return Number(estadisticasGenerales.duracionTotal);
+    }
+
+    return carrera.duracion_minutos * 60 || 0;
   }
 
   formatearFecha(fecha: string): string {
@@ -293,6 +348,10 @@ export class HistorialSesionesComponent implements OnInit {
     this.router.navigate(['/home']);
   }
 
+  grupoTienePreguntas(grupo: SesionAgrupada): boolean {
+    return this.juegoAdapter.grupoTienePreguntas(grupo);
+  }
+
   getVelocidadPromedioGrupo(grupo: SesionAgrupada): number {
     let sumaVelocidades = 0;
     let totalParticipantes = 0;
@@ -316,7 +375,7 @@ export class HistorialSesionesComponent implements OnInit {
     grupo.carreras.forEach((carrera) => {
       if (carrera.participantes_data && carrera.participantes_data.length > 0) {
         carrera.participantes_data.forEach((p) => {
-          totalCalorias += Number(p.caloriasQuemadas) || 0;
+          totalCalorias += this.juegoAdapter.getCaloriasParticipante(p);
         });
       }
     });
@@ -328,7 +387,7 @@ export class HistorialSesionesComponent implements OnInit {
     grupo.carreras.forEach((carrera) => {
       if (carrera.participantes_data && carrera.participantes_data.length > 0) {
         carrera.participantes_data.forEach((p) => {
-          totalVatios += Number(p.vatiosGenerados) || 0;
+          totalVatios += this.juegoAdapter.getVatiosParticipante(p);
         });
       }
     });
@@ -374,9 +433,10 @@ export class HistorialSesionesComponent implements OnInit {
     grupo.carreras.forEach((carrera) => {
       if (carrera.participantes_data && carrera.participantes_data.length > 0) {
         carrera.participantes_data.forEach((p) => {
-          if (p.sexo === 'M') {
+          const sexo = this.juegoAdapter.getDistribucionSexoParticipante(p);
+          if (sexo === 'M') {
             hombres++;
-          } else if (p.sexo === 'F') {
+          } else if (sexo === 'F') {
             mujeres++;
           } else {
             sinEspecificar++;
@@ -386,6 +446,16 @@ export class HistorialSesionesComponent implements OnInit {
     });
 
     return { hombres, mujeres, sinEspecificar };
+  }
+
+  getPreguntasRespondidasGrupo(grupo: SesionAgrupada): number {
+    let total = 0;
+    grupo.carreras.forEach((carrera) => {
+      if (carrera.estadisticas_generales?.preguntasRespondidas) {
+        total += Number(carrera.estadisticas_generales.preguntasRespondidas);
+      }
+    });
+    return total;
   }
 
   descargarInforme(sesionId: number): void {
@@ -518,6 +588,14 @@ export class HistorialSesionesComponent implements OnInit {
     this.sesionIdParaCorreo = null;
     this.empresaIdParaCorreo = null;
     this.grupoParaCorreo = null;
+  }
+
+  mostrarIndicadoresGlobales(): boolean {
+    return true;
+  }
+
+  deberiaOcultarDistancia(grupo: SesionAgrupada): boolean {
+    return grupo.carreras.every((c) => c.juego_jugado === 'Biketona');
   }
 
   onCorreoEnviado(): void {
