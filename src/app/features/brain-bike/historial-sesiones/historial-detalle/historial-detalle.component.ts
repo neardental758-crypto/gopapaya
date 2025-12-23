@@ -25,6 +25,8 @@ export class HistorialDetalleComponent implements OnInit {
 
   Math = Math;
   Number = Number;
+  mostrarInfoPodio = false;
+  mostrarInfoParticipantes = false;
 
   constructor(
     private historialService: HistorialService,
@@ -51,6 +53,45 @@ export class HistorialDetalleComponent implements OnInit {
         );
         this.participantesAdaptados =
           this.juegoAdapter.adaptarParticipantesBiketona(data);
+
+        // ORDENAR PARTICIPANTES SEGÚN TIPO DE JUEGO
+        if (data.juego_jugado === 'Biketona Campeonato') {
+          this.participantesAdaptados = this.participantesAdaptados
+            .sort((a: any, b: any) => {
+              if (b.rondaMaximaAlcanzada !== a.rondaMaximaAlcanzada) {
+                return b.rondaMaximaAlcanzada - a.rondaMaximaAlcanzada;
+              }
+              const tiempoA = a.mejorTiempo || 0;
+              const tiempoB = b.mejorTiempo || 0;
+              return tiempoA - tiempoB;
+            })
+            .map((p: any, index: number) => ({
+              ...p,
+              posicionGeneral: index + 1,
+              totalParticipantesGeneral: this.participantesAdaptados.length,
+            }));
+        } else if (data.juego_jugado.includes('Biketona')) {
+          this.participantesAdaptados = this.participantesAdaptados
+            .sort((a: any, b: any) => {
+              return (a.mejorTiempo || 0) - (b.mejorTiempo || 0);
+            })
+            .map((p: any, index: number) => ({
+              ...p,
+              posicionGeneral: index + 1,
+              totalParticipantesGeneral: this.participantesAdaptados.length,
+            }));
+        } else {
+          this.participantesAdaptados = this.participantesAdaptados
+            .sort((a: any, b: any) => {
+              return (b.puntosCarrera || 0) - (a.puntosCarrera || 0);
+            })
+            .map((p: any, index: number) => ({
+              ...p,
+              posicionGeneral: index + 1,
+              totalParticipantesGeneral: this.participantesAdaptados.length,
+            }));
+        }
+
         this.estadisticasResumen =
           this.juegoAdapter.getEstadisticasResumen(data);
 
@@ -212,7 +253,50 @@ export class HistorialDetalleComponent implements OnInit {
     return Math.round((incorrectas / total) * 100);
   }
 
+  formatearTiempoTorneo(segundos: number): string {
+    const mins = Math.floor(segundos / 60);
+    const secs = segundos % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  esBiketonaCampeonato(): boolean {
+    return this.historial?.juego_jugado === 'Biketona Campeonato';
+  }
+
   volver(): void {
     this.router.navigate(['/historial']);
+  }
+
+  getRankingParaPodio(): any[] {
+    if (!this.historial?.ranking_final) return [];
+
+    let ranking = this.historial.ranking_final;
+    if (typeof ranking === 'string') {
+      ranking = JSON.parse(ranking);
+    }
+
+    if (this.historial.juego_jugado === 'Biketona Campeonato') {
+      return ranking.sort((a: any, b: any) => {
+        if (b.rondaMaximaAlcanzada !== a.rondaMaximaAlcanzada) {
+          return b.rondaMaximaAlcanzada - a.rondaMaximaAlcanzada;
+        }
+        return a.puntos - b.puntos;
+      });
+    }
+
+    return ranking.sort((a: any, b: any) => {
+      if (this.historial!.juego_jugado.includes('Biketona')) {
+        return a.puntos - b.puntos;
+      }
+      return b.puntos - a.puntos;
+    });
+  }
+
+  toggleInfoPodio(): void {
+    this.mostrarInfoPodio = !this.mostrarInfoPodio;
+  }
+
+  toggleInfoParticipantes(): void {
+    this.mostrarInfoParticipantes = !this.mostrarInfoParticipantes;
   }
 }

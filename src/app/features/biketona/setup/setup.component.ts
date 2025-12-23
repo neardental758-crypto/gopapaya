@@ -115,49 +115,6 @@ export class SetupComponent implements OnInit {
     return this.configuracion.tipoPista !== null;
   }
 
-  seleccionarTipoCompetencia(
-    tipo: '1v1' | 'campeonato' | 'campeonato-equipos'
-  ): void {
-    this.configuracion.tipoCompetencia = tipo;
-
-    if (tipo === '1v1') {
-      if (this.configuracion.numeroParticipantes < 2) {
-        this.configuracion.numeroParticipantes = 2;
-      }
-      this.configuracion.numeroBicicletas = Math.min(
-        this.configuracion.numeroBicicletas,
-        2
-      );
-    } else if (tipo === 'campeonato') {
-      if (this.configuracion.numeroParticipantes < 4) {
-        this.configuracion.numeroParticipantes = 4;
-      }
-    } else if (tipo === 'campeonato-equipos') {
-      if (this.configuracion.numeroParticipantes < 4) {
-        this.configuracion.numeroParticipantes = 4;
-      }
-    }
-
-    if (
-      this.configuracion.numeroParticipantes <
-      this.configuracion.numeroBicicletas
-    ) {
-      this.configuracion.numeroParticipantes =
-        this.configuracion.numeroBicicletas;
-    }
-  }
-
-  puedeAvanzarPaso2(): boolean {
-    return (
-      this.configuracion.tipoCompetencia !== null &&
-      this.configuracion.numeroBicicletas >= 1 &&
-      this.configuracion.numeroParticipantes >= 2 &&
-      this.configuracion.numeroParticipantes >=
-        this.configuracion.numeroBicicletas &&
-      this.configuracion.numeroVueltas >= 1
-    );
-  }
-
   siguiente(): void {
     if (this.paso === 1 && this.puedeAvanzarPaso1()) {
       this.paso = 2;
@@ -172,6 +129,156 @@ export class SetupComponent implements OnInit {
     }
   }
 
+  volver(): void {
+    if (this.paso > 1) {
+      this.anterior();
+    } else {
+      this.router.navigate(['/sesion/seleccionar-juego']);
+    }
+  }
+
+  ajustarBicicletas(valor: number): void {
+    const min = 1;
+    const max = 10;
+    const nuevoValor = Math.max(min, Math.min(max, valor));
+
+    this.configuracion.numeroBicicletas = nuevoValor;
+
+    if (this.configuracion.numeroParticipantes < nuevoValor) {
+      this.configuracion.numeroParticipantes = nuevoValor;
+    }
+  }
+
+  ajustarVueltas(valor: number): void {
+    const min = 1;
+    const max = 20;
+    this.configuracion.numeroVueltas = Math.max(min, Math.min(max, valor));
+  }
+
+  requiereTurnos(): boolean {
+    return (
+      this.configuracion.numeroParticipantes >
+      this.configuracion.numeroBicicletas
+    );
+  }
+
+  obtenerNumeroTurnos(): number {
+    if (!this.requiereTurnos()) return 1;
+    return Math.ceil(
+      this.configuracion.numeroParticipantes /
+        this.configuracion.numeroBicicletas
+    );
+  }
+
+  esPotenciaDeDos(n: number): boolean {
+    return n > 0 && (n & (n - 1)) === 0;
+  }
+
+  obtenerPotenciaDeDosValida(
+    n: number,
+    direccion: 'subir' | 'bajar' = 'subir'
+  ): number {
+    const potencias = [2, 4, 8, 16, 32];
+
+    if (direccion === 'subir') {
+      return potencias.find((p) => p >= n) || 4;
+    } else {
+      const potenciasReversas = [...potencias].reverse();
+      return potenciasReversas.find((p) => p <= n) || 2;
+    }
+  }
+
+  ajustarParticipantes(valor: number): void {
+    const valorAnterior = this.configuracion.numeroParticipantes;
+    const min = this.configuracion.tipoCompetencia === '1v1' ? 2 : 2;
+    const max = 50;
+    let nuevoValor = Math.max(min, Math.min(max, valor));
+
+    const minParticipantes = Math.max(min, this.configuracion.numeroBicicletas);
+    nuevoValor = Math.max(minParticipantes, nuevoValor);
+
+    if (
+      this.configuracion.tipoCompetencia === 'campeonato' ||
+      this.configuracion.tipoCompetencia === 'campeonato-equipos'
+    ) {
+      const direccion = nuevoValor < valorAnterior ? 'bajar' : 'subir';
+      nuevoValor = this.obtenerPotenciaDeDosValida(nuevoValor, direccion);
+    }
+
+    this.configuracion.numeroParticipantes = nuevoValor;
+  }
+
+  validarNumeroParticipantes(): { valido: boolean; mensaje: string } {
+    const { tipoCompetencia, numeroParticipantes } = this.configuracion;
+
+    if (
+      tipoCompetencia === 'campeonato' ||
+      tipoCompetencia === 'campeonato-equipos'
+    ) {
+      if (!this.esPotenciaDeDos(numeroParticipantes)) {
+        return {
+          valido: false,
+          mensaje: `Para campeonatos debe ser potencia de 2: 2, 4, 8, 16 o 32 participantes. Actualmente: ${numeroParticipantes}`,
+        };
+      }
+    }
+
+    if (tipoCompetencia === '1v1' && numeroParticipantes < 2) {
+      return {
+        valido: false,
+        mensaje: 'Para 1v1 se necesitan mínimo 2 participantes',
+      };
+    }
+
+    return { valido: true, mensaje: '' };
+  }
+
+  seleccionarTipoCompetencia(
+    tipo: '1v1' | 'campeonato' | 'campeonato-equipos'
+  ): void {
+    this.configuracion.tipoCompetencia = tipo;
+
+    if (tipo === '1v1') {
+      if (this.configuracion.numeroParticipantes < 2) {
+        this.configuracion.numeroParticipantes = 2;
+      }
+      this.configuracion.numeroBicicletas = Math.min(
+        this.configuracion.numeroBicicletas,
+        2
+      );
+    } else if (tipo === 'campeonato' || tipo === 'campeonato-equipos') {
+      if (!this.esPotenciaDeDos(this.configuracion.numeroParticipantes)) {
+        this.configuracion.numeroParticipantes =
+          this.obtenerPotenciaDeDosValida(
+            this.configuracion.numeroParticipantes
+          );
+      }
+    }
+
+    if (
+      this.configuracion.numeroParticipantes <
+      this.configuracion.numeroBicicletas
+    ) {
+      this.configuracion.numeroParticipantes =
+        this.configuracion.numeroBicicletas;
+    }
+  }
+
+  puedeAvanzarPaso2(): boolean {
+    if (this.configuracion.tipoCompetencia === null) return false;
+    if (this.configuracion.numeroBicicletas < 1) return false;
+    if (this.configuracion.numeroParticipantes < 2) return false;
+    if (
+      this.configuracion.numeroParticipantes <
+      this.configuracion.numeroBicicletas
+    )
+      return false;
+    if (this.configuracion.numeroVueltas < 1) return false;
+
+    const validacion = this.validarNumeroParticipantes();
+    return validacion.valido;
+  }
+
   finalizarConfiguracion(): void {
     if (
       this.configuracion.numeroParticipantes <
@@ -183,8 +290,13 @@ export class SetupComponent implements OnInit {
       return;
     }
 
-    const idSesion = Number(localStorage.getItem('idSesion') || 0);
+    const validacion = this.validarNumeroParticipantes();
+    if (!validacion.valido) {
+      alert(validacion.mensaje);
+      return;
+    }
 
+    const idSesion = Number(localStorage.getItem('idSesion') || 0);
     if (!idSesion) {
       alert(
         'No se encontró id de sesión. Verifica cómo estás manejando la sesión.'
@@ -259,60 +371,6 @@ export class SetupComponent implements OnInit {
         alert('Ocurrió un error guardando la configuración en el servidor.');
       },
     });
-  }
-
-  volver(): void {
-    if (this.paso > 1) {
-      this.anterior();
-    } else {
-      this.router.navigate(['/sesion/seleccionar-juego']);
-    }
-  }
-
-  ajustarBicicletas(valor: number): void {
-    const min = 1;
-    const max = 10;
-    const nuevoValor = Math.max(min, Math.min(max, valor));
-
-    this.configuracion.numeroBicicletas = nuevoValor;
-
-    if (this.configuracion.numeroParticipantes < nuevoValor) {
-      this.configuracion.numeroParticipantes = nuevoValor;
-    }
-  }
-
-  ajustarParticipantes(valor: number): void {
-    const min = this.configuracion.tipoCompetencia === '1v1' ? 2 : 2;
-    const max = 50;
-    const nuevoValor = Math.max(min, Math.min(max, valor));
-
-    const minParticipantes = Math.max(min, this.configuracion.numeroBicicletas);
-
-    this.configuracion.numeroParticipantes = Math.max(
-      minParticipantes,
-      nuevoValor
-    );
-  }
-
-  ajustarVueltas(valor: number): void {
-    const min = 1;
-    const max = 20;
-    this.configuracion.numeroVueltas = Math.max(min, Math.min(max, valor));
-  }
-
-  requiereTurnos(): boolean {
-    return (
-      this.configuracion.numeroParticipantes >
-      this.configuracion.numeroBicicletas
-    );
-  }
-
-  obtenerNumeroTurnos(): number {
-    if (!this.requiereTurnos()) return 1;
-    return Math.ceil(
-      this.configuracion.numeroParticipantes /
-        this.configuracion.numeroBicicletas
-    );
   }
 
   ngOnDestroy(): void {

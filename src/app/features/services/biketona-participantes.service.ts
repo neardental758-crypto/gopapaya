@@ -13,10 +13,10 @@ export interface BiketonaParticipante {
   tiempo?: string;
   velocidadPromedio?: string;
   velocidadMax?: string;
-  calorias?: string; // kcal
-  vatios?: string; // W
-  distanciaReal?: string; // km (por ejemplo)
-  tiempoTotal?: string; // mm:ss
+  calorias?: string;
+  vatios?: string;
+  distanciaReal?: string;
+  tiempoTotal?: string;
   posicion?: number;
   llave: number;
   estadoLlave: string;
@@ -64,6 +64,15 @@ export class BiketonaParticipantesService {
         `${this.apiUrl}/bulk`,
         participantes
       )
+      .pipe(map((res) => res.data));
+  }
+
+  actualizarParticipante(
+    id: string,
+    datos: Partial<BiketonaParticipante>
+  ): Observable<BiketonaParticipante> {
+    return this.http
+      .put<BiketonaParticipanteApiResponse>(`${this.apiUrl}/${id}`, datos)
       .pipe(map((res) => res.data));
   }
 }

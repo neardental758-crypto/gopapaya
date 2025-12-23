@@ -28,6 +28,19 @@ export class HistorialJuegoAdapter {
           'respuestasIncorrectas',
         ],
       },
+      'Biketona Campeonato': {
+        tabs: ['resumen', 'participantes', 'estadisticas'],
+        tienePreguntas: false,
+        camposParticipante: [
+          'nombre',
+          'mejorTiempo',
+          'velocidadPromedio',
+          'velocidadMaxima',
+          'calorias',
+          'vatios',
+          'posicion',
+        ],
+      },
       Biketona: {
         tabs: ['resumen', 'participantes', 'estadisticas'],
         tienePreguntas: false,
@@ -71,8 +84,9 @@ export class HistorialJuegoAdapter {
   }
 
   adaptarParticipantesBiketona(historial: HistorialSesion): any[] {
-    if (historial.juego_jugado !== 'Biketona')
+    if (!historial.juego_jugado.includes('Biketona')) {
       return historial.participantes_data;
+    }
 
     const participantesOrdenados = [...historial.participantes_data]
       .filter((p) => p.mejorTiempo != null)
@@ -82,25 +96,25 @@ export class HistorialJuegoAdapter {
       ...p,
       nombre: p.nombre || 'Sin nombre',
       puntosCarrera: p.mejorTiempo || 0,
-      velocidadPromedio: p.velocidadPromedio || 0,
-      velocidadMaxima: p.velocidadMaxima || 0,
-      caloriasQuemadas: p.calorias || 0,
-      vatiosGenerados: p.vatios || 0,
+      velocidadPromedio: Number(p.velocidadPromedio || 0),
+      velocidadMaxima: Number(p.velocidadMaxima || 0),
+      caloriasQuemadas: Number(p.calorias || 0),
+      vatiosGenerados: Number(p.vatios || 0),
       posicionGeneral: index + 1,
       totalParticipantesGeneral: participantesOrdenados.length,
     }));
   }
 
   getRankingLabel(juegoJugado: string): string {
-    return juegoJugado === 'Biketona' ? 'Mejor Tiempo' : 'Puntos';
+    return juegoJugado.includes('Biketona') ? 'Mejor Tiempo' : 'Puntos';
   }
 
   formatearPuntos(puntos: number, juegoJugado: string): string {
     if (puntos === null || puntos === undefined) {
-      return juegoJugado === 'Biketona' ? '0:00' : '0';
+      return juegoJugado.includes('Biketona') ? '0:00' : '0';
     }
 
-    if (juegoJugado === 'Biketona') {
+    if (juegoJugado.includes('Biketona')) {
       const mins = Math.floor(puntos / 60);
       const secs = Math.round(puntos % 60);
       return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -109,14 +123,24 @@ export class HistorialJuegoAdapter {
   }
 
   getEstadisticasResumen(historial: HistorialSesion): any {
-    if (historial.juego_jugado === 'Biketona') {
-      return {
+    if (historial.juego_jugado.includes('Biketona')) {
+      const stats: any = {
         totalParticipantes: historial.participantes_data?.length || 0,
         velocidadPromedio: this.calcularVelocidadPromedioBiketona(historial),
         velocidadMaxima: this.calcularVelocidadMaximaBiketona(historial),
         caloriasTotales: this.calcularCaloriasTotalesBiketona(historial),
         vatiosTotales: this.calcularVatiosTotalesBiketona(historial),
       };
+
+      if (historial.juego_jugado === 'Biketona Campeonato') {
+        stats.totalRondas = historial.estadisticas_generales?.totalRondas || 0;
+        stats.duracionTotalTorneo =
+          historial.estadisticas_generales?.duracionTotal || 0;
+        stats.distanciaPromedioGeneral =
+          historial.estadisticas_generales?.distanciaPromedioGeneral || 0;
+      }
+
+      return stats;
     }
 
     return {

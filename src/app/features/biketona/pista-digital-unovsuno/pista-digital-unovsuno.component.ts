@@ -115,9 +115,7 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
   ];
   idBiketona: string | null = null;
   participantesRegistrados: any[] = [];
-
   participantesRecientes: string[] = [];
-
   tiempoTotalTorneo = 0;
 
   constructor(

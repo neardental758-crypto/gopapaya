@@ -105,7 +105,9 @@ export class HistorialService {
     fechaFin?: string,
     pagina: number = 1,
     limite: number = 10,
-    juegoFiltro?: string
+    juegoFiltro?: string,
+    cronograma?: string,
+    secuencia?: string
   ): Observable<HistorialResponse & { paginacion: any }> {
     const params: any = {
       pagina: pagina.toString(),

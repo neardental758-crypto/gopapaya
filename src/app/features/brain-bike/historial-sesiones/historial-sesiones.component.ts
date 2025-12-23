@@ -32,6 +32,7 @@ export class HistorialSesionesComponent implements OnInit {
   filtroJuego = '';
   fechaInicio = '';
   fechaFin = '';
+
   sesionesExpandidas: Set<number> = new Set();
 
   paginacionSesiones: any = null;
@@ -48,6 +49,11 @@ export class HistorialSesionesComponent implements OnInit {
   empresaIdParaCorreo: string | null = null;
   grupoParaCorreo: any = null;
 
+  filtroCronograma = '';
+  filtroSecuencia = '';
+  cronogramas: string[] = [];
+  secuencias: string[] = [];
+
   constructor(
     private historialService: HistorialService,
     private authService: AuthService,
@@ -60,29 +66,6 @@ export class HistorialSesionesComponent implements OnInit {
   ngOnInit(): void {
     this.cargarEmpresas();
     this.cargarHistorial();
-  }
-
-  cargarHistorial(): void {
-    this.cargando = true;
-    const empresaId = this.empresaSeleccionada || undefined;
-    const fechaIni = this.fechaInicio || undefined;
-    const fechaFn = this.fechaFin || undefined;
-    const juego = this.filtroJuego || undefined;
-
-    this.historialService
-      .getHistorial(empresaId, fechaIni, fechaFn, 1, 10, juego)
-      .subscribe({
-        next: (response) => {
-          this.sesionesAgrupadas = response.agrupado;
-          this.indicadores = response.indicadores;
-          this.paginacionSesiones = response.paginacion;
-          this.cargando = false;
-        },
-        error: (error) => {
-          console.error('❌ Error al cargar historial:', error);
-          this.cargando = false;
-        },
-      });
   }
 
   cargarEmpresas(): void {
@@ -100,9 +83,20 @@ export class HistorialSesionesComponent implements OnInit {
     const fechaIni = this.fechaInicio || undefined;
     const fechaFn = this.fechaFin || undefined;
     const juego = this.filtroJuego || undefined;
+    const cronograma = this.filtroCronograma || undefined;
+    const secuencia = this.filtroSecuencia || undefined;
 
     this.historialService
-      .getHistorial(empresaId, fechaIni, fechaFn, pagina, 10, juego)
+      .getHistorial(
+        empresaId,
+        fechaIni,
+        fechaFn,
+        pagina,
+        10,
+        juego,
+        cronograma,
+        secuencia
+      )
       .subscribe({
         next: (response) => {
           this.sesionesAgrupadas = response.agrupado;
@@ -197,12 +191,88 @@ export class HistorialSesionesComponent implements OnInit {
     this.filtroJuego = '';
     this.fechaInicio = '';
     this.fechaFin = '';
+    this.filtroCronograma = '';
+    this.filtroSecuencia = '';
+    this.cargarHistorial();
+  }
+
+  onCronogramaChange(): void {
+    this.cargarHistorial();
+  }
+
+  onSecuenciaChange(): void {
     this.cargarHistorial();
   }
 
   onJuegoChange(): void {
+    if (this.filtroJuego === 'Biketona') {
+      this.filtroJuego = '';
+    }
     this.cargarHistorial();
   }
+
+  cargarHistorial(): void {
+    this.cargando = true;
+    const empresaId = this.empresaSeleccionada || undefined;
+    const fechaIni = this.fechaInicio || undefined;
+    const fechaFn = this.fechaFin || undefined;
+    let juego = this.filtroJuego || undefined;
+    const cronograma = this.filtroCronograma || undefined;
+    const secuencia = this.filtroSecuencia || undefined;
+
+    if (juego === 'Biketona') {
+      juego = undefined;
+    }
+
+    this.historialService
+      .getHistorial(
+        empresaId,
+        fechaIni,
+        fechaFn,
+        1,
+        10,
+        juego,
+        cronograma,
+        secuencia
+      )
+      .subscribe({
+        next: (response) => {
+          if (this.filtroJuego === 'Biketona') {
+            this.sesionesAgrupadas = response.agrupado.filter((grupo) =>
+              grupo.carreras.some((c) => c.juego_jugado.includes('Biketona'))
+            );
+          } else {
+            this.sesionesAgrupadas = response.agrupado;
+          }
+          this.indicadores = response.indicadores;
+          this.paginacionSesiones = response.paginacion;
+          this.extraerValoresUnicos();
+          this.cargando = false;
+        },
+        error: (error) => {
+          console.error('❌ Error al cargar historial:', error);
+          this.cargando = false;
+        },
+      });
+  }
+
+  extraerValoresUnicos(): void {
+    const cronogramasSet = new Set<string>();
+    const secuenciasSet = new Set<string>();
+
+    this.sesionesAgrupadas.forEach((grupo) => {
+      if (grupo.sesion?.cronograma) {
+        cronogramasSet.add(grupo.sesion.cronograma);
+      }
+      if (grupo.sesion?.secuencia) {
+        secuenciasSet.add(grupo.sesion.secuencia);
+      }
+    });
+
+    this.cronogramas = Array.from(cronogramasSet).sort();
+    this.secuencias = Array.from(secuenciasSet).sort();
+  }
+
   juegoFiltradoTienePreguntas(): boolean {
     if (!this.filtroJuego) return false;
     return this.juegoAdapter.tienePreguntas(this.filtroJuego);
@@ -595,9 +665,8 @@ export class HistorialSesionesComponent implements OnInit {
   }
 
   deberiaOcultarDistancia(grupo: SesionAgrupada): boolean {
-    return grupo.carreras.every((c) => c.juego_jugado === 'Biketona');
+    return grupo.carreras.every((c) => c.juego_jugado.includes('Biketona'));
   }
-
   onCorreoEnviado(): void {
     this.cerrarModalCorreo();
   }
