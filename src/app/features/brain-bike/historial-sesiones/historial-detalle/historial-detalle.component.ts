@@ -8,7 +8,12 @@ import {
 import { FormsModule } from '@angular/forms';
 import { HistorialJuegoAdapter } from '../adapter/historial-juego.adapter';
 
-type TabHistorial = 'resumen' | 'preguntas' | 'participantes' | 'estadisticas';
+type TabHistorial =
+  | 'resumen'
+  | 'preguntas'
+  | 'participantes'
+  | 'estadisticas'
+  | 'equipos';
 @Component({
   selector: 'app-historial-detalle',
   standalone: true,
@@ -262,6 +267,19 @@ export class HistorialDetalleComponent implements OnInit {
   esBiketonaCampeonato(): boolean {
     return this.historial?.juego_jugado === 'Biketona Campeonato';
   }
+  esBiketonaEquipos(): boolean {
+    return this.historial?.juego_jugado === 'Biketona Equipos';
+  }
+
+  getEquiposRanking(): any[] {
+    if (!this.historial) return [];
+    return this.juegoAdapter.getEquiposRanking(this.historial);
+  }
+
+  getColorEquipo(equipoId: number): string {
+    if (!this.historial) return '#22c55e';
+    return this.juegoAdapter.getColorEquipo(equipoId, this.historial);
+  }
 
   volver(): void {
     this.router.navigate(['/historial']);
@@ -298,5 +316,9 @@ export class HistorialDetalleComponent implements OnInit {
 
   toggleInfoParticipantes(): void {
     this.mostrarInfoParticipantes = !this.mostrarInfoParticipantes;
+  }
+
+  getParticipantesPorEquipo(equipoId: number): any[] {
+    return this.participantesAdaptados.filter((p) => p.equipoId === equipoId);
   }
 }

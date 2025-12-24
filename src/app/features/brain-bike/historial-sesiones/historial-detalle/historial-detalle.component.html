@@ -77,116 +77,287 @@
         </button>
       </div>
 
-<div *ngIf="tabActiva === 'resumen'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-display font-bold text-neon-yellow">🏆 Podio</h2>
+<!-- TAB RESUMEN -->
+<div *ngIf="tabActiva === 'resumen'" class="space-y-6">
 
-      <button *ngIf="esBiketonaCampeonato()"
-        (click)="toggleInfoPodio()"
-        class="p-2 bg-neon-blue/20 hover:bg-neon-blue/30 border border-neon-blue/50 rounded-lg transition-all">
-        <span class="text-neon-blue text-lg">ℹ️</span>
-      </button>
-    </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-    <div *ngIf="mostrarInfoPodio && esBiketonaCampeonato()"
-      class="mb-4 text-xs text-gray-300 bg-neon-blue/10 border border-neon-blue/30 rounded-lg p-4 animate-fadeIn">
-      <p class="font-bold text-neon-blue mb-2">📊 Cómo funciona el ranking en campeonatos:</p>
-      <ul class="space-y-1 list-disc list-inside">
-        <li>El ranking se basa en la <span class="text-neon-blue font-bold">ronda alcanzada</span> en el bracket de eliminación</li>
-        <li>El ganador es quien llegó a la <span class="text-neon-blue font-bold">final y ganó</span>, independientemente del tiempo</li>
-        <li>Los tiempos solo se usan para <span class="text-neon-blue font-bold">desempatar</span> entre participantes de la misma ronda</li>
-      </ul>
-    </div>
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-display font-bold text-neon-yellow">🏆 Podio</h2>
 
-    <div class="flex justify-center items-end gap-4 mb-6 h-48">
-      <div *ngIf="getRankingParaPodio()[1]" class="text-center">
-        <div class="w-20 h-24 bg-gradient-to-t from-gray-600 to-gray-500 rounded-t-lg flex items-end justify-center pb-2">
-          <span class="text-4xl">🥈</span>
+        <button *ngIf="esBiketonaCampeonato()"
+          (click)="toggleInfoPodio()"
+          class="p-2 bg-neon-blue/20 hover:bg-neon-blue/30 border border-neon-blue/50 rounded-lg transition-all">
+          <span class="text-neon-blue text-lg">ℹ️</span>
+        </button>
+      </div>
+
+      <div *ngIf="mostrarInfoPodio && esBiketonaCampeonato()"
+        class="mb-4 text-xs text-gray-300 bg-neon-blue/10 border border-neon-blue/30 rounded-lg p-4 animate-fadeIn">
+        <p class="font-bold text-neon-blue mb-2">📊 Cómo funciona el ranking en campeonatos:</p>
+        <ul class="space-y-1 list-disc list-inside">
+          <li>El ranking se basa en la <span class="text-neon-blue font-bold">ronda alcanzada</span> en el bracket de eliminación</li>
+          <li>El ganador es quien llegó a la <span class="text-neon-blue font-bold">final y ganó</span>, independientemente del tiempo</li>
+          <li>Los tiempos solo se usan para <span class="text-neon-blue font-bold">desempatar</span> entre participantes de la misma ronda</li>
+        </ul>
+      </div>
+
+      <div class="flex justify-center items-end gap-4 mb-6 h-48">
+        <div *ngIf="getRankingParaPodio()[1]" class="text-center">
+          <div class="w-20 h-24 bg-gradient-to-t from-gray-600 to-gray-500 rounded-t-lg flex items-end justify-center pb-2">
+            <span class="text-4xl">🥈</span>
+          </div>
+          <div class="bg-dark-800 rounded-b-lg p-2">
+            <p class="text-white font-bold text-sm truncate w-20">{{ getRankingParaPodio()[1].nombreParticipante || getRankingParaPodio()[1].nombre }}</p>
+            <p class="text-neon-blue text-xs">{{ formatearPuntos(getRankingParaPodio()[1].puntosCarrera || getRankingParaPodio()[1].puntos) }}</p>
+          </div>
         </div>
-        <div class="bg-dark-800 rounded-b-lg p-2">
-          <p class="text-white font-bold text-sm truncate w-20">{{ getRankingParaPodio()[1].nombreParticipante || getRankingParaPodio()[1].nombre }}</p>
-          <p class="text-neon-blue text-xs">{{ formatearPuntos(getRankingParaPodio()[1].puntosCarrera || getRankingParaPodio()[1].puntos) }}</p>
+        <div *ngIf="getRankingParaPodio()[0]" class="text-center">
+          <div class="w-24 h-32 bg-gradient-to-t from-yellow-600 to-yellow-400 rounded-t-lg flex items-end justify-center pb-2">
+            <span class="text-5xl">🥇</span>
+          </div>
+          <div class="bg-dark-800 rounded-b-lg p-2 border border-neon-yellow/30">
+            <p class="text-neon-yellow font-bold text-sm truncate w-24">{{ getRankingParaPodio()[0].nombreParticipante || getRankingParaPodio()[0].nombre }}</p>
+            <p class="text-white text-xs">{{ formatearPuntos(getRankingParaPodio()[0].puntosCarrera || getRankingParaPodio()[0].puntos) }}</p>
+          </div>
+        </div>
+        <div *ngIf="getRankingParaPodio()[2]" class="text-center">
+          <div class="w-20 h-20 bg-gradient-to-t from-orange-700 to-orange-500 rounded-t-lg flex items-end justify-center pb-2">
+            <span class="text-3xl">🥉</span>
+          </div>
+          <div class="bg-dark-800 rounded-b-lg p-2">
+            <p class="text-white font-bold text-sm truncate w-20">{{ getRankingParaPodio()[2].nombreParticipante || getRankingParaPodio()[2].nombre }}</p>
+            <p class="text-neon-orange text-xs">{{ formatearPuntos(getRankingParaPodio()[2].puntosCarrera || getRankingParaPodio()[2].puntos) }}</p>
+          </div>
         </div>
       </div>
-      <div *ngIf="getRankingParaPodio()[0]" class="text-center">
-        <div class="w-24 h-32 bg-gradient-to-t from-yellow-600 to-yellow-400 rounded-t-lg flex items-end justify-center pb-2">
-          <span class="text-5xl">🥇</span>
-        </div>
-        <div class="bg-dark-800 rounded-b-lg p-2 border border-neon-yellow/30">
-          <p class="text-neon-yellow font-bold text-sm truncate w-24">{{ getRankingParaPodio()[0].nombreParticipante || getRankingParaPodio()[0].nombre }}</p>
-          <p class="text-white text-xs">{{ formatearPuntos(getRankingParaPodio()[0].puntosCarrera || getRankingParaPodio()[0].puntos) }}</p>
-        </div>
-      </div>
-      <div *ngIf="getRankingParaPodio()[2]" class="text-center">
-        <div class="w-20 h-20 bg-gradient-to-t from-orange-700 to-orange-500 rounded-t-lg flex items-end justify-center pb-2">
-          <span class="text-3xl">🥉</span>
-        </div>
-        <div class="bg-dark-800 rounded-b-lg p-2">
-          <p class="text-white font-bold text-sm truncate w-20">{{ getRankingParaPodio()[2].nombreParticipante || getRankingParaPodio()[2].nombre }}</p>
-          <p class="text-neon-orange text-xs">{{ formatearPuntos(getRankingParaPodio()[2].puntosCarrera || getRankingParaPodio()[2].puntos) }}</p>
+
+      <div class="space-y-2 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neon-yellow/30 scrollbar-track-dark-800">
+        <div *ngFor="let participante of getRankingParaPodio(); let i = index"
+          class="bg-dark-800 rounded-lg p-3 flex items-center gap-3 border border-transparent hover:border-neon-yellow/30 transition-all"
+          [class.border-neon-yellow]="i === 0">
+          <div class="text-2xl w-8">{{ getMedalEmoji(participante.posicion || i + 1) }}</div>
+          <div *ngIf="participante.colorBicicleta" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white"
+            [style.background-color]="participante.colorBicicleta">
+            {{ participante.numeroBicicleta }}
+          </div>
+
+          <div class="flex-1">
+            <p class="text-white font-bold">{{ participante.nombreParticipante || participante.nombre }}</p>
+            <p *ngIf="esBiketonaEquipos() && participante.equipoNombre" class="text-xs font-bold mt-0.5"
+              [style.color]="getColorEquipo(participante.equipoId)">
+              {{ participante.equipoNombre }}
+            </p>
+          </div>
+          <div class="text-right">
+            <p class="text-neon-yellow font-bold">{{ formatearPuntos(participante.puntosCarrera || participante.puntos) }}</p>
+            <p class="text-xs text-gray-500">{{ getRankingLabel() }}</p>
+          </div>
         </div>
       </div>
     </div>
 
-<div class="space-y-2 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neon-yellow/30 scrollbar-track-dark-800">
-  <div *ngFor="let participante of getRankingParaPodio(); let i = index"
-    class="bg-dark-800 rounded-lg p-3 flex items-center gap-3 border border-transparent hover:border-neon-yellow/30 transition-all"
-    [class.border-neon-yellow50]="i === 0">
-    <div class="text-2xl w-8 text-ye">{{ getMedalEmoji(participante.posicion || i + 1) }}</div>
-    <div *ngIf="participante.colorBicicleta" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white"
-      [style.background-color]="participante.colorBicicleta">
-      {{ participante.numeroBicicleta }}
-    </div>
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+      <h2 class="text-xl font-display font-bold text-white mb-4">ℹ️ Información de la Sesión</h2>
+      <div class="space-y-4">
+        <div class="bg-dark-800 rounded-lg p-4">
+          <p class="text-xs text-gray-400 mb-1">Lugar de ejecución</p>
+          <p class="text-lg font-bold text-white">{{ historial.sesion?.lugarEjecucion || 'No especificado' }}</p>
+        </div>
 
-    <div class="flex-1">
-      <p class="text-white font-bold">{{ participante.nombreParticipante || participante.nombre }}</p>
+        <div class="bg-dark-800 rounded-lg p-4">
+          <p class="text-xs text-gray-400 mb-1">Fecha y Hora Programada</p>
+          <p class="text-lg font-bold text-neon-blue">{{ formatearFecha(historial.sesion?.fecha_sesion) }}</p>
+        </div>
+
+        <div class="bg-dark-800 rounded-lg p-4">
+          <p class="text-xs text-gray-400 mb-1">Operado por</p>
+          <p class="text-lg font-bold text-neon-yellow">{{ historial.creador?.nombre || 'N/A' }}</p>
+          <p class="text-xs text-gray-500">{{ historial.creador?.email || '' }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div *ngIf="configuracionJuego?.tienePreguntas" class="bg-dark-800 rounded-lg p-4 text-center border border-neon-green/30">
+            <p class="text-3xl font-bold text-neon-green">{{ historial.parametros_utilizados?.numeroPreguntas }}</p>
+            <p class="text-xs text-gray-400 mt-1">Preguntas</p>
+          </div>
+          <div *ngIf="!configuracionJuego?.tienePreguntas" class="bg-dark-800 rounded-lg p-4 text-center border border-neon-green/30">
+            <p class="text-3xl font-bold text-neon-green">{{ historial.parametros_utilizados?.numeroVueltas }}</p>
+            <p class="text-xs text-gray-400 mt-1">Vueltas</p>
+          </div>
+          <div class="bg-dark-800 rounded-lg p-4 text-center border border-neon-pink/30">
+            <p class="text-3xl font-bold text-neon-pink">{{ participantesAdaptados.length || 0 }}</p>
+            <p class="text-xs text-gray-400 mt-1">Participantes</p>
+          </div>
+        </div>
+
+        <div *ngIf="historial.sesion?.nota" class="bg-dark-800 rounded-lg p-4 border-l-4 border-neon-blue">
+          <p class="text-xs text-gray-400 mb-1">Notas de la sesión</p>
+          <p class="text-sm text-gray-300">{{ historial.sesion.nota }}</p>
+        </div>
+      </div>
     </div>
-    <div class="text-right">
-      <p class="text-neon-yellow font-bold">{{ formatearPuntos(participante.puntosCarrera || participante.puntos) }}</p>
-      <p class="text-xs text-gray-500">{{ getRankingLabel() }}</p>
+  </div>
+
+  <div *ngIf="esBiketonaEquipos()" class="bg-dark-900 border border-dark-700 rounded-card p-6">
+    <h2 class="text-xl font-display font-bold text-white mb-4 flex items-center gap-2">
+      <span class="text-2xl">🏆</span>
+      Ranking de Equipos
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngFor="let equipo of getEquiposRanking(); let i = index"
+        class="bg-dark-800 rounded-lg p-4 border-2 transition-all hover:scale-[1.02]"
+        [class.border-neon-yellow]="i === 0"
+        [class.shadow-neon-yellow]="i === 0"
+        [class.border-gray-400]="i === 1"
+        [class.border-orange-500]="i === 2"
+        [style.border-color]="i >= 3 ? (equipo.color + '40') : null">
+
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold border-2"
+            [class.bg-neon-yellow]="i === 0"
+            [class.text-dark-950]="i === 0"
+            [class.bg-gray-400]="i === 1"
+            [class.text-dark-950]="i === 1"
+            [class.bg-orange-500]="i === 2"
+            [class.text-white]="i === 2"
+            [style.background-color]="i >= 3 ? (equipo.color + '20') : null"
+            [style.border-color]="i >= 3 ? equipo.color : null"
+            [style.color]="i >= 3 ? equipo.color : null"
+            [style.box-shadow]="i === 0 ? '0 0 20px rgba(255,247,0,0.5)' : 'none'">
+            {{ i + 1 }}
+          </div>
+
+          <div class="flex-1">
+            <p class="text-white font-bold text-lg">{{ equipo.nombre }}</p>
+            <p class="text-xs text-gray-400">Equipo {{ equipo.id }}</p>
+          </div>
+
+          <div class="text-right">
+            <p class="text-xs text-gray-400 mb-1">Llaves</p>
+            <p class="text-3xl font-display font-bold"
+              [style.color]="equipo.color">
+              {{ equipo.llavesGanadas }}
+            </p>
+          </div>
+
+          <div *ngIf="i < 3" class="text-3xl">
+            {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- TAB EQUIPOS -->
+<div *ngIf="tabActiva === 'equipos' && esBiketonaEquipos()" class="animate-fadeIn">
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-6 mb-6">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-2xl font-display font-bold text-white flex items-center gap-3">
+        <span class="text-4xl">🏆</span>
+        Ranking de Equipos
+      </h3>
+      <span class="text-neon-yellow font-bold text-lg">
+        {{ getEquiposRanking().length }} equipos
+      </span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div *ngFor="let equipo of getEquiposRanking(); let i = index"
+        class="bg-gradient-to-br from-dark-800/80 to-dark-950/80 rounded-xl p-6 border-2 transition-all hover:scale-[1.02]"
+        [class.border-neon-yellow]="i === 0"
+        [class.shadow-neon-yellow-lg]="i === 0"
+        [class.border-gray-400]="i === 1"
+        [class.border-orange-500]="i === 2"
+        [style.border-color]="i >= 3 ? (equipo.color + '40') : null">
+
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold border-2"
+              [class.bg-neon-yellow]="i === 0"
+              [class.text-dark-950]="i === 0"
+              [class.bg-gray-400]="i === 1"
+              [class.text-dark-950]="i === 1"
+              [class.bg-orange-500]="i === 2"
+              [class.text-white]="i === 2"
+              [style.background-color]="i >= 3 ? (equipo.color + '20') : null"
+              [style.border-color]="i >= 3 ? equipo.color : null"
+              [style.color]="i >= 3 ? equipo.color : null"
+              [style.box-shadow]="i === 0 ? '0 0 20px rgba(255,247,0,0.5)' : 'none'">
+              {{ i + 1 }}
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Equipo</p>
+              <h4 class="text-white font-bold text-lg">{{ equipo.nombre }}</h4>
+            </div>
+          </div>
+          <div *ngIf="i < 3" class="text-4xl">
+            {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
+          </div>
+        </div>
+
+        <div class="bg-dark-950/60 rounded-lg p-4 border"
+          [style.border-color]="equipo.color + '40'">
+          <div class="text-center">
+            <p class="text-gray-400 text-xs mb-2">Llaves Ganadas</p>
+            <p class="text-4xl font-display font-bold"
+              [style.color]="equipo.color"
+              [style.text-shadow]="'0 0 20px ' + equipo.color + '80'">
+              {{ equipo.llavesGanadas }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
-    <h2 class="text-xl font-display font-bold text-white mb-4">ℹ️ Información de la Sesión</h2>
-    <div class="space-y-4">
-      <div class="bg-dark-800 rounded-lg p-4">
-        <p class="text-xs text-gray-400 mb-1">Lugar de ejecución</p>
-        <p class="text-lg font-bold text-white">{{ historial.sesion?.lugarEjecucion || 'No especificado' }}</p>
-      </div>
+    <h3 class="text-xl font-display font-bold text-white mb-6 flex items-center gap-3">
+      <span class="text-3xl">👥</span>
+      Participantes por Equipo
+    </h3>
 
-      <div class="bg-dark-800 rounded-lg p-4">
-        <p class="text-xs text-gray-400 mb-1">Fecha y Hora Programada</p>
-        <p class="text-lg font-bold text-neon-blue">{{ formatearFecha(historial.sesion?.fecha_sesion) }}</p>
-      </div>
+    <div class="space-y-6">
+      <div *ngFor="let equipo of getEquiposRanking()"
+        class="bg-dark-800/50 rounded-xl p-6 border-2"
+        [style.border-color]="equipo.color + '40'">
 
-      <div class="bg-dark-800 rounded-lg p-4">
-        <p class="text-xs text-gray-400 mb-1">Operado por</p>
-        <p class="text-lg font-bold text-neon-yellow">{{ historial.creador?.nombre || 'N/A' }}</p>
-        <p class="text-xs text-gray-500">{{ historial.creador?.email || '' }}</p>
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div *ngIf="configuracionJuego?.tienePreguntas" class="bg-dark-800 rounded-lg p-4 text-center border border-neon-green/30">
-          <p class="text-3xl font-bold text-neon-green">{{ historial.parametros_utilizados?.numeroPreguntas }}</p>
-          <p class="text-xs text-gray-400 mt-1">Preguntas</p>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center text-xl font-bold border-2"
+            [style.background-color]="equipo.color + '20'"
+            [style.border-color]="equipo.color"
+            [style.color]="equipo.color">
+            {{ equipo.nombre.charAt(0) }}
+          </div>
+          <h4 class="text-white font-bold text-lg">{{ equipo.nombre }}</h4>
         </div>
-        <div *ngIf="!configuracionJuego?.tienePreguntas" class="bg-dark-800 rounded-lg p-4 text-center border border-neon-green/30">
-          <p class="text-3xl font-bold text-neon-green">{{ historial.parametros_utilizados?.numeroVueltas }}</p>
-          <p class="text-xs text-gray-400 mt-1">Vueltas</p>
-        </div>
-        <div class="bg-dark-800 rounded-lg p-4 text-center border border-neon-pink/30">
-          <p class="text-3xl font-bold text-neon-pink">{{ participantesAdaptados.length || 0 }}</p>
-          <p class="text-xs text-gray-400 mt-1">Participantes</p>
-        </div>
-      </div>
 
-      <div *ngIf="historial.sesion?.nota" class="bg-dark-800 rounded-lg p-4 border-l-4 border-neon-blue">
-        <p class="text-xs text-gray-400 mb-1">Notas de la sesión</p>
-        <p class="text-sm text-gray-300">{{ historial.sesion.nota }}</p>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div *ngFor="let participante of getParticipantesPorEquipo(equipo.id)"
+            class="bg-dark-900/60 rounded-lg p-4 border"
+            [style.border-color]="equipo.color + '30'">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="text-white font-bold">{{ participante.nombre }}</p>
+                <p class="text-xs font-mono mt-1"
+                  [style.color]="equipo.color">
+                  ⏱ {{ formatearTiempo(participante.puntosCarrera) }}
+                </p>
+                <div class="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                  <span>🚴 {{ participante.velocidadPromedio }} km/h</span>
+                  <span>⚡ {{ participante.velocidadMaxima }} km/h</span>
+                </div>
+              </div>
+              <div class="text-2xl"
+                [style.color]="equipo.color">
+                #{{ participante.posicionGeneral }}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -195,287 +366,363 @@
 <div *ngIf="tabActiva === 'estadisticas'">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
-          <div *ngIf="configuracionJuego?.tienePreguntas" class="bg-dark-900 border border-dark-700 rounded-card p-6">
-            <h2 class="text-xl font-display font-bold text-neon-yellow mb-6">🏆 Puntos</h2>
+    <div *ngIf="configuracionJuego?.tienePreguntas" class="bg-dark-900 border border-dark-700 rounded-card p-6">
+      <h2 class="text-xl font-display font-bold text-neon-yellow mb-6">🏆 Puntos</h2>
 
-            <div class="bg-gradient-to-br from-neon-yellow/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-yellow/50 mb-4">
-              <p class="text-xs text-gray-400 mb-2">Puntos Ganados</p>
-              <p class="text-5xl font-bold text-neon-yellow mb-1">{{ estadisticasResumen.puntosTotal }}</p>
-              <p class="text-xs text-gray-500">Totales</p>
-            </div>
+      <div class="bg-gradient-to-br from-neon-yellow/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-yellow/50 mb-4">
+        <p class="text-xs text-gray-400 mb-2">Puntos Ganados</p>
+        <p class="text-5xl font-bold text-neon-yellow mb-1">{{ estadisticasResumen.puntosTotal }}</p>
+        <p class="text-xs text-gray-500">Totales</p>
+      </div>
 
-            <div class="bg-gradient-to-r from-dark-800 to-dark-700 rounded-lg p-3 text-center mb-3 border border-neon-blue/30">
-              <p class="text-gray-400 text-sm font-bold mb-1">Preguntas Respondidas</p>
-              <p class="text-3xl font-bold text-neon-blue animate-pulse-slow">{{ estadisticasResumen.respuestasCorrectas + estadisticasResumen.respuestasIncorrectas }}</p>
-            </div>
+      <div class="bg-gradient-to-r from-dark-800 to-dark-700 rounded-lg p-3 text-center mb-3 border border-neon-blue/30">
+        <p class="text-gray-400 text-sm font-bold mb-1">Preguntas Respondidas</p>
+        <p class="text-3xl font-bold text-neon-blue animate-pulse-slow">{{ estadisticasResumen.respuestasCorrectas + estadisticasResumen.respuestasIncorrectas }}</p>
+      </div>
 
-            <div class="grid grid-cols-2 gap-3">
-              <div class="bg-neon-green/10 border border-neon-green/30 rounded-lg p-3 text-center">
-                <p class="text-neon-green font-bold text-2xl">{{ estadisticasResumen.respuestasCorrectas }}</p>
-                <p class="text-sm text-gray-400 mb-1">Correctas</p>
-                <p class="text-neon-green/70 text-xs">{{ getPorcentajeCorrectas() }}%</p>
-              </div>
-              <div class="bg-neon-red/10 border border-neon-red/30 rounded-lg p-3 text-center">
-                <p class="text-neon-red font-bold text-2xl">{{ estadisticasResumen.respuestasIncorrectas }}</p>
-                <p class="text-sm text-gray-400 mb-1">Incorrectas</p>
-                <p class="text-neon-red/70 text-xs">{{ getPorcentajeIncorrectas() }}%</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-dark-900 border border-dark-700 rounded-card p-6" [class.lg:col-span-2]="!configuracionJuego?.tienePreguntas">
-            <h2 class="text-xl font-display font-bold text-neon-blue mb-6">🚴 Velocidades</h2>
-
-            <div class="bg-dark-800 rounded-lg p-4 mb-4">
-              <p class="text-xs text-gray-400 mb-2">Velocidad Promedio</p>
-              <div class="flex items-end gap-2 mb-2">
-                <p class="text-4xl font-bold text-neon-blue">{{ formatearDecimal(estadisticasResumen.velocidadPromedio) }}</p>
-                <p class="text-lg text-gray-400 pb-1">km/h</p>
-              </div>
-              <div class="w-full bg-dark-700 rounded-full h-3">
-                <div class="bg-neon-blue h-3 rounded-full transition-all"
-                  [style.width.%]="Math.min((estadisticasResumen.velocidadPromedio / 30) * 100, 100)"></div>
-              </div>
-            </div>
-
-            <div class="bg-dark-800 rounded-lg p-4 mb-4">
-              <p class="text-xs text-gray-400 mb-2">Velocidad Máxima</p>
-              <div class="flex items-end gap-2 mb-2">
-                <p class="text-4xl font-bold text-neon-yellow">{{ formatearDecimal(estadisticasResumen.velocidadMaxima) }}</p>
-                <p class="text-lg text-gray-400 pb-1">km/h</p>
-              </div>
-              <div class="w-full bg-dark-700 rounded-full h-3">
-                <div class="bg-neon-yellow h-3 rounded-full transition-all"
-                  [style.width.%]="Math.min((estadisticasResumen.velocidadMaxima / 40) * 100, 100)"></div>
-              </div>
-            </div>
-
-            <div *ngIf="configuracionJuego?.tienePreguntas" class="grid grid-cols-2 gap-3">
-              <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-blue/30">
-                <p class="text-xs text-gray-400 mb-1">Vel. Mín. Video</p>
-                <p class="text-2xl font-bold text-neon-blue">{{ historial.parametros_utilizados?.velocidadMinimaVideo }}</p>
-                <p class="text-xs text-gray-500">km/h</p>
-              </div>
-              <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-yellow/30">
-                <p class="text-xs text-gray-400 mb-1">Vel. Mín. Trivia</p>
-                <p class="text-2xl font-bold text-neon-yellow">{{ historial.parametros_utilizados?.velocidadMinimaTrivia }}</p>
-                <p class="text-xs text-gray-500">km/h</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
-            <h2 class="text-xl font-display font-bold text-neon-orange mb-6">⚡ Energía</h2>
-
-            <div class="bg-gradient-to-br from-neon-orange/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-orange/50 mb-4">
-              <p class="text-xs text-gray-400 mb-2">Calorías Totales</p>
-              <p class="text-5xl font-bold text-neon-orange mb-1">{{ estadisticasResumen.caloriasTotales }}</p>
-              <p class="text-xs text-gray-500">kcal quemadas</p>
-            </div>
-
-            <div class="bg-gradient-to-br from-neon-yellow/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-yellow/50 mb-4">
-              <p class="text-xs text-gray-400 mb-2">Vatios Totales</p>
-              <p class="text-5xl font-bold text-neon-yellow mb-1">{{ estadisticasResumen.vatiosTotales }}</p>
-              <p class="text-xs text-gray-500">watts generados</p>
-            </div>
-          </div>
-
-        <div *ngIf="esBiketonaCampeonato()" class="bg-dark-900 border border-dark-700 rounded-card p-6">
-          <h2 class="text-xl font-display font-bold text-white mb-6">🏆 Info Campeonato</h2>
-
-          <div class="bg-gradient-to-br from-neon-blue/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-blue/50 mb-4">
-            <p class="text-xs text-gray-400 mb-2">Total Rondas</p>
-            <p class="text-5xl font-bold text-neon-blue mb-1">{{ estadisticasResumen.totalRondas || 0 }}</p>
-            <p class="text-xs text-gray-500">Rondas Jugadas</p>
-          </div>
-
-          <div class="bg-gradient-to-br from-neon-yellow/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-yellow/50">
-            <p class="text-xs text-gray-400 mb-2">Duración Total</p>
-            <p class="text-5xl font-bold text-neon-yellow mb-1">{{ formatearTiempoTorneo(estadisticasResumen.duracionTotalTorneo || 0) }}</p>
-            <p class="text-xs text-gray-500">tiempo torneo</p>
-          </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-neon-green/10 border border-neon-green/30 rounded-lg p-3 text-center">
+          <p class="text-neon-green font-bold text-2xl">{{ estadisticasResumen.respuestasCorrectas }}</p>
+          <p class="text-sm text-gray-400 mb-1">Correctas</p>
+          <p class="text-neon-green/70 text-xs">{{ getPorcentajeCorrectas() }}%</p>
         </div>
-
-          <div class="bg-dark-900 border border-dark-700 rounded-card p-6 mb-6">
-            <h2 class="text-xl font-display font-bold text-white mb-6 flex items-center gap-2">
-              <span class="text-2xl">👥</span>
-              Distribución por Sexo
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="bg-gradient-to-br from-neon-blue/20 to-transparent border-2 border-neon-blue/50 rounded-lg p-6 text-center hover:shadow-neon-blue-lg transition-all">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-neon-blue/20 flex items-center justify-center border-2 border-neon-blue">
-                  <span class="text-5xl">♂</span>
-                </div>
-                <p class="text-5xl font-bold text-neon-blue mb-2">{{ getDistribucionSexo().hombres }}</p>
-                <p class="text-lg font-bold text-white mb-1">Hombres</p>
-                <p class="text-sm text-gray-400">{{ getDistribucionSexo().hombres > 0 ? ((getDistribucionSexo().hombres / participantesAdaptados.length) * 100).toFixed(0) + '%' : '0%' }} del total</p>
-              </div>
-
-              <div class="bg-gradient-to-br from-neon-pink/20 to-transparent border-2 border-neon-pink/50 rounded-lg p-6 text-center transition-all" style="box-shadow: 0 0 20px rgba(255, 16, 240, 0.2);" onmouseover="this.style.boxShadow='0 0 40px rgba(255, 16, 240, 0.4)'" onmouseout="this.style.boxShadow='0 0 20px rgba(255, 16, 240, 0.2)'">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-neon-pink/20 flex items-center justify-center border-2 border-neon-pink">
-                  <span class="text-5xl">♀</span>
-                </div>
-                <p class="text-5xl font-bold text-neon-pink mb-2">{{ getDistribucionSexo().mujeres }}</p>
-                <p class="text-lg font-bold text-white mb-1">Mujeres</p>
-                <p class="text-sm text-gray-400">{{ getDistribucionSexo().mujeres > 0 ? ((getDistribucionSexo().mujeres / participantesAdaptados.length) * 100).toFixed(0) + '%' : '0%' }} del total</p>
-              </div>
-            </div>
-
-            <div *ngIf="getDistribucionSexo().sinEspecificar > 0" class="mt-4 bg-dark-800 border border-gray-600 rounded-lg p-4 text-center">
-              <div class="flex items-center justify-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-gray-600/20 flex items-center justify-center">
-                  <span class="text-2xl text-gray-400">❓</span>
-                </div>
-                <div>
-                  <p class="text-2xl font-bold text-gray-400">{{ getDistribucionSexo().sinEspecificar }}</p>
-                  <p class="text-sm text-gray-500">Sin especificar</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        <div class="bg-neon-red/10 border border-neon-red/30 rounded-lg p-3 text-center">
+          <p class="text-neon-red font-bold text-2xl">{{ estadisticasResumen.respuestasIncorrectas }}</p>
+          <p class="text-sm text-gray-400 mb-1">Incorrectas</p>
+          <p class="text-neon-red/70 text-xs">{{ getPorcentajeIncorrectas() }}%</p>
         </div>
+      </div>
+    </div>
 
-<div class="bg-dark-900 border border-dark-700 rounded-card p-6">
-  <div class="flex items-center justify-between mb-6">
-    <h2 class="text-xl font-display font-bold text-white">👥 Detalle Individual por Participante</h2>
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6" [class.lg:col-span-2]="!configuracionJuego?.tienePreguntas">
+      <h2 class="text-xl font-display font-bold text-neon-blue mb-6">🚴 Velocidades</h2>
 
-    <button *ngIf="esBiketonaCampeonato()"
-      (click)="toggleInfoParticipantes()"
-      class="p-2 bg-neon-yellow/20 hover:bg-neon-yellow/30 border border-neon-yellow/50 rounded-lg transition-all">
-      <span class="text-neon-yellow text-lg">ℹ️</span>
-    </button>
-  </div>
-
-  <div *ngIf="mostrarInfoParticipantes && esBiketonaCampeonato()"
-    class="mb-6 text-xs text-gray-300 bg-neon-yellow/10 border border-neon-yellow/30 rounded-lg p-4 animate-fadeIn">
-    <p class="font-bold text-neon-yellow mb-2">🏁 Sistema de clasificación:</p>
-    <ul class="space-y-1 list-disc list-inside">
-      <li>El ranking se determina por la <span class="text-neon-yellow font-bold">ronda alcanzada</span> en el torneo de eliminación</li>
-      <li>Quien llegó <span class="text-neon-yellow font-bold">más lejos</span> en el bracket obtiene mejor posición</li>
-      <li>Los tiempos de rondas anteriores <span class="text-neon-yellow font-bold">no afectan</span> la posición final</li>
-    </ul>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div *ngFor="let p of participantesAdaptados; let i = index"
-      class="bg-dark-800 rounded-lg p-4 border-2 border-dark-700 hover:border-neon-blue/50 transition-all">
-
-      <div class="flex items-center gap-3 mb-4 pb-3 border-b border-dark-700">
-        <span *ngIf="!p.colorBicicleta || p.colorBicicleta === '#FFFFFF' || p.colorBicicleta === '#000000'" class="text-2xl text-white">
-          {{ getMedalEmoji(p.posicionGeneral) }}
-        </span>
-        <div *ngIf="p.colorBicicleta && p.colorBicicleta !== '#FFFFFF' && p.colorBicicleta !== '#000000'"
-          class="w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl"
-          [style.background-color]="p.colorBicicleta"
-          [style.color]="p.colorBicicleta === '#FFFFFF' ? '#666' : '#FFFFFF'">
-          {{ p.numeroBicicleta }}
+      <div class="bg-dark-800 rounded-lg p-4 mb-4">
+        <p class="text-xs text-gray-400 mb-2">Velocidad Promedio</p>
+        <div class="flex items-end gap-2 mb-2">
+          <p class="text-4xl font-bold text-neon-blue">{{ formatearDecimal(estadisticasResumen.velocidadPromedio) }}</p>
+          <p class="text-lg text-gray-400 pb-1">km/h</p>
         </div>
-        <div *ngIf="!p.colorBicicleta"
-          class="w-14 h-14 rounded-full bg-gray-600 flex items-center justify-center font-bold text-xl text-white">
-          {{ p.id || p.posicionGeneral }}
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1">
-            <p class="text-white font-bold text-lg truncate">{{ p.nombreParticipante || p.nombre }}</p>
-            <div *ngIf="p.sexo === 'M' || p.genero === 'masculino'" class="flex items-center justify-center w-7 h-7 rounded-full bg-neon-blue/20 border border-neon-blue flex-shrink-0">
-              <span class="text-sm text-neon-blue">♂</span>
-            </div>
-            <div *ngIf="p.sexo === 'F' || p.genero === 'femenino'" class="flex items-center justify-center w-7 h-7 rounded-full bg-neon-pink/20 border border-neon-pink flex-shrink-0">
-              <span class="text-sm text-neon-pink">♀</span>
-            </div>
-          </div>
-          <p class="text-neon-yellow font-bold text-sm">
-            {{ formatearPuntos(Number(p.puntosCarrera) || Number(p.mejorTiempo) || 0) }}
-            <span class="text-xs text-gray-400">{{ getRankingLabel() }}</span>
-          </p>
+        <div class="w-full bg-dark-700 rounded-full h-3">
+          <div class="bg-neon-blue h-3 rounded-full transition-all"
+            [style.width.%]="Math.min((estadisticasResumen.velocidadPromedio / 30) * 100, 100)"></div>
         </div>
       </div>
 
-      <div class="space-y-3">
-        <div class="grid grid-cols-2 gap-2">
-          <div *ngIf="p.posicionGeneral" class="bg-gradient-to-br from-dark-700 to-dark-800 rounded p-2 text-center border-2 relative overflow-hidden"
-            [ngClass]="{
-              'border-neon-yellow shadow-neon-yellow': p.posicionGeneral === 1,
-              'border-gray-400': p.posicionGeneral === 2,
-              'border-neon-orange shadow-neon-orange': p.posicionGeneral === 3,
-              'border-dark-600': p.posicionGeneral > 3
-            }">
-            <div *ngIf="p.posicionGeneral <= 3" class="absolute top-0 left-0 right-0 h-0.5 animate-glow"
-              [ngClass]="{
-                'bg-neon-yellow': p.posicionGeneral === 1,
-                'bg-gray-400': p.posicionGeneral === 2,
-                'bg-neon-orange': p.posicionGeneral === 3
-              }"></div>
-            <p class="text-xs font-bold uppercase tracking-wide text-gray-400">Ranking</p>
-            <div class="flex items-baseline justify-center gap-1">
-              <span class="text-2xl font-bold"
-                [ngClass]="{
-                  'text-neon-yellow': p.posicionGeneral === 1,
-                  'text-gray-300': p.posicionGeneral === 2,
-                  'text-neon-orange': p.posicionGeneral === 3,
-                  'text-neon-blue': p.posicionGeneral > 3
-                }">
-                {{ p.posicionGeneral === 1 ? '🥇' : p.posicionGeneral === 2 ? '🥈' : p.posicionGeneral === 3 ? '🥉' : p.posicionGeneral }}
-              </span>
-              <span *ngIf="p.posicionGeneral > 3" class="text-sm font-bold text-neon-blue/70">°</span>
+      <div class="bg-dark-800 rounded-lg p-4 mb-4">
+        <p class="text-xs text-gray-400 mb-2">Velocidad Máxima</p>
+        <div class="flex items-end gap-2 mb-2">
+          <p class="text-4xl font-bold text-neon-yellow">{{ formatearDecimal(estadisticasResumen.velocidadMaxima) }}</p>
+          <p class="text-lg text-gray-400 pb-1">km/h</p>
+        </div>
+        <div class="w-full bg-dark-700 rounded-full h-3">
+          <div class="bg-neon-yellow h-3 rounded-full transition-all"
+            [style.width.%]="Math.min((estadisticasResumen.velocidadMaxima / 40) * 100, 100)"></div>
+        </div>
+      </div>
+
+      <div *ngIf="configuracionJuego?.tienePreguntas" class="grid grid-cols-2 gap-3">
+        <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-blue/30">
+          <p class="text-xs text-gray-400 mb-1">Vel. Mín. Video</p>
+          <p class="text-2xl font-bold text-neon-blue">{{ historial.parametros_utilizados?.velocidadMinimaVideo }}</p>
+          <p class="text-xs text-gray-500">km/h</p>
+        </div>
+        <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-yellow/30">
+          <p class="text-xs text-gray-400 mb-1">Vel. Mín. Trivia</p>
+          <p class="text-2xl font-bold text-neon-yellow">{{ historial.parametros_utilizados?.velocidadMinimaTrivia }}</p>
+          <p class="text-xs text-gray-500">km/h</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+      <h2 class="text-xl font-display font-bold text-neon-orange mb-6">⚡ Energía</h2>
+
+      <div class="bg-gradient-to-br from-neon-orange/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-orange/50 mb-4">
+        <p class="text-xs text-gray-400 mb-2">Calorías Totales</p>
+        <p class="text-5xl font-bold text-neon-orange mb-1">{{ estadisticasResumen.caloriasTotales }}</p>
+        <p class="text-xs text-gray-500">kcal quemadas</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-neon-yellow/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-yellow/50 mb-4">
+        <p class="text-xs text-gray-400 mb-2">Vatios Totales</p>
+        <p class="text-5xl font-bold text-neon-yellow mb-1">{{ estadisticasResumen.vatiosTotales }}</p>
+        <p class="text-xs text-gray-500">watts generados</p>
+      </div>
+    </div>
+
+    <div *ngIf="esBiketonaCampeonato() || esBiketonaEquipos()" class="bg-dark-900 border border-dark-700 rounded-card p-6">
+      <h2 class="text-xl font-display font-bold text-white mb-6">
+        <span *ngIf="esBiketonaCampeonato()">🏆 Info Campeonato</span>
+        <span *ngIf="esBiketonaEquipos()">🏆 Info Equipos</span>
+      </h2>
+
+      <div *ngIf="esBiketonaCampeonato()" class="bg-gradient-to-br from-neon-blue/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-blue/50 mb-4">
+        <p class="text-xs text-gray-400 mb-2">Total Rondas</p>
+        <p class="text-5xl font-bold text-neon-blue mb-1">{{ estadisticasResumen.totalRondas || 0 }}</p>
+        <p class="text-xs text-gray-500">Rondas Jugadas</p>
+      </div>
+
+      <div *ngIf="esBiketonaEquipos()" class="bg-gradient-to-br from-neon-blue/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-blue/50 mb-4">
+        <p class="text-xs text-gray-400 mb-2">Total Llaves</p>
+        <p class="text-5xl font-bold text-neon-blue mb-1">{{ estadisticasResumen.totalLlaves || 0 }}</p>
+        <p class="text-xs text-gray-500">Llaves Jugadas</p>
+      </div>
+
+      <div class="bg-gradient-to-br from-neon-yellow/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-yellow/50">
+        <p class="text-xs text-gray-400 mb-2">Duración Total</p>
+        <p class="text-5xl font-bold text-neon-yellow mb-1">{{ formatearTiempoTorneo(estadisticasResumen.duracionTotalTorneo || 0) }}</p>
+        <p class="text-xs text-gray-500">tiempo torneo</p>
+      </div>
+    </div>
+
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+      <h2 class="text-xl font-display font-bold text-white mb-6 flex items-center gap-2">
+        <span class="text-2xl">👥</span>
+        Distribución por Sexo
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gradient-to-br from-neon-blue/20 to-transparent border-2 border-neon-blue/50 rounded-lg p-6 text-center hover:shadow-neon-blue-lg transition-all">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-neon-blue/20 flex items-center justify-center border-2 border-neon-blue">
+            <span class="text-5xl">♂</span>
+          </div>
+          <p class="text-5xl font-bold text-neon-blue mb-2">{{ getDistribucionSexo().hombres }}</p>
+          <p class="text-lg font-bold text-white mb-1">Hombres</p>
+          <p class="text-sm text-gray-400">{{ getDistribucionSexo().hombres > 0 ? ((getDistribucionSexo().hombres / participantesAdaptados.length) * 100).toFixed(0) + '%' : '0%' }} del total</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-neon-pink/20 to-transparent border-2 border-neon-pink/50 rounded-lg p-6 text-center transition-all" style="box-shadow: 0 0 20px rgba(255, 16, 240, 0.2);" onmouseover="this.style.boxShadow='0 0 40px rgba(255, 16, 240, 0.4)'" onmouseout="this.style.boxShadow='0 0 20px rgba(255, 16, 240, 0.2)'">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-neon-pink/20 flex items-center justify-center border-2 border-neon-pink">
+            <span class="text-5xl">♀</span>
+          </div>
+          <p class="text-5xl font-bold text-neon-pink mb-2">{{ getDistribucionSexo().mujeres }}</p>
+          <p class="text-lg font-bold text-white mb-1">Mujeres</p>
+          <p class="text-sm text-gray-400">{{ getDistribucionSexo().mujeres > 0 ? ((getDistribucionSexo().mujeres / participantesAdaptados.length) * 100).toFixed(0) + '%' : '0%' }} del total</p>
+        </div>
+      </div>
+
+      <div *ngIf="getDistribucionSexo().sinEspecificar > 0" class="mt-4 bg-dark-800 border border-gray-600 rounded-lg p-4 text-center">
+        <div class="flex items-center justify-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-gray-600/20 flex items-center justify-center">
+            <span class="text-2xl text-gray-400">❓</span>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-400">{{ getDistribucionSexo().sinEspecificar }}</p>
+            <p class="text-sm text-gray-500">Sin especificar</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div *ngIf="esBiketonaEquipos()" class="bg-dark-900 border border-dark-700 rounded-card p-6 mb-6">
+    <h2 class="text-xl font-display font-bold text-white mb-4 flex items-center gap-2">
+      <span class="text-2xl">🏆</span>
+      Ranking de Equipos
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div *ngFor="let equipo of getEquiposRanking(); let i = index"
+        class="bg-dark-800 rounded-lg p-4 border-2 transition-all hover:scale-[1.02]"
+        [class.border-neon-yellow]="i === 0"
+        [class.shadow-neon-yellow]="i === 0"
+        [class.border-gray-400]="i === 1"
+        [class.border-orange-500]="i === 2"
+        [style.border-color]="i >= 3 ? (equipo.color + '40') : null">
+
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold border-2"
+            [class.bg-neon-yellow]="i === 0"
+            [class.text-dark-950]="i === 0"
+            [class.bg-gray-400]="i === 1"
+            [class.text-dark-950]="i === 1"
+            [class.bg-orange-500]="i === 2"
+            [class.text-white]="i === 2"
+            [style.background-color]="i >= 3 ? (equipo.color + '20') : null"
+            [style.border-color]="i >= 3 ? equipo.color : null"
+            [style.color]="i >= 3 ? equipo.color : null"
+            [style.box-shadow]="i === 0 ? '0 0 20px rgba(255,247,0,0.5)' : 'none'">
+            {{ i + 1 }}
+          </div>
+
+          <div class="flex-1">
+            <p class="text-white font-bold text-lg">{{ equipo.nombre }}</p>
+            <p class="text-xs text-gray-400">Equipo {{ equipo.id }}</p>
+          </div>
+
+          <div class="text-right">
+            <p class="text-xs text-gray-400 mb-1">Llaves</p>
+            <p class="text-3xl font-display font-bold"
+              [style.color]="equipo.color">
+              {{ equipo.llavesGanadas }}
+            </p>
+          </div>
+
+          <div *ngIf="i < 3" class="text-3xl">
+            {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-xl font-display font-bold text-white">👥 Detalle Individual por Participante</h2>
+
+      <button *ngIf="esBiketonaCampeonato()"
+        (click)="toggleInfoParticipantes()"
+        class="p-2 bg-neon-yellow/20 hover:bg-neon-yellow/30 border border-neon-yellow/50 rounded-lg transition-all">
+        <span class="text-neon-yellow text-lg">ℹ️</span>
+      </button>
+    </div>
+
+    <div *ngIf="mostrarInfoParticipantes && esBiketonaCampeonato()"
+      class="mb-6 text-xs text-gray-300 bg-neon-yellow/10 border border-neon-yellow/30 rounded-lg p-4 animate-fadeIn">
+      <p class="font-bold text-neon-yellow mb-2">🏁 Sistema de clasificación:</p>
+      <ul class="space-y-1 list-disc list-inside">
+        <li>El ranking se determina por la <span class="text-neon-yellow font-bold">ronda alcanzada</span> en el torneo de eliminación</li>
+        <li>Quien llegó <span class="text-neon-yellow font-bold">más lejos</span> en el bracket obtiene mejor posición</li>
+        <li>Los tiempos de rondas anteriores <span class="text-neon-yellow font-bold">no afectan</span> la posición final</li>
+      </ul>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngFor="let p of participantesAdaptados; let i = index"
+        class="bg-dark-800 rounded-lg p-4 border-2 transition-all hover:scale-[1.01]"
+        [class.border-dark-700]="!esBiketonaEquipos()"
+        [style.border-color]="esBiketonaEquipos() && p.equipoId ? (getColorEquipo(p.equipoId) + '40') : null">
+
+        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-dark-700">
+          <span *ngIf="!p.colorBicicleta || p.colorBicicleta === '#FFFFFF' || p.colorBicicleta === '#000000'" class="text-2xl text-white">
+            {{ getMedalEmoji(p.posicionGeneral) }}
+          </span>
+          <div *ngIf="p.colorBicicleta && p.colorBicicleta !== '#FFFFFF' && p.colorBicicleta !== '#000000'"
+            class="w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl"
+            [style.background-color]="p.colorBicicleta"
+            [style.color]="p.colorBicicleta === '#FFFFFF' ? '#666' : '#FFFFFF'">
+            {{ p.numeroBicicleta }}
+          </div>
+          <div *ngIf="!p.colorBicicleta"
+            class="w-14 h-14 rounded-full bg-gray-600 flex items-center justify-center font-bold text-xl text-white">
+            {{ p.id || p.posicionGeneral }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-white font-bold text-lg truncate">{{ p.nombreParticipante || p.nombre }}</p>
+              <div *ngIf="p.sexo === 'M' || p.genero === 'masculino'" class="flex items-center justify-center w-7 h-7 rounded-full bg-neon-blue/20 border border-neon-blue flex-shrink-0">
+                <span class="text-sm text-neon-blue">♂</span>
+              </div>
+              <div *ngIf="p.sexo === 'F' || p.genero === 'femenino'" class="flex items-center justify-center w-7 h-7 rounded-full bg-neon-pink/20 border border-neon-pink flex-shrink-0">
+                <span class="text-sm text-neon-pink">♀</span>
+              </div>
             </div>
-            <p class="text-xs font-mono"
-              [ngClass]="{
-                'text-neon-yellow/60': p.posicionGeneral === 1,
-                'text-gray-400': p.posicionGeneral === 2,
-                'text-neon-orange/60': p.posicionGeneral === 3,
-                'text-neon-blue/60': p.posicionGeneral > 3
-              }">/ {{ p.totalParticipantesGeneral }}</p>
-          </div>
 
-          <div *ngIf="p.distanciaRecorrida !== undefined" class="bg-dark-700 rounded p-2 text-center">
-            <p class="text-xs text-gray-400">Distancia</p>
-            <p class="text-neon-green font-bold">{{ formatearDecimal(p.distanciaRecorrida) }}</p>
-            <p class="text-xs text-gray-500">km</p>
-          </div>
+            <div *ngIf="esBiketonaEquipos() && p.equipoId" class="flex items-center gap-2 mb-1">
+              <div class="w-6 h-6 rounded flex items-center justify-center text-xs font-bold border"
+                [style.background-color]="getColorEquipo(p.equipoId) + '20'"
+                [style.border-color]="getColorEquipo(p.equipoId)"
+                [style.color]="getColorEquipo(p.equipoId)">
+                {{ p.equipoNombre ? p.equipoNombre.charAt(0) : 'T' }}
+              </div>
+              <span class="text-xs font-bold"
+                [style.color]="getColorEquipo(p.equipoId)">
+                {{ p.equipoNombre || 'Equipo ' + p.equipoId }}
+              </span>
+            </div>
 
-          <div class="bg-dark-700 rounded p-2 text-center">
-            <p class="text-xs text-gray-400">Vel. Prom.</p>
-            <p class="text-neon-blue font-bold">{{ formatearDecimal(p.velocidadPromedio) }}</p>
-            <p class="text-xs text-gray-500">km/h</p>
-          </div>
-
-          <div class="bg-dark-700 rounded p-2 text-center">
-            <p class="text-xs text-gray-400">Vel. Máx.</p>
-            <p class="text-neon-yellow font-bold">{{ formatearDecimal(p.velocidadMaxima) }}</p>
-            <p class="text-xs text-gray-500">km/h</p>
-          </div>
-
-          <div class="bg-dark-700 rounded p-2 text-center">
-            <p class="text-xs text-gray-400">Calorías</p>
-            <p class="text-neon-orange font-bold">{{ Number(p.caloriasQuemadas || p.calorias) || 0 }}</p>
-            <p class="text-xs text-gray-500">kcal</p>
-          </div>
-
-          <div class="bg-dark-700 rounded p-2 text-center">
-            <p class="text-xs text-gray-400">Vatios</p>
-            <p class="text-neon-pink font-bold">{{ Number(p.vatiosGenerados || p.vatios) || 0 }}</p>
-            <p class="text-xs text-gray-500">watts</p>
+            <p class="text-neon-yellow font-bold text-sm">
+              {{ formatearPuntos(Number(p.puntosCarrera) || Number(p.mejorTiempo) || 0) }}
+              <span class="text-xs text-gray-400">{{ getRankingLabel() }}</span>
+            </p>
           </div>
         </div>
 
-        <div *ngIf="configuracionJuego?.tienePreguntas" class="grid grid-cols-2 gap-2">
-          <div class="bg-neon-green/10 border border-neon-green/30 rounded p-2 text-center">
-            <p class="text-neon-green font-bold text-lg">✅ {{ Number(p.respuestasCorrectas) || 0 }}</p>
-            <p class="text-xs text-gray-500">Correctas</p>
+        <div class="space-y-3">
+          <div class="grid grid-cols-2 gap-2">
+            <div *ngIf="p.posicionGeneral" class="bg-gradient-to-br from-dark-700 to-dark-800 rounded p-2 text-center border-2 relative overflow-hidden"
+              [ngClass]="{
+                'border-neon-yellow shadow-neon-yellow': p.posicionGeneral === 1,
+                'border-gray-400': p.posicionGeneral === 2,
+                'border-neon-orange shadow-neon-orange': p.posicionGeneral === 3,
+                'border-dark-600': p.posicionGeneral > 3
+              }">
+              <div *ngIf="p.posicionGeneral <= 3" class="absolute top-0 left-0 right-0 h-0.5 animate-glow"
+                [ngClass]="{
+                  'bg-neon-yellow': p.posicionGeneral === 1,
+                  'bg-gray-400': p.posicionGeneral === 2,
+                  'bg-neon-orange': p.posicionGeneral === 3
+                }"></div>
+              <p class="text-xs font-bold uppercase tracking-wide text-gray-400">Ranking</p>
+              <div class="flex items-baseline justify-center gap-1">
+                <span class="text-2xl font-bold"
+                  [ngClass]="{
+                    'text-neon-yellow': p.posicionGeneral === 1,
+                    'text-gray-300': p.posicionGeneral === 2,
+                    'text-neon-orange': p.posicionGeneral === 3,
+                    'text-neon-blue': p.posicionGeneral > 3
+                  }">
+                  {{ p.posicionGeneral === 1 ? '🥇' : p.posicionGeneral === 2 ? '🥈' : p.posicionGeneral === 3 ? '🥉' : p.posicionGeneral }}
+                </span>
+                <span *ngIf="p.posicionGeneral > 3" class="text-sm font-bold text-neon-blue/70">°</span>
+              </div>
+              <p class="text-xs font-mono"
+                [ngClass]="{
+                  'text-neon-yellow/60': p.posicionGeneral === 1,
+                  'text-gray-400': p.posicionGeneral === 2,
+                  'text-neon-orange/60': p.posicionGeneral === 3,
+                  'text-neon-blue/60': p.posicionGeneral > 3
+                }">/ {{ p.totalParticipantesGeneral }}</p>
+            </div>
+
+            <div *ngIf="p.distanciaRecorrida !== undefined" class="bg-dark-700 rounded p-2 text-center">
+              <p class="text-xs text-gray-400">Distancia</p>
+              <p class="text-neon-green font-bold">{{ formatearDecimal(p.distanciaRecorrida) }}</p>
+              <p class="text-xs text-gray-500">km</p>
+            </div>
+
+            <div class="bg-dark-700 rounded p-2 text-center">
+              <p class="text-xs text-gray-400">Vel. Prom.</p>
+              <p class="text-neon-blue font-bold">{{ formatearDecimal(p.velocidadPromedio) }}</p>
+              <p class="text-xs text-gray-500">km/h</p>
+            </div>
+
+            <div class="bg-dark-700 rounded p-2 text-center">
+              <p class="text-xs text-gray-400">Vel. Máx.</p>
+              <p class="text-neon-yellow font-bold">{{ formatearDecimal(p.velocidadMaxima) }}</p>
+              <p class="text-xs text-gray-500">km/h</p>
+            </div>
+
+            <div class="bg-dark-700 rounded p-2 text-center">
+              <p class="text-xs text-gray-400">Calorías</p>
+              <p class="text-neon-orange font-bold">{{ Number(p.caloriasQuemadas || p.calorias) || 0 }}</p>
+              <p class="text-xs text-gray-500">kcal</p>
+            </div>
+
+            <div class="bg-dark-700 rounded p-2 text-center">
+              <p class="text-xs text-gray-400">Vatios</p>
+              <p class="text-neon-pink font-bold">{{ Number(p.vatiosGenerados || p.vatios) || 0 }}</p>
+              <p class="text-xs text-gray-500">watts</p>
+            </div>
           </div>
-          <div class="bg-neon-red/10 border border-neon-red/30 rounded p-2 text-center">
-            <p class="text-neon-red font-bold text-lg">❌ {{ Number(p.respuestasIncorrectas) || 0 }}</p>
-            <p class="text-xs text-gray-500">Incorrectas</p>
+
+          <div *ngIf="configuracionJuego?.tienePreguntas" class="grid grid-cols-2 gap-2">
+            <div class="bg-neon-green/10 border border-neon-green/30 rounded p-2 text-center">
+              <p class="text-neon-green font-bold text-lg">✅ {{ Number(p.respuestasCorrectas) || 0 }}</p>
+              <p class="text-xs text-gray-500">Correctas</p>
+            </div>
+            <div class="bg-neon-red/10 border border-neon-red/30 rounded p-2 text-center">
+              <p class="text-neon-red font-bold text-lg">❌ {{ Number(p.respuestasIncorrectas) || 0 }}</p>
+              <p class="text-xs text-gray-500">Incorrectas</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-      </div>
 
       <div *ngIf="historial.notas_finales" class="bg-dark-900 border border-dark-700 rounded-card p-6 mt-6">
         <h2 class="text-xl font-display font-bold text-white mb-3">📝 Notas</h2>
