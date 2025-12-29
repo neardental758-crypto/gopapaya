@@ -94,21 +94,102 @@ export class SetupComponent implements OnInit {
   }
 
   private irDirectoAlJuego(biketona: BiketonaCreatePayload): void {
-    if (biketona.tipoPista === 'digital') {
-      if (biketona.tipoCompetencia === '1vs1') {
-        this.router.navigate(['/biketona/pista-digital-unovsuno']);
-      } else if (biketona.tipoCompetencia === 'campeonato') {
-        this.router.navigate(['/biketona/pista-digital-campeonato']);
-      } else if (biketona.tipoCompetencia === 'campeonato-equipos') {
-        this.router.navigate(['/biketona/pista-digital-equipos']);
-      }
-    } else if (biketona.tipoPista === 'fisica') {
-      this.router.navigate(['/biketona/pista-fisica']);
-    }
+    this.navegarSegunConfiguracion(
+      biketona.tipoPista,
+      biketona.tipoCompetencia
+    );
   }
 
   seleccionarTipoPista(tipo: 'digital' | 'fisica'): void {
     this.configuracion.tipoPista = tipo;
+
+    const idSesionStr = localStorage.getItem('idSesion');
+    const idSesion = idSesionStr ? Number(idSesionStr) : 0;
+
+    if (!idSesion) {
+      console.warn('No se encontró idSesion en localStorage.');
+      return;
+    }
+
+    this.loading = true;
+
+    this.biketonaService.getBySesion(idSesion).subscribe({
+      next: (biketona) => {
+        this.loading = false;
+
+        if (!biketona || biketona.estado !== 'activa') {
+          console.log('No hay biketona activa. Continuar con setup.');
+          return;
+        }
+
+        if (biketona.tipoPista !== tipo) {
+          console.log('Tipo de pista diferente. Continuar con setup.');
+          return;
+        }
+
+        localStorage.setItem('biketonaId', biketona.id);
+
+        const usuarioStr = localStorage.getItem('usuario');
+        let userId = '0';
+
+        if (usuarioStr) {
+          try {
+            const usuario = JSON.parse(usuarioStr);
+            userId = usuario.id || usuario._id || '0';
+          } catch (e) {
+            console.warn('No se pudo parsear usuario');
+          }
+        }
+
+        localStorage.setItem('sesionId', biketona.idSesion.toString());
+        localStorage.setItem('userId', userId);
+
+        this.configuracion = {
+          tipoPista: biketona.tipoPista,
+          numeroBicicletas: biketona.nBicicletas,
+          numeroParticipantes: biketona.nParticipantes,
+          numeroVueltas: biketona.nVueltas,
+          tipoCompetencia:
+            biketona.tipoCompetencia === '1vs1'
+              ? '1v1'
+              : biketona.tipoCompetencia,
+        };
+
+        localStorage.setItem(
+          'configuracionCarrera',
+          JSON.stringify(this.configuracion)
+        );
+
+        this.navegarSegunConfiguracion(
+          biketona.tipoPista,
+          biketona.tipoCompetencia
+        );
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Error consultando biketona:', err);
+      },
+    });
+  }
+
+  private navegarSegunConfiguracion(
+    tipoPista: 'digital' | 'fisica',
+    tipoCompetencia: string
+  ): void {
+    const sufijo = tipoPista === 'digital' ? 'digital' : 'fisica';
+
+    if (tipoPista === 'fisica') {
+      this.router.navigate(['/biketona/pista-fisica']);
+      return;
+    }
+
+    if (tipoCompetencia === '1vs1') {
+      this.router.navigate([`/biketona/pista-${sufijo}-unovsuno`]);
+    } else if (tipoCompetencia === 'campeonato') {
+      this.router.navigate([`/biketona/pista-${sufijo}-campeonato`]);
+    } else if (tipoCompetencia === 'campeonato-equipos') {
+      this.router.navigate([`/biketona/pista-${sufijo}-equipos`]);
+    }
   }
 
   puedeAvanzarPaso1(): boolean {
@@ -351,19 +432,10 @@ export class SetupComponent implements OnInit {
           JSON.stringify(this.configuracion)
         );
 
-        if (this.configuracion.tipoPista === 'digital') {
-          if (this.configuracion.tipoCompetencia === '1v1') {
-            this.router.navigate(['/biketona/pista-digital-unovsuno']);
-          } else if (this.configuracion.tipoCompetencia === 'campeonato') {
-            this.router.navigate(['/biketona/pista-digital-campeonato']);
-          } else if (
-            this.configuracion.tipoCompetencia === 'campeonato-equipos'
-          ) {
-            this.router.navigate(['/biketona/pista-digital-equipos']);
-          }
-        } else if (this.configuracion.tipoPista === 'fisica') {
-          this.router.navigate(['/biketona/pista-fisica']);
-        }
+        this.navegarSegunConfiguracion(
+          this.configuracion.tipoPista!,
+          tipoCompetenciaBackend
+        );
       },
       error: (err) => {
         console.error('❌ Error al registrar biketona:', err);

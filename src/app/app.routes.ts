@@ -28,6 +28,8 @@ import { PistaDigital1v1Component } from './features/biketona/pista-digital-unov
 import { PistaDigitalCampeonatoComponent } from './features/biketona/pista-digital-campeonato/pista-digital-campeonato.component';
 import { PistaDigitalEquiposComponent } from './features/biketona/pista-digital-equipos/pista-digital-equipos.component';
 import { GestionAliadosComponent } from './features/aliados/gestion-aliados.component';
+import { PistaFisicaCampeonatoComponent } from './features/biketona/pista-fisica/pista-fisica-campeonato/pista-fisica-campeonato.component';
+import { PistaFisicaUnovsunoComponent } from './features/biketona/pista-fisica/pista-fisica-unovsuno/pista-fisica-unovsuno.component';
 
 export const routes: Routes = [
   {
@@ -157,6 +159,25 @@ export const routes: Routes = [
       {
         path: 'biketona/pista-digital-equipos',
         component: PistaDigitalEquiposComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      //Pista Fisica
+      {
+        path: 'biketona/pista-fisica-unovsuno',
+        component: PistaFisicaUnovsunoComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'biketona/pista-fisica-equipos',
+        component: PistaDigitalEquiposComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'biketona/pista-fisica-campeonato',
+        component: PistaFisicaCampeonatoComponent,
         canActivate: [sesionActivaGuard, rolGuard],
         data: { roles: ['super_admin', 'admin'] },
       },

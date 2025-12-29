@@ -1,0 +1,240 @@
+/* =========================================
+   🎨 PALETA NEÓN — SUPER BRILLANTE
+   ========================================= */
+:root {
+  --neon-yellow: #ffea00;  /* Amarillo neón fuerte */
+  --neon-green:  #38ff6a;  /* Verde neón brillante */
+  --neon-red:    #ff2255;  /* Rojo neón intenso */
+
+  --dark-bg: #030712;
+  --dark-panel: #0a0f1d;
+}
+
+/* =========================================
+   ✴️ FONDO GENERAL — MÁS LUMINOSO
+   ========================================= */
+.biketona-bg {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 20% 20%, #1a1a1a, #000);
+}
+
+.biketona-bg::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255,234,0,0.35), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(255,34,85,0.32), transparent 60%),
+    radial-gradient(circle at 50% 100%, rgba(56,255,106,0.32), transparent 60%);
+  filter: blur(25px);
+  z-index: 0;
+}
+
+/* =========================================
+   🟥🟨🟩 TARJETAS NEÓN
+   ========================================= */
+.neon-card {
+  border-radius: 1rem;
+  border-width: 4px;
+  border-style: solid;
+  padding: 1rem;
+  position: relative;
+  background: rgba(10, 15, 29, 0.7);
+  backdrop-filter: blur(4px);
+  transition: all 0.25s ease;
+  box-shadow:
+    0 0 20px rgba(0,0,0,0.8),
+    inset 0 0 25px rgba(255,255,255,0.06);
+}
+
+/* Variantes */
+.neon-card--yellow { border-color: var(--neon-yellow); }
+.neon-card--red { border-color: var(--neon-red); }
+.neon-card--green { border-color: var(--neon-green); }
+.neon-card--blue { border-color: var(--neon-yellow); }  /* azul eliminado => usamos amarillo */
+
+/* Hover super brillante */
+.neon-card:hover {
+  box-shadow:
+    0 0 22px var(--neon-yellow),
+    0 0 45px var(--neon-yellow),
+    inset 0 0 25px rgba(255,255,255,0.1);
+  transform: translateY(-3px);
+}
+
+/* Cambia según la variante */
+.neon-card--red:hover {
+  box-shadow:
+    0 0 22px var(--neon-red),
+    0 0 45px var(--neon-red),
+    inset 0 0 25px rgba(255,255,255,0.1);
+}
+
+.neon-card--green:hover {
+  box-shadow:
+    0 0 22px var(--neon-green),
+    0 0 45px var(--neon-green),
+    inset 0 0 25px rgba(255,255,255,0.1);
+}
+
+/* =========================================
+   🟨 BOTONES NEÓN
+   ========================================= */
+.neon-btn {
+  font-weight: 700;
+  border-width: 3px;
+  border-radius: 0.75rem;
+  padding: 0.6rem 1.2rem;
+  transition: all 0.2s ease;
+}
+
+.neon-btn-yellow {
+  background: var(--neon-yellow);
+  border-color: var(--neon-yellow);
+  color: #000;
+}
+
+.neon-btn-green {
+  background: var(--neon-green);
+  border-color: var(--neon-green);
+  color: #000;
+}
+
+.neon-btn-red {
+  background: var(--neon-red);
+  border-color: var(--neon-red);
+  color: #fff;
+}
+
+/* Hover con glow */
+.neon-btn:hover {
+  box-shadow: 0 0 18px currentColor, 0 0 35px currentColor;
+  transform: translateY(-2px);
+}
+
+.neon-btn:active {
+  transform: scale(0.95);
+}
+
+/* =========================================
+   🌟 GLOW EMOJIS / ICONOS
+   ========================================= */
+.neon-emoji-glow {
+  text-shadow:
+    0 0 12px var(--neon-yellow),
+    0 0 26px var(--neon-green),
+    0 0 40px var(--neon-red);
+}
+
+/* =========================================
+   🏁 ELEMENTOS DE CARRERA
+   ========================================= */
+.track-border {
+  border: 4px dashed var(--neon-yellow);
+  opacity: 0.9;
+}
+
+.car-glow {
+  box-shadow:
+    0 0 10px currentColor,
+    0 0 20px currentColor,
+    0 0 30px currentColor;
+  border-width: 3px !important;
+}
+
+/* Carril interno */
+.inner-circle {
+  border: 4px solid var(--neon-green);
+}
+
+/* Línea de meta */
+.finish-line {
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--neon-red),
+    var(--neon-red) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+/* =========================================
+   ✨ GLOWS ESPECIALES
+   ========================================= */
+.neon-glow-green {
+  box-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-green);
+}
+
+.neon-glow-yellow {
+  box-shadow: 0 0 20px var(--neon-yellow), 0 0 40px var(--neon-yellow);
+}
+
+.neon-glow-red {
+  box-shadow: 0 0 20px var(--neon-red), 0 0 40px var(--neon-red);
+}
+
+.arcade-track-card {
+  position: relative;
+}
+
+/* Borde neón “conic” suave */
+.arcade-track-card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 24px;
+  background: conic-gradient(
+    from 0deg,
+    #22c55e,
+    #0ea5e9,
+    #e879f9,
+    #facc15,
+    #22c55e
+  );
+  opacity: 0.35;
+  filter: blur(8px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* Para que el contenido quede encima del glow */
+.arcade-track-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Scanlines efecto CRT */
+.arcade-scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.4) 1px,
+    transparent 1px
+  );
+  background-size: 100% 2px;
+  mix-blend-mode: soft-light;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Ligero zoom-in para el estadio */
+.arcade-track-arena {
+  transform: translateZ(0);
+}
+
+/* Avatar redondo más arcade */
+.arcade-avatar {
+  box-shadow:
+    0 0 10px rgba(0, 0, 0, 0.9),
+    0 0 25px rgba(56, 189, 248, 0.4);
+}
+
+/* Nombre del jugador estilo etiqueta arcade */
+.arcade-name-tag {
+  text-shadow:
+    0 0 6px rgba(15, 23, 42, 0.9),
+    0 0 18px rgba(0, 0, 0, 1);
+}

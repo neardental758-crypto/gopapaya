@@ -2,11 +2,11 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BleEsp32Service } from '../../services/ble-esp32.service';
-import { BiketonaParticipantesService } from '../../services/biketona-participantes.service';
-import { BiketonaService } from '../../services/biketona.service';
-import { BrainBikeAudioService } from '../../services/audio/brain-bike-audio.service';
-import { SesionService } from '../../services/sesion.service';
+import { BrainBikeAudioService } from '../../../services/audio/brain-bike-audio.service';
+import { BiketonaParticipantesService } from '../../../services/biketona-participantes.service';
+import { BiketonaService } from '../../../services/biketona.service';
+import { BleEsp32Service } from '../../../services/ble-esp32.service';
+import { SesionService } from '../../../services/sesion.service';
 
 type BikeKey = 'bici1' | 'bici2';
 
@@ -49,13 +49,13 @@ interface BiciUI {
 }
 
 @Component({
-  selector: 'app-pista-digital-unovsuno',
+  selector: 'app-pista-fisica-unovsuno',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './pista-digital-unovsuno.component.html',
-  styleUrl: './pista-digital-unovsuno.component.css',
+  templateUrl: './pista-fisica-unovsuno.component.html',
+  styleUrl: './pista-fisica-unovsuno.component.css',
 })
-export class PistaDigital1v1Component implements OnInit, OnDestroy {
+export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   paso = 1;
   modalSexoJugadorId: number | null = null;
   participantes: Jugador[] = [];
@@ -67,7 +67,7 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
     numeroParticipantes: 2,
     numeroVueltas: 3,
     tipoCompetencia: '1v1',
-    tipoPista: 'digital',
+    tipoPista: 'fisica',
     numeroLlaves: 1,
   };
   currentLlaveIndex = 0;
@@ -117,7 +117,6 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
   participantesRegistrados: any[] = [];
   participantesRecientes: string[] = [];
   tiempoTotalTorneo = 0;
-  Math = Math;
 
   constructor(
     private router: Router,
@@ -656,17 +655,39 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
         const distanciaMetros = velocidadMps;
 
         jugador.distanciaReal += distanciaMetros;
-        jugador.distanciaRecorrida += distanciaMetros;
-
-        if (jugador.distanciaRecorrida >= 100) {
-          jugador.distanciaRecorrida -= 100;
-          jugador.vueltaActual++;
-        }
       });
 
       this.actualizarPosiciones();
-      this.verificarFinCarrera();
     }, 1000);
+  }
+
+  calcularCalorias(jugador: Jugador): number {
+    const MET = 8;
+    const pesoKg = 70;
+    const minutosTranscurridos = this.tiempoTranscurrido / 60;
+    return parseFloat(
+      (0.0175 * MET * pesoKg * minutosTranscurridos).toFixed(0)
+    );
+  }
+
+  calcularVatios(jugador: Jugador): number {
+    return parseFloat((jugador.velocidad * 10).toFixed(0));
+  }
+
+  actualizarPosiciones(): void {
+    const ordenados = [...this.jugadores].sort((a, b) => {
+      if (b.vueltaActual !== a.vueltaActual) {
+        return b.vueltaActual - a.vueltaActual;
+      }
+      return b.distanciaReal - a.distanciaReal;
+    });
+
+    ordenados.forEach((jugador, index) => {
+      const original = this.jugadores.find((j) => j.id === jugador.id);
+      if (original) {
+        original.posicion = index + 1;
+      }
+    });
   }
 
   getCarStyle(jugador: Jugador) {
@@ -683,22 +704,6 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
       top: `${y}%`,
       filter: `drop-shadow(0 0 8px ${jugador.color})`,
     } as any;
-  }
-
-  actualizarPosiciones(): void {
-    const ordenados = [...this.jugadores].sort((a, b) => {
-      if (b.vueltaActual !== a.vueltaActual) {
-        return b.vueltaActual - a.vueltaActual;
-      }
-      return b.distanciaRecorrida - a.distanciaRecorrida;
-    });
-
-    ordenados.forEach((jugador, index) => {
-      const original = this.jugadores.find((j) => j.id === jugador.id);
-      if (original) {
-        original.posicion = index + 1;
-      }
-    });
   }
 
   pausarReanudarCarrera(): void {
@@ -905,23 +910,5 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
   }
   getJugadorPorId(id: number): Jugador | undefined {
     return this.llaveEnPantalla?.jugadores.find((j) => j.id === id);
-  }
-  getCarPosition(jugador: Jugador): { x: number; y: number } {
-    const progress = jugador.distanciaRecorrida / 100;
-    const angle = progress * 2 * Math.PI - Math.PI / 2;
-    const rx = 350;
-    const ry = 145;
-    const cx = 500;
-    const cy = 225;
-    return {
-      x: cx + rx * Math.cos(angle),
-      y: cy + ry * Math.sin(angle),
-    };
-  }
-
-  getCarRotation(jugador: Jugador): number {
-    const progress = jugador.distanciaRecorrida / 100;
-    const angle = progress * 2 * Math.PI - Math.PI / 2;
-    return (angle * 180) / Math.PI + 90;
   }
 }
