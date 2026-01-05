@@ -18,6 +18,7 @@
           <label class="block text-gray-400 text-sm mb-2">Sección del informe</label>
           <select
             [(ngModel)]="seccionSeleccionada"
+            (ngModelChange)="resetForm()"
             class="w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
           >
             <option value="">Selecciona una sección</option>
@@ -27,29 +28,46 @@
           </select>
         </div>
 
+        <div *ngIf="seccionSeleccionada" class="mb-4 p-3 bg-dark-800 border border-dark-600 rounded-lg">
+          <div class="text-gray-300 text-sm space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-neon-blue">ℹ️</span>
+              <span class="font-semibold">{{ obtenerNombreSeccion(seccionSeleccionada) }}</span>
+            </div>
+            <div *ngIf="permiteFotoSeccionActual()" class="flex items-center gap-2 text-gray-400">
+              <span>📷</span>
+              <span>Fotos: {{ obtenerFotosActuales() }} / {{ obtenerMaxFotos() }} ({{ obtenerMinFotos() }} requerida{{ obtenerMinFotos() > 1 ? 's' : '' }})</span>
+            </div>
+            <div *ngIf="permiteTextoSeccionActual()" class="flex items-center gap-2 text-gray-400">
+              <span>📝</span>
+              <span>Texto: Máximo {{ obtenerMaxPalabrasSeccionActual() }} palabras</span>
+            </div>
+          </div>
+        </div>
+
         <div class="flex gap-3 mb-4">
           <button
             (click)="seleccionarTipo('texto')"
-            [disabled]="seccionSeleccionada !== 'observaciones' && seccionSeleccionada !== ''"
+            [disabled]="!permiteTextoSeccionActual()"
             [class.bg-neon-yellow]="tipoNueva === 'texto'"
             [class.text-dark-950]="tipoNueva === 'texto'"
             [class.bg-dark-800]="tipoNueva !== 'texto'"
             [class.text-gray-300]="tipoNueva !== 'texto'"
-            [class.opacity-50]="seccionSeleccionada !== 'observaciones' && seccionSeleccionada !== ''"
-            [class.cursor-not-allowed]="seccionSeleccionada !== 'observaciones' && seccionSeleccionada !== ''"
+            [class.opacity-50]="!permiteTextoSeccionActual()"
+            [class.cursor-not-allowed]="!permiteTextoSeccionActual()"
             class="flex-1 px-4 py-2 rounded-lg font-bold transition-all"
           >
             📝 Texto
           </button>
           <button
             (click)="seleccionarTipo('foto')"
-            [disabled]="!['resumen', 'metricas', 'galeria', ''].includes(seccionSeleccionada)"
+            [disabled]="!permiteFotoSeccionActual()"
             [class.bg-neon-blue]="tipoNueva === 'foto'"
             [class.text-white]="tipoNueva === 'foto'"
             [class.bg-dark-800]="tipoNueva !== 'foto'"
             [class.text-gray-300]="tipoNueva !== 'foto'"
-            [class.opacity-50]="!['resumen', 'metricas', 'galeria', ''].includes(seccionSeleccionada)"
-            [class.cursor-not-allowed]="!['resumen', 'metricas', 'galeria', ''].includes(seccionSeleccionada)"
+            [class.opacity-50]="!permiteFotoSeccionActual()"
+            [class.cursor-not-allowed]="!permiteFotoSeccionActual()"
             class="flex-1 px-4 py-2 rounded-lg font-bold transition-all"
           >
             📷 Fotos
@@ -57,15 +75,34 @@
         </div>
 
         <div *ngIf="tipoNueva === 'texto'">
+          <div class="mb-2 flex justify-between items-center">
+            <label class="text-gray-400 text-sm">Contenido del texto</label>
+            <span
+              class="text-sm"
+              [class.text-gray-500]="contarPalabras() <= obtenerMaxPalabrasSeccionActual()"
+              [class.text-neon-red]="contarPalabras() > obtenerMaxPalabrasSeccionActual()"
+            >
+              {{ contarPalabras() }} / {{ obtenerMaxPalabrasSeccionActual() }} palabras
+            </span>
+          </div>
           <textarea
             [(ngModel)]="contenidoTexto"
             placeholder="Escribe una nota o descripción..."
             class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white placeholder-gray-500 focus:border-neon-yellow focus:outline-none resize-none"
             rows="4"
           ></textarea>
+          <p *ngIf="contarPalabras() > obtenerMaxPalabrasSeccionActual()" class="text-neon-red text-xs mt-1">
+            ⚠️ Has excedido el límite de palabras
+          </p>
         </div>
 
         <div *ngIf="tipoNueva === 'foto'">
+          <div *ngIf="obtenerFotosActuales() >= obtenerMaxFotos()" class="mb-4 p-3 bg-dark-800 border border-neon-orange rounded-lg">
+            <p class="text-neon-orange text-sm">
+              ⚠️ Ya has alcanzado el máximo de {{ obtenerMaxFotos() }} foto(s) para esta sección
+            </p>
+          </div>
+
           <input
             type="file"
             accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -75,13 +112,16 @@
             #fileInput
           />
 
-          <div *ngIf="previsualizaciones.length === 0"
+          <div *ngIf="previsualizaciones.length === 0 && obtenerFotosActuales() < obtenerMaxFotos()"
             (click)="fileInput.click()"
             class="border-2 border-dashed border-dark-600 rounded-lg p-8 text-center cursor-pointer hover:border-neon-blue transition-all"
           >
             <div class="text-6xl mb-3">📸</div>
             <p class="text-gray-400 mb-2">Click para seleccionar fotos</p>
-            <p class="text-gray-500 text-sm">JPG, PNG o WEBP - Máx 5MB c/u - Múltiples archivos</p>
+            <p class="text-gray-500 text-sm mb-2">JPG, PNG o WEBP - Máx 5MB c/u</p>
+            <p class="text-neon-blue text-sm font-semibold">
+              Puedes agregar {{ obtenerMaxFotos() - obtenerFotosActuales() }} foto(s) más
+            </p>
           </div>
 
           <div *ngIf="previsualizaciones.length > 0" class="space-y-3">
@@ -95,17 +135,18 @@
               </button>
             </div>
             <button
+              *ngIf="obtenerFotosActuales() + archivosSeleccionados.length < obtenerMaxFotos()"
               (click)="fileInput.click()"
               class="w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg text-gray-300 hover:border-neon-blue transition-all"
             >
-              ➕ Agregar más fotos
+              ➕ Agregar más fotos ({{ obtenerMaxFotos() - obtenerFotosActuales() - archivosSeleccionados.length }} disponibles)
             </button>
           </div>
         </div>
 
         <button
           (click)="guardarEvidencia()"
-          [disabled]="subiendoArchivo || !seccionSeleccionada"
+          [disabled]="subiendoArchivo || !seccionSeleccionada || !puedeGuardar()"
           class="w-full mt-4 px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg transition-all disabled:opacity-50"
         >
           {{ subiendoArchivo ? '⏳ Guardando...' : '💾 Guardar Evidencia' }}
@@ -125,9 +166,14 @@
 
         <div *ngFor="let seccionGrupo of evidenciasAgrupadas">
           <div class="bg-dark-800 border border-neon-yellow rounded-lg p-3 mb-3">
-            <h4 class="text-neon-yellow font-bold">
-              📋 {{ obtenerNombreSeccion(seccionGrupo.seccion) }}
-            </h4>
+            <div class="flex justify-between items-center">
+              <h4 class="text-neon-yellow font-bold">
+                📋 {{ obtenerNombreSeccion(seccionGrupo.seccion) }}
+              </h4>
+              <span class="text-gray-400 text-sm">
+                {{ contarFotosSeccion(seccionGrupo.seccion) }} foto(s) • {{ contarTextosSeccion(seccionGrupo.seccion) }} texto(s)
+              </span>
+            </div>
           </div>
 
           <div class="space-y-3 pl-4">

@@ -213,6 +213,9 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
     if (!ganador) return;
 
     this.detenerCarrera();
+    this.audioService.detenerMusicaFondo();
+    this.audioService.reproducirSonidoLlegadaMeta();
+
     this.ganadorActual = ganador;
 
     this.participantes.forEach((p) => {
@@ -504,6 +507,7 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
       );
       return;
     }
+
     const index = this.llaves.findIndex((l) => l.id === llave.id);
     if (index !== -1) {
       this.currentLlaveIndex = index;
@@ -528,6 +532,9 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
     llave.estado = 'en_curso';
     this.ganadorActual = null;
     this.paso = 3;
+
+    this.audioService.reproducirSonidoTrompetaInicio();
+
     this.abrirModalHeat(
       `Carrera Llave ${llave.id}`,
       'Presiona "Iniciar carrera" para comenzar este enfrentamiento.',
@@ -640,6 +647,8 @@ export class PistaDigital1v1Component implements OnInit, OnDestroy {
   }
 
   iniciarSimulacion(): void {
+    this.audioService.reproducirMusicaCarrera();
+
     this.intervaloCarrera = setInterval(() => {
       if (this.carreraPausada) return;
 

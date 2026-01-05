@@ -613,4 +613,177 @@ export class BrainBikeAudioService {
   reproducirSonidoCambioLlave(): void {
     this.reproducirSonidoSintetico('cambioLlave');
   }
+
+  reproducirMusicaCarrera(): void {
+    if (this.musicaFondo) {
+      this.detenerMusicaFondo();
+    }
+
+    this.musicaFondo = new Audio(
+      'https://www.bensound.com/bensound-music/bensound-actionable.mp3'
+    );
+    this.musicaFondo.loop = true;
+    this.musicaFondo.volume = 0;
+    this.musicaFondo
+      .play()
+      .catch((err) => console.error('Error reproduciendo música:', err));
+
+    let volumenActual = 0;
+    const fadeIn = setInterval(() => {
+      if (volumenActual < this.volumenMusica) {
+        volumenActual += 0.05;
+        if (this.musicaFondo) {
+          this.musicaFondo.volume = Math.min(volumenActual, this.volumenMusica);
+        }
+      } else {
+        clearInterval(fadeIn);
+      }
+    }, 50);
+  }
+
+  reproducirSonidoMotorAcelerando(): void {
+    if (!this.audioContext) return;
+
+    const now = this.audioContext.currentTime;
+    const oscillator1 = this.audioContext.createOscillator();
+    const oscillator2 = this.audioContext.createOscillator();
+    const oscillator3 = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+    const filter = this.audioContext.createBiquadFilter();
+
+    oscillator1.connect(filter);
+    oscillator2.connect(filter);
+    oscillator3.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+
+    oscillator1.type = 'sawtooth';
+    oscillator2.type = 'square';
+    oscillator3.type = 'triangle';
+
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(300, now);
+    filter.frequency.exponentialRampToValueAtTime(1200, now + 2);
+    filter.Q.value = 8;
+
+    oscillator1.frequency.setValueAtTime(60, now);
+    oscillator1.frequency.exponentialRampToValueAtTime(240, now + 2);
+
+    oscillator2.frequency.setValueAtTime(120, now);
+    oscillator2.frequency.exponentialRampToValueAtTime(480, now + 2);
+
+    oscillator3.frequency.setValueAtTime(90, now);
+    oscillator3.frequency.exponentialRampToValueAtTime(360, now + 2);
+
+    gainNode.gain.setValueAtTime(0.4, now);
+    gainNode.gain.setValueAtTime(0.7, now + 1);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 2.2);
+
+    oscillator1.start(now);
+    oscillator1.stop(now + 2.2);
+    oscillator2.start(now);
+    oscillator2.stop(now + 2.2);
+    oscillator3.start(now);
+    oscillator3.stop(now + 2.2);
+  }
+
+  reproducirSonidoBocinaCarrera(): void {
+    if (!this.audioContext) return;
+
+    const now = this.audioContext.currentTime;
+    const oscillator = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(880, now);
+    oscillator.frequency.setValueAtTime(1046, now + 0.15);
+    oscillator.frequency.setValueAtTime(880, now + 0.3);
+
+    gainNode.gain.setValueAtTime(0.5, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+    oscillator.start(now);
+    oscillator.stop(now + 0.35);
+  }
+
+  reproducirSonidoLlegadaMeta(): void {
+    if (!this.audioContext) return;
+
+    const now = this.audioContext.currentTime;
+
+    const oscillator1 = this.audioContext.createOscillator();
+    const oscillator2 = this.audioContext.createOscillator();
+    const gainNode = this.audioContext.createGain();
+    const filter = this.audioContext.createBiquadFilter();
+
+    oscillator1.connect(filter);
+    oscillator2.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(2000, now);
+    filter.Q.value = 5;
+
+    oscillator1.type = 'sine';
+    oscillator1.frequency.setValueAtTime(1046.5, now);
+    oscillator1.frequency.setValueAtTime(1318.51, now + 0.3);
+    oscillator1.frequency.setValueAtTime(1567.98, now + 0.6);
+    oscillator1.frequency.setValueAtTime(2093.0, now + 0.9);
+
+    oscillator2.type = 'triangle';
+    oscillator2.frequency.setValueAtTime(523.25, now);
+    oscillator2.frequency.setValueAtTime(659.25, now + 0.3);
+    oscillator2.frequency.setValueAtTime(783.99, now + 0.6);
+    oscillator2.frequency.setValueAtTime(1046.5, now + 0.9);
+
+    gainNode.gain.setValueAtTime(0.6, now);
+    gainNode.gain.setValueAtTime(0.8, now + 0.5);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+
+    oscillator1.start(now);
+    oscillator1.stop(now + 1.5);
+    oscillator2.start(now);
+    oscillator2.stop(now + 1.5);
+  }
+
+  reproducirSonidoPitStop(): void {
+    if (!this.audioContext) return;
+
+    const now = this.audioContext.currentTime;
+    const noiseBuffer = this.audioContext.createBuffer(
+      1,
+      this.audioContext.sampleRate * 0.3,
+      this.audioContext.sampleRate
+    );
+    const output = noiseBuffer.getChannelData(0);
+
+    for (let i = 0; i < noiseBuffer.length; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = this.audioContext.createBufferSource();
+    noise.buffer = noiseBuffer;
+
+    const gainNode = this.audioContext.createGain();
+    const filter = this.audioContext.createBiquadFilter();
+
+    noise.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(this.audioContext.destination);
+
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(2000, now);
+    filter.frequency.exponentialRampToValueAtTime(4000, now + 0.3);
+    filter.Q.value = 10;
+
+    gainNode.gain.setValueAtTime(0.3, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+    noise.start(now);
+    noise.stop(now + 0.3);
+  }
 }

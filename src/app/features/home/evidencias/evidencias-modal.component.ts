@@ -30,10 +30,48 @@ export class EvidenciasModalComponent implements OnInit {
   seccionSeleccionada: string = '';
 
   secciones = [
-    { valor: 'resumen', label: 'Resumen de Participación' },
-    { valor: 'metricas', label: 'Métricas de la Experiencia' },
-    { valor: 'galeria', label: 'Galería' },
-    { valor: 'observaciones', label: 'Notas y Observaciones' },
+    {
+      valor: 'resumen',
+      label: 'Resumen de Participación',
+      maxFotos: 2,
+      minFotos: 2,
+      permiteFotos: true,
+      permiteTexto: false,
+    },
+    {
+      valor: 'informe',
+      label: 'Informe Experiencia',
+      maxFotos: 2,
+      minFotos: 2,
+      permiteFotos: true,
+      permiteTexto: true,
+      maxPalabras: 150,
+    },
+    {
+      valor: 'impacto',
+      label: 'Impacto en Bienestar',
+      maxFotos: 2,
+      minFotos: 2,
+      permiteFotos: true,
+      permiteTexto: false,
+    },
+    {
+      valor: 'galeria',
+      label: 'Galería',
+      maxFotos: 6,
+      minFotos: 1,
+      permiteFotos: true,
+      permiteTexto: false,
+    },
+    {
+      valor: 'observaciones',
+      label: 'Notas y Observaciones',
+      maxFotos: 0,
+      minFotos: 0,
+      permiteFotos: false,
+      permiteTexto: true,
+      maxPalabras: 200,
+    },
   ];
 
   constructor(private sesionService: SesionService) {}
@@ -93,57 +131,58 @@ export class EvidenciasModalComponent implements OnInit {
   }
 
   seleccionarTipo(tipo: 'foto' | 'texto'): void {
+    const seccion = this.secciones.find(
+      (s) => s.valor === this.seccionSeleccionada
+    );
+
+    if (!seccion) {
+      alert('Selecciona una sección primero');
+      return;
+    }
+
+    if (tipo === 'texto' && !seccion.permiteTexto) {
+      alert(`No se pueden agregar textos en "${seccion.label}"`);
+      return;
+    }
+
+    if (tipo === 'foto' && !seccion.permiteFotos) {
+      alert(`No se pueden agregar fotos en "${seccion.label}"`);
+      return;
+    }
+
     this.tipoNueva = tipo;
-
-    if (tipo === 'texto' && this.seccionSeleccionada !== 'observaciones') {
-      alert(
-        'Solo se pueden agregar textos en la sección "Notas y Observaciones"'
-      );
-      this.tipoNueva = 'foto';
-      return;
-    }
-
-    if (
-      tipo === 'foto' &&
-      !['resumen', 'metricas', 'galeria'].includes(this.seccionSeleccionada)
-    ) {
-      alert(
-        'Solo se pueden agregar fotos en "Resumen de Participación", "Métricas" o "Galería"'
-      );
-      this.tipoNueva = 'texto';
-      return;
-    }
-
     this.resetForm();
   }
 
   onFileSelected(event: any): void {
     const files = Array.from(event.target.files) as File[];
+    const seccion = this.secciones.find(
+      (s) => s.valor === this.seccionSeleccionada
+    );
+
+    if (!seccion) return;
 
     const fotosActuales = this.evidencias.filter(
       (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'foto'
     ).length;
 
-    let maxFotos = 9;
-    if (this.seccionSeleccionada === 'resumen') maxFotos = 1;
-    if (this.seccionSeleccionada === 'metricas') maxFotos = 1;
-
     const espacioDisponible =
-      maxFotos - fotosActuales - this.archivosSeleccionados.length;
+      seccion.maxFotos - fotosActuales - this.archivosSeleccionados.length;
+
+    if (espacioDisponible <= 0) {
+      alert(
+        `Ya tienes el máximo de ${seccion.maxFotos} foto(s) permitidas en "${seccion.label}"`
+      );
+      return;
+    }
 
     files.forEach((file, index) => {
       if (index >= espacioDisponible) {
-        let mensaje = '';
-        if (this.seccionSeleccionada === 'resumen') {
-          mensaje = 'Solo se permite 1 foto en "Resumen de Participación"';
-        } else if (this.seccionSeleccionada === 'metricas') {
-          mensaje = 'Solo se permite 1 foto en "Métricas"';
-        } else {
-          mensaje = `Solo se permiten máximo 9 fotos en "Galería". Ya tienes ${
-            fotosActuales + this.archivosSeleccionados.length
-          }`;
-        }
-        alert(mensaje);
+        alert(
+          `Solo se permiten ${seccion.maxFotos} foto(s) en "${
+            seccion.label
+          }". Ya tienes ${fotosActuales + this.archivosSeleccionados.length}`
+        );
         return;
       }
 
@@ -179,14 +218,27 @@ export class EvidenciasModalComponent implements OnInit {
       return;
     }
 
+    const seccion = this.secciones.find(
+      (s) => s.valor === this.seccionSeleccionada
+    );
+    if (!seccion) return;
+
     if (this.tipoNueva === 'texto') {
-      if (this.seccionSeleccionada !== 'observaciones') {
-        alert('Solo se pueden agregar textos en "Notas y Observaciones"');
+      if (!seccion.permiteTexto) {
+        alert(`No se pueden agregar textos en "${seccion.label}"`);
         return;
       }
 
       if (!this.contenidoTexto.trim()) {
         alert('Ingresa un texto');
+        return;
+      }
+
+      const palabras = this.contenidoTexto.trim().split(/\s+/).length;
+      if (seccion.maxPalabras && palabras > seccion.maxPalabras) {
+        alert(
+          `El texto no debe superar ${seccion.maxPalabras} palabras. Actualmente tiene ${palabras} palabras.`
+        );
         return;
       }
 
@@ -196,9 +248,7 @@ export class EvidenciasModalComponent implements OnInit {
 
       if (textoExistente) {
         alert(
-          `Ya existe un texto para la sección "${this.obtenerNombreSeccion(
-            this.seccionSeleccionada
-          )}". Solo puede haber un texto por sección.`
+          `Ya existe un texto para la sección "${seccion.label}". Solo puede haber un texto por sección.`
         );
         return;
       }
@@ -222,12 +272,8 @@ export class EvidenciasModalComponent implements OnInit {
           },
         });
     } else {
-      if (
-        !['resumen', 'metricas', 'galeria'].includes(this.seccionSeleccionada)
-      ) {
-        alert(
-          'Solo se pueden agregar fotos en "Resumen de Participación", "Métricas" o "Galería"'
-        );
+      if (!seccion.permiteFotos) {
+        alert(`No se pueden agregar fotos en "${seccion.label}"`);
         return;
       }
 
@@ -241,27 +287,11 @@ export class EvidenciasModalComponent implements OnInit {
       ).length;
 
       if (
-        this.seccionSeleccionada === 'resumen' &&
-        fotosActuales + this.archivosSeleccionados.length > 1
-      ) {
-        alert('Solo se permite 1 foto en "Resumen de Participación"');
-        return;
-      }
-
-      if (
-        this.seccionSeleccionada === 'metricas' &&
-        fotosActuales + this.archivosSeleccionados.length > 1
-      ) {
-        alert('Solo se permite 1 foto en "Métricas"');
-        return;
-      }
-
-      if (
-        this.seccionSeleccionada === 'galeria' &&
-        fotosActuales + this.archivosSeleccionados.length > 9
+        fotosActuales + this.archivosSeleccionados.length >
+        seccion.maxFotos
       ) {
         alert(
-          `Solo se permiten máximo 9 fotos en "Galería". Actualmente tienes ${fotosActuales}`
+          `Solo se permite(n) ${seccion.maxFotos} foto(s) en "${seccion.label}"`
         );
         return;
       }
@@ -269,6 +299,13 @@ export class EvidenciasModalComponent implements OnInit {
       this.subiendoArchivo = true;
       this.subirFotos(0);
     }
+  }
+
+  contarPalabras(): number {
+    return this.contenidoTexto
+      .trim()
+      .split(/\s+/)
+      .filter((p) => p.length > 0).length;
   }
 
   eliminarPreview(index: number): void {
@@ -315,9 +352,76 @@ export class EvidenciasModalComponent implements OnInit {
     });
   }
 
+  permiteTextoSeccionActual(): boolean {
+    if (!this.seccionSeleccionada) return false;
+    const seccion = this.secciones.find(
+      (s) => s.valor === this.seccionSeleccionada
+    );
+    return seccion?.permiteTexto || false;
+  }
+
+  permiteFotoSeccionActual(): boolean {
+    if (!this.seccionSeleccionada) return false;
+    const seccion = this.secciones.find(
+      (s) => s.valor === this.seccionSeleccionada
+    );
+    return seccion?.permiteFotos || false;
+  }
+
+  obtenerMaxPalabrasSeccionActual(): number {
+    if (!this.seccionSeleccionada) return 0;
+    const seccion = this.secciones.find(
+      (s) => s.valor === this.seccionSeleccionada
+    );
+    return seccion?.maxPalabras || 0;
+  }
+
   resetForm(): void {
     this.contenidoTexto = '';
     this.archivosSeleccionados = [];
     this.previsualizaciones = [];
+  }
+  obtenerMinFotos(): number {
+    if (!this.seccionSeleccionada) return 0;
+    const seccion = this.secciones.find(
+      (s) => s.valor === this.seccionSeleccionada
+    );
+    return seccion?.minFotos || 0;
+  }
+
+  obtenerMaxFotos(): number {
+    if (!this.seccionSeleccionada) return 0;
+    const seccion = this.secciones.find(
+      (s) => s.valor === this.seccionSeleccionada
+    );
+    return seccion?.maxFotos || 0;
+  }
+
+  obtenerFotosActuales(): number {
+    return this.evidencias.filter(
+      (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'foto'
+    ).length;
+  }
+
+  contarFotosSeccion(seccion: string): number {
+    return this.evidencias.filter(
+      (e) => e.seccion === seccion && e.tipo === 'foto'
+    ).length;
+  }
+
+  contarTextosSeccion(seccion: string): number {
+    return this.evidencias.filter(
+      (e) => e.seccion === seccion && e.tipo === 'texto'
+    ).length;
+  }
+
+  puedeGuardar(): boolean {
+    if (this.tipoNueva === 'texto') {
+      return (
+        this.contenidoTexto.trim().length > 0 &&
+        this.contarPalabras() <= this.obtenerMaxPalabrasSeccionActual()
+      );
+    }
+    return this.archivosSeleccionados.length > 0;
   }
 }

@@ -542,27 +542,19 @@
 </div>
 
 <!-- PASO 3: CARRERA EN VIVO -->
-<div *ngIf="paso === 3" class="space-y-6">
-  <div
-    *ngIf="mostrarCuentaRegresiva"
-    class="fixed inset-0 bg-dark-950/95 backdrop-blur-sm z-50 flex items-center justify-center animate-fadeIn"
-  >
+<div *ngIf="paso === 3" class="fixed inset-0 bg-gradient-to-br from-dark-950 via-dark-900 to-dark-850 text-white font-sans overflow-hidden">
+
+  <div *ngIf="mostrarCuentaRegresiva" class="fixed inset-0 bg-dark-950/95 backdrop-blur-sm z-50 flex items-center justify-center animate-fadeIn">
     <div class="text-center space-y-8">
       <div class="relative">
         <div class="absolute inset-0 blur-3xl animate-glow"
           [style.background]="numeroCuentaRegresiva === 3 ? 'rgba(239,68,68,0.3)' : numeroCuentaRegresiva === 2 ? 'rgba(250,204,21,0.3)' : 'rgba(34,197,94,0.3)'">
         </div>
-        <div
-          *ngIf="numeroCuentaRegresiva > 0"
-          class="relative text-9xl font-display font-bold animate-pulse drop-shadow-[0_0_40px_rgba(255,255,255,0.5)]"
-          [style.color]="numeroCuentaRegresiva === 3 ? '#ef4444' : numeroCuentaRegresiva === 2 ? '#facc15' : '#22c55e'"
-        >
+        <div *ngIf="numeroCuentaRegresiva > 0" class="relative text-9xl font-display font-bold animate-pulse drop-shadow-[0_0_40px_rgba(255,255,255,0.5)]"
+          [style.color]="numeroCuentaRegresiva === 3 ? '#ef4444' : numeroCuentaRegresiva === 2 ? '#facc15' : '#22c55e'">
           {{ numeroCuentaRegresiva }}
         </div>
-        <div
-          *ngIf="numeroCuentaRegresiva === 0"
-          class="relative text-9xl font-display font-bold text-neon-green animate-pulse drop-shadow-[0_0_50px_rgba(34,197,94,0.9)]"
-        >
+        <div *ngIf="numeroCuentaRegresiva === 0" class="relative text-9xl font-display font-bold text-neon-green animate-pulse drop-shadow-[0_0_50px_rgba(34,197,94,0.9)]">
           ¡YA!
         </div>
       </div>
@@ -572,283 +564,348 @@
     </div>
   </div>
 
-  <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6 shadow-neon-blue">
-    <div class="flex items-center justify-between gap-4 flex-wrap">
-      <div *ngIf="llaveActual">
-        <h2 class="text-2xl sm:text-3xl font-display font-bold text-white">
-          <span class="text-neon-blue">🏁 Carrera en Vivo</span>
-        </h2>
-        <p class="text-gray-400 text-sm sm:text-base mt-1">
-          Llave <span class="text-neon-yellow font-bold">#{{ llaveActual.id }}</span> · {{ configuracion.numeroVueltas }} vueltas
-        </p>
+  <div class="h-full flex flex-col p-4 gap-4">
+
+    <div class="bg-dark-900 border border-dark-700 rounded-xl p-4 shadow-neon-blue">
+      <div class="flex items-center justify-between gap-4">
+        <div *ngIf="llaveActual">
+          <h2 class="text-2xl font-display font-bold text-white">
+            <span class="text-neon-blue">🏁 Carrera en Vivo</span>
+          </h2>
+          <p class="text-gray-400 text-sm mt-1">
+            Llave <span class="text-neon-yellow font-bold">#{{ llaveActual.id }}</span> · {{ configuracion.numeroVueltas }} vueltas
+          </p>
+        </div>
+
+        <div class="flex gap-2">
+          <button (click)="pausarReanudarCarrera()" class="px-4 py-2 rounded-lg font-bold text-sm transition-all"
+            [class.bg-neon-green]="carreraPausada"
+            [class.text-dark-950]="carreraPausada"
+            [class.bg-neon-yellow]="!carreraPausada"
+            [class.text-dark-950]="!carreraPausada"
+            [class.shadow-neon-green]="carreraPausada"
+            [class.shadow-neon-yellow]="!carreraPausada">
+            {{ carreraPausada ? '▶️ Reanudar' : '⏸️ Pausar' }}
+          </button>
+          <button (click)="reiniciarCarrera()" class="px-4 py-2 bg-dark-700 text-gray-300 rounded-lg font-bold text-sm border border-dark-600 hover:border-neon-red hover:text-neon-red transition-all">
+            🔄 Reiniciar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1 grid grid-cols-12 gap-4 min-h-0">
+
+      <div class="col-span-9 bg-dark-900 border border-dark-700 rounded-xl p-4 shadow-neon-blue-lg flex flex-col gap-3">
+
+        <div class="flex justify-between items-center text-xs text-gray-400 font-mono uppercase tracking-wider">
+          <span>🎮 Pista Digital 1v1</span>
+          <span class="text-neon-yellow">{{ jugadores[0]?.nombre || 'J1' }} vs {{ jugadores[1]?.nombre || 'J2' }}</span>
+        </div>
+
+        <div class="flex-1 relative bg-gradient-to-r from-dark-950 via-dark-900 to-dark-950 rounded-xl overflow-hidden border-4 border-dark-700" style="box-shadow: inset 0 0 40px rgba(0,0,0,0.5);">
+
+          <div class="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,240,255,0.05)_2px,transparent_2px)] bg-[size:40px_100%] pointer-events-none"></div>
+
+          <div class="absolute top-4 left-4 flex gap-2 z-20">
+            <div class="w-4 h-4 rounded-full bg-neon-red animate-pulse shadow-neon-red border border-neon-red/50"></div>
+            <div class="w-4 h-4 rounded-full bg-neon-yellow animate-pulse shadow-neon-yellow border border-neon-yellow/50" style="animation-delay: 0.3s"></div>
+            <div class="w-4 h-4 rounded-full bg-neon-green animate-pulse shadow-neon-green border border-neon-green/50" style="animation-delay: 0.6s"></div>
+          </div>
+
+          <div class="absolute top-4 right-4 z-20">
+            <div class="bg-dark-950/95 backdrop-blur-md rounded-xl px-4 py-2 border-2 border-neon-blue/60 shadow-neon-blue">
+              <div class="text-xs text-gray-400 font-mono uppercase tracking-wider mb-1">⏱️ Tiempo Transcurrido</div>
+              <div class="text-3xl font-display font-black text-neon-blue" style="text-shadow: 0 0 20px rgba(0,240,255,0.9);">
+                {{ formatearTiempo(tiempoTranscurrido) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="absolute left-8 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2">
+            <div class="h-32 w-0.5 bg-gradient-to-b from-transparent via-neon-yellow to-transparent"></div>
+            <div class="px-4 py-2 bg-dark-950/95 backdrop-blur-sm rounded-lg border-2 border-neon-yellow" style="box-shadow: 0 0 20px rgba(255,247,0,0.5);">
+              <div class="text-sm font-mono font-bold text-neon-yellow" style="text-shadow: 0 0 10px rgba(255,247,0,0.8);">SALIDA</div>
+            </div>
+            <div class="h-32 w-0.5 bg-gradient-to-b from-transparent via-neon-yellow to-transparent"></div>
+          </div>
+
+          <div class="absolute right-8 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2">
+            <div class="h-32 w-0.5 bg-gradient-to-b from-transparent via-neon-green to-transparent"></div>
+            <div class="px-4 py-2 bg-dark-950/95 backdrop-blur-sm rounded-lg border-2 border-neon-green" style="box-shadow: 0 0 25px rgba(57,255,20,0.6);">
+              <div class="text-sm font-mono font-bold text-neon-green" style="text-shadow: 0 0 10px rgba(57,255,20,0.9);">🏁 META</div>
+            </div>
+            <div class="h-32 w-0.5 bg-gradient-to-b from-transparent via-neon-green to-transparent"></div>
+          </div>
+
+          <div class="absolute inset-0 flex items-center px-32">
+            <div class="relative w-full h-48 bg-gradient-to-b from-dark-850/90 via-dark-800/90 to-dark-850/90 rounded-2xl border-2 border-dark-700" style="box-shadow: inset 0 0 30px rgba(0,0,0,0.6);">
+
+              <div class="absolute inset-0 pointer-events-none overflow-hidden">
+                <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-0.5 flex items-center gap-4">
+                  <div *ngFor="let i of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]"
+                       class="w-8 h-0.5 bg-white/30 flex-shrink-0"></div>
+                </div>
+              </div>
+
+              <div class="absolute left-0 top-1/2 -translate-y-1/2 h-2 w-full bg-gradient-to-r from-neon-yellow/20 via-transparent to-neon-green/20"></div>
+
+              <div class="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+
+                    <div *ngFor="let jugador of jugadores; let idx = index"
+                class="absolute transition-all duration-100 ease-linear z-20"
+                [style.left]="'calc(' + (jugador.distanciaRecorrida / 100 * 96) + '%)'"
+                [style.top]="idx === 0 ? '10%' : '60%'"
+                [style.filter]="'drop-shadow(0 0 ' + (jugador.velocidad > 10 ? '20' : '10') + 'px ' + jugador.color + ')'">
+
+                <div class="relative">
+
+                  <div class="absolute left-1/2 -translate-x-1/2 whitespace-nowrap z-30"
+                       [style.top]="idx === 0 ? '-90px' : '70px'">
+                    <div class="px-4 py-2 bg-dark-950/98 backdrop-blur-md rounded-xl border-2 shadow-xl"
+                         [style.border-color]="jugador.color"
+                         [style.box-shadow]="'0 0 20px ' + jugador.color + '60'">
+                      <div class="text-xs font-display font-bold text-white mb-1"
+                           [style.text-shadow]="'0 0 10px ' + jugador.color">
+                        {{ jugador.nombre || 'J' + jugador.id }}
+                      </div>
+                      <div class="flex items-baseline gap-1">
+                        <div class="text-3xl font-display font-black"
+                             [style.color]="jugador.color"
+                             [style.text-shadow]="'0 0 15px ' + jugador.color">
+                          {{ jugador.velocidad.toFixed(0) }}
+                        </div>
+                        <div class="text-xs text-gray-400 font-mono mb-1">km/h</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="jugador.velocidad > 8"
+                       class="absolute inset-0 -z-10 animate-pulse"
+                       [style.background]="'radial-gradient(ellipse 160% 120% at center, ' + jugador.color + '40, transparent)'"
+                       style="width: 220%; height: 220%; left: -60%; top: -60%;"></div>
+
+                  <div class="relative text-6xl transition-all duration-200"
+                       [style.transform]="'scaleX(-1) ' + (jugador.velocidad > 20 ? 'scale(1.25) rotate(8deg)' : (jugador.velocidad > 15 ? 'scale(1.15) rotate(5deg)' : 'scale(1)'))"
+                       [style.filter]="jugador.velocidad > 15 ? 'brightness(1.4)' : 'brightness(1)'">
+                    <span *ngIf="jugador.genero === 'femenino'">🚴‍♀️</span>
+                    <span *ngIf="jugador.genero !== 'femenino'">🚴</span>
+                  </div>
+
+                  <div *ngIf="jugador.velocidad > 12" class="absolute -right-10 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 opacity-70">
+                    <div *ngFor="let i of [0,1,2]"
+                         class="h-1.5 rounded-full animate-speedLine"
+                         [style.width]="(25 - i * 5) + 'px'"
+                         [style.background]="jugador.color"
+                         [style.animation-delay]="i * 0.08 + 's'"
+                         [style.box-shadow]="'0 0 8px ' + jugador.color"></div>
+                  </div>
+
+                  <!-- <div class="absolute left-1/2 -translate-x-1/2 whitespace-nowrap"
+                       [style.top]="idx === 0 ? '70px' : '-35px'">
+                    <div class="px-2 py-1 bg-dark-950/90 backdrop-blur-sm rounded-lg border"
+                         [style.border-color]="jugador.color + '40'">
+                      <div class="text-[10px] font-mono text-gray-400">
+                        Vuelta <span [style.color]="jugador.color" class="font-bold">{{ jugador.vueltaActual }}/{{ configuracion.numeroVueltas }}</span>
+                      </div>
+                    </div>
+                  </div> -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="(jugadores[0]?.velocidad || 0) > 20 || (jugadores[1]?.velocidad || 0) > 20"
+               class="absolute inset-0 pointer-events-none z-30 overflow-hidden">
+            <div *ngFor="let i of [0,1,2,3,4,5,6,7,8]"
+                 class="absolute w-1.5 h-1.5 rounded-full animate-pulse-slow"
+                 [style.background]="i % 2 === 0 ? '#FFF700' : '#00F0FF'"
+                 [style.left]="(15 + Math.random() * 70) + '%'"
+                 [style.top]="(10 + Math.random() * 80) + '%'"
+                 [style.animation-delay]="i * 0.12 + 's'"
+                 [style.box-shadow]="'0 0 10px ' + (i % 2 === 0 ? '#FFF700' : '#00F0FF')"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-3">
+          <div class="bg-gradient-to-br from-dark-800 to-dark-900 rounded-xl p-3 border border-neon-yellow/40">
+            <div class="flex items-center justify-between">
+              <div class="flex-1 min-w-0">
+                <div class="text-[10px] text-gray-400 font-mono uppercase tracking-wide mb-1">🏆 Líder Actual</div>
+                <div class="text-lg font-display font-black text-neon-yellow truncate" style="text-shadow: 0 0 12px rgba(255,247,0,0.8);">
+                  {{ jugadores.length > 0 && jugadores[0].posicion === 1 ? (jugadores[0].nombre || 'J1') : (jugadores[1]?.nombre || 'J2') }}
+                </div>
+              </div>
+              <div class="text-3xl opacity-80 ml-2">👑</div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-dark-800 to-dark-900 rounded-xl p-3 border border-neon-pink/40">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[10px] text-gray-400 font-mono uppercase tracking-wide mb-1">🔥 Intensidad</div>
+                <div class="text-lg font-display font-black text-neon-pink" style="text-shadow: 0 0 12px rgba(255,16,240,0.8);">
+                  {{ ((jugadores[0]?.velocidad || 0) + (jugadores[1]?.velocidad || 0)) / 2 > 15 ? 'ALTA' : 'MEDIA' }}
+                </div>
+              </div>
+              <div class="text-3xl opacity-80">⚡</div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-dark-800 to-dark-900 rounded-xl p-3 border border-neon-green/40">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[10px] text-gray-400 font-mono uppercase tracking-wide mb-1">📏 Distancia Total</div>
+                <div class="text-lg font-display font-black text-neon-green" style="text-shadow: 0 0 12px rgba(57,255,20,0.8);">
+                  {{ ((jugadores[0]?.distanciaReal || 0) + (jugadores[1]?.distanciaReal || 0)).toFixed(0) }}m
+                </div>
+              </div>
+              <div class="text-3xl opacity-80">📊</div>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-br from-dark-800 to-dark-900 rounded-xl p-3 border border-neon-blue/40">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[10px] text-gray-400 font-mono uppercase tracking-wide mb-1">⚡ Vel. Promedio</div>
+                <div class="text-lg font-display font-black text-neon-blue" style="text-shadow: 0 0 12px rgba(0,240,255,0.8);">
+                  {{ (((jugadores[0]?.velocidad || 0) + (jugadores[1]?.velocidad || 0)) / 2).toFixed(1) }} km/h
+                </div>
+              </div>
+              <div class="text-3xl opacity-80">💨</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="flex gap-2">
-        <button
-          (click)="pausarReanudarCarrera()"
-          class="px-4 py-2 rounded-lg font-bold text-sm transition-all"
-          [class.bg-neon-green]="carreraPausada"
-          [class.text-dark-950]="carreraPausada"
-          [class.bg-neon-yellow]="!carreraPausada"
-          [class.text-dark-950]="!carreraPausada"
-          [class.shadow-neon-green]="carreraPausada"
-          [class.shadow-neon-yellow]="!carreraPausada">
-          {{ carreraPausada ? '▶️ Reanudar' : '⏸️ Pausar' }}
-        </button>
-        <button
-          (click)="reiniciarCarrera()"
-          class="px-4 py-2 bg-dark-700 text-gray-300 rounded-lg font-bold text-sm border border-dark-600 hover:border-neon-red hover:text-neon-red transition-all">
-          🔄 Reiniciar
-        </button>
+      <div class="col-span-3 space-y-3 overflow-y-auto">
+        <div class="bg-dark-900 border border-dark-700 rounded-xl p-3">
+          <div class="bg-gradient-to-br from-dark-800/60 to-dark-950/60 rounded-lg border-2 border-neon-blue/70 p-3 backdrop-blur-sm shadow-neon-blue">
+            <div class="text-center">
+              <div class="text-gray-400 text-xs mb-1 font-display uppercase">🔄 Total Vueltas</div>
+              <div class="text-neon-blue font-bold text-4xl font-display">
+                {{ configuracion.numeroVueltas }}
+              </div>
+              <div class="text-[10px] text-gray-500 font-mono mt-1">vueltas completas</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-dark-900 border border-dark-700 rounded-xl p-3">
+          <h3 class="text-base font-display font-bold text-white mb-3 flex items-center gap-2">
+            🏆 Ranking en Vivo
+          </h3>
+
+          <div class="space-y-2">
+            <div *ngFor="let jugador of jugadores" class="bg-dark-800 rounded-lg p-3 border-2 transition-all"
+              [style.border-color]="jugador.color + '40'">
+              <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center text-base font-display font-bold border-2"
+                  [style.background-color]="jugador.posicion === 1 ? '#facc15' : '#94a3b8'"
+                  [style.color]="jugador.posicion === 1 ? '#0a0a0a' : '#ffffff'"
+                  [style.border-color]="jugador.posicion === 1 ? '#facc15' : '#94a3b8'"
+                  [style.box-shadow]="jugador.posicion === 1 ? '0 0 20px rgba(250,204,21,0.6)' : 'none'">
+                  {{ jugador.posicion }}
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <p class="text-white font-bold text-sm truncate">
+                    {{ jugador.nombre || ('J' + jugador.id) }}
+                  </p>
+                  <div class="text-xs font-mono mt-0.5 flex items-center gap-2">
+                    <span [style.color]="jugador.color" class="font-bold">V{{ jugador.vueltaActual }}/{{ configuracion.numeroVueltas }}</span>
+                    <span class="text-gray-500">•</span>
+                    <span class="text-gray-400">{{ jugador.distanciaRecorrida.toFixed(0) }}%</span>
+                  </div>
+                </div>
+
+                <div class="text-2xl">
+                  <span *ngIf="jugador.genero === 'femenino'">🚴‍♀️</span>
+                  <span *ngIf="jugador.genero !== 'femenino'">🚴</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-dark-900 border border-dark-700 rounded-xl p-3">
+          <h3 class="text-sm font-display font-bold text-white mb-2 flex items-center gap-2">
+            📊 Estadísticas
+          </h3>
+          <div class="space-y-2">
+            <div *ngFor="let jugador of jugadores" class="bg-dark-800 rounded-lg p-2 border"
+                 [style.border-color]="jugador.color + '30'">
+              <div class="text-xs font-bold text-white mb-2" [style.color]="jugador.color">
+                {{ jugador.nombre || ('J' + jugador.id) }}
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-[10px]">
+                <div>
+                  <div class="text-gray-500">Máxima</div>
+                  <div class="font-bold text-neon-yellow">{{ jugador.velocidadMaxima.toFixed(1) }} km/h</div>
+                </div>
+                <div>
+                  <div class="text-gray-500">Distancia</div>
+                  <div class="font-bold text-neon-blue">{{ (jugador.distanciaReal / 1000).toFixed(2) }} km</div>
+                </div>
+                <div>
+                  <div class="text-gray-500">Calorías</div>
+                  <div class="font-bold text-neon-orange">{{ (0.0175 * 8 * 70 * (tiempoTranscurrido / 60)).toFixed(0) }} kcal</div>
+                </div>
+                <div>
+                  <div class="text-gray-500">Vatios</div>
+                  <div class="font-bold text-neon-pink">{{ (jugador.velocidad * 10).toFixed(0) }} W</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-dark-900 to-dark-800 border border-neon-green/30 rounded-xl p-3">
+          <div class="text-center space-y-1">
+            <div class="text-3xl animate-bounce">
+              {{ carreraIniciada ? (carreraPausada ? '⏸️' : '🏁') : '⏳' }}
+            </div>
+            <div class="text-[10px] text-gray-400 font-display uppercase tracking-wider">Estado Carrera</div>
+            <div class="text-sm font-display font-bold"
+                 [style.color]="carreraIniciada ? (carreraPausada ? '#FFF700' : '#39FF14') : '#00F0FF'">
+              {{ carreraIniciada ? (carreraPausada ? 'PAUSADA' : 'EN CURSO') : 'LISTA' }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-    <div class="lg:col-span-3 bg-dark-900 border border-dark-700 rounded-card p-6 shadow-neon-blue-lg">
-      <div class="flex justify-between items-center text-xs text-gray-400 font-mono mb-3 uppercase tracking-wider">
-        <span>🎮 Sistema de Carrera Digital</span>
-        <span class="text-neon-yellow">{{ jugadores[0]?.nombre || 'Jugador 1' }} vs {{ jugadores[1]?.nombre || 'Jugador 2' }}</span>
-      </div>
+  <div *ngIf="mostrarModalHeat" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-dark-900 rounded-2xl border-2 max-w-lg w-full p-8 shadow-2xl animate-slideUp"
+         [ngClass]="{'border-neon-yellow': modoModalHeat === 'inicio', 'border-neon-green': modoModalHeat === 'fin'}">
+      <h3 class="text-3xl font-display font-bold mb-4"
+          [ngClass]="{'text-neon-yellow': modoModalHeat === 'inicio', 'text-neon-green': modoModalHeat === 'fin'}">
+        {{tituloModalHeat}}
+      </h3>
+      <p class="text-gray-300 mb-6 text-lg">{{textoModalHeat}}</p>
 
-      <div class="relative w-full mx-auto aspect-[9/16] lg:aspect-[16/12] rounded-2xl overflow-hidden bg-gradient-to-b from-dark-950 via-dark-900 to-dark-800 border-4 border-dark-700">
-
-        <div class="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,240,255,0.03)_1px,transparent_1px)] bg-[size:100%_30px] pointer-events-none"></div>
-
-        <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-neon-green/20 via-neon-yellow/10 to-transparent z-10 pointer-events-none"></div>
-
-        <div class="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3">
-          <div class="relative px-10 py-4 bg-dark-950/98 border-4 rounded-2xl backdrop-blur-md"
-               [style.border-color]="carreraIniciada ? '#39FF14' : '#FFF700'"
-               [style.box-shadow]="carreraIniciada ? '0 0 40px rgba(57,255,20,0.7), 0 0 80px rgba(57,255,20,0.3), inset 0 0 30px rgba(57,255,20,0.15)' : '0 0 40px rgba(255,247,0,0.7), 0 0 80px rgba(255,247,0,0.3), inset 0 0 30px rgba(255,247,0,0.15)'">
-            <div class="text-3xl sm:text-5xl font-display font-black tracking-widest uppercase flex items-center gap-3"
-                 [style.color]="carreraIniciada ? '#39FF14' : '#FFF700'"
-                 [style.text-shadow]="carreraIniciada ? '0 0 25px rgba(57,255,20,0.9), 0 0 50px rgba(57,255,20,0.5)' : '0 0 25px rgba(255,247,0,0.9), 0 0 50px rgba(255,247,0,0.5)'">
-              🏁 META 🏁
-            </div>
+      <div *ngIf="modoModalHeat === 'fin' && ganadorActual" class="bg-dark-800 rounded-xl p-6 mb-6 border border-neon-green">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-full bg-neon-green/20 flex items-center justify-center text-3xl">
+            🏆
           </div>
-          <div class="flex gap-1">
-            <div *ngFor="let i of [0,1,2,3,4,5,6,7,8,9,10,11]"
-                 class="w-4 h-10 animate-pulse"
-                 [class.bg-white]="i % 2 === 0"
-                 [class.bg-dark-950]="i % 2 !== 0"
-                 [style.animation-delay]="i * 0.08 + 's'"
-                 [style.box-shadow]="i % 2 === 0 ? '0 0 10px rgba(255,255,255,0.5)' : 'none'"></div>
-          </div>
-        </div>
-
-        <div class="absolute top-44 bottom-0 left-0 right-0 flex gap-1">
-
-          <div *ngFor="let jugador of jugadores; let idx = index"
-               class="flex-1 relative"
-               [style.background]="'linear-gradient(to bottom, ' + jugador.color + '08, ' + jugador.color + '15)'">
-
-            <div class="absolute inset-y-0 left-0 w-1 opacity-40"
-                 [style.background]="'linear-gradient(to bottom, transparent, ' + jugador.color + ', transparent)'"></div>
-            <div class="absolute inset-y-0 right-0 w-1 opacity-40"
-                 [style.background]="'linear-gradient(to bottom, transparent, ' + jugador.color + ', transparent)'"></div>
-
-            <div class="absolute inset-x-0 top-0 bottom-0 flex flex-col justify-start items-center pointer-events-none pt-8">
-              <div *ngFor="let i of [0,1,2,3,4,5,6,7,8,9,10]"
-                   class="w-2 h-12 mb-8 rounded-full opacity-30 animate-slideDown"
-                   [style.background]="'linear-gradient(to bottom, ' + jugador.color + ', transparent)'"
-                   [style.animation-delay]="i * 0.15 + 's'"></div>
-            </div>
-
-            <div class="absolute left-2 top-4 z-30 bg-dark-950/95 backdrop-blur-md rounded-xl p-3 border-2 shadow-2xl"
-                 [style.border-color]="jugador.color"
-                 [style.box-shadow]="'0 0 25px ' + jugador.color + '60, 0 0 50px ' + jugador.color + '30'">
-              <div class="text-xs text-gray-500 font-mono uppercase tracking-wide mb-1">Carril {{ idx + 1 }}</div>
-              <div class="flex items-baseline gap-1">
-                <div class="text-4xl font-display font-black"
-                     [style.color]="jugador.color"
-                     [style.text-shadow]="'0 0 15px ' + jugador.color + ', 0 0 30px ' + jugador.color + '80'">
-                  {{ jugador.velocidad.toFixed(0) }}
-                </div>
-                <div class="text-xs text-gray-400 font-mono mb-1">km/h</div>
-              </div>
-              <div class="text-[10px] text-gray-500 font-mono mt-1 flex items-center gap-1">
-                <span>⚡</span>
-                <span>Max: {{ jugador.velocidadMaxima.toFixed(0) }}</span>
-              </div>
-            </div>
-
-            <div class="absolute left-1/2 -translate-x-1/2 transition-all duration-100 ease-linear z-20"
-                 [style.bottom]="(jugador.distanciaRecorrida / 100 * 87) + '%'"
-                 [style.filter]="'drop-shadow(0 0 ' + (jugador.velocidad > 10 ? '20' : '10') + 'px ' + jugador.color + ')'">
-
-              <div class="relative flex flex-col items-center">
-                <div class="absolute -top-20 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                  <div class="px-4 py-2 bg-dark-950/95 backdrop-blur-md rounded-xl border-2 shadow-2xl"
-                       [style.border-color]="jugador.color + '50'"
-                       [style.box-shadow]="'0 0 20px ' + jugador.color + '40'">
-                    <div class="text-sm font-display font-bold text-white truncate max-w-[120px]"
-                         [style.text-shadow]="'0 0 10px ' + jugador.color">
-                      {{ (jugador.nombre || 'Jugador ' + jugador.id).substring(0, 12) }}
-                    </div>
-                  </div>
-                </div>
-
-                <div *ngIf="jugador.velocidad > 8"
-                     class="absolute inset-0 -z-10 animate-pulse"
-                     [style.background]="'radial-gradient(ellipse 150% 100% at center, ' + jugador.color + '30, transparent)'"
-                     style="width: 160%; height: 160%; left: -30%; top: -30%;"></div>
-
-                <div class="relative text-6xl sm:text-7xl transition-all duration-200"
-                     [style.transform]="jugador.velocidad > 20 ? 'scale(1.15)' : jugador.velocidad > 15 ? 'scale(1.08)' : 'scale(1)'"
-                     [style.filter]="jugador.velocidad > 15 ? 'brightness(1.2)' : 'brightness(1)'">
-                  🚴
-                </div>
-
-                <div *ngIf="jugador.velocidad > 12" class="absolute -left-10 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 opacity-70">
-                  <div *ngFor="let i of [0,1,2]"
-                       class="h-1.5 rounded-full animate-speedLine"
-                       [style.width]="(25 - i * 5) + 'px'"
-                       [style.background]="jugador.color"
-                       [style.animation-delay]="i * 0.08 + 's'"
-                       [style.box-shadow]="'0 0 8px ' + jugador.color"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-dark-950 via-dark-900/80 to-transparent z-10 pointer-events-none flex items-end justify-center pb-3">
-          <div class="px-6 py-2 bg-dark-950/90 backdrop-blur-sm rounded-full border-2 border-gray-700">
-            <div class="text-xs text-gray-400 font-mono uppercase tracking-widest">⚡ Línea de Salida ⚡</div>
-          </div>
-        </div>
-
-        <div class="absolute top-36 left-3 flex gap-2 z-30">
-          <div class="w-4 h-4 rounded-full bg-neon-red animate-pulse shadow-neon-red border-2 border-neon-red/50"></div>
-          <div class="w-4 h-4 rounded-full bg-neon-yellow animate-pulse shadow-neon-yellow border-2 border-neon-yellow/50" style="animation-delay: 0.3s"></div>
-          <div class="w-4 h-4 rounded-full bg-neon-green animate-pulse shadow-neon-green border-2 border-neon-green/50" style="animation-delay: 0.6s"></div>
-        </div>
-
-        <div class="absolute top-36 right-3 z-30">
-          <div class="bg-dark-950/95 backdrop-blur-md rounded-xl px-4 py-3 border-2 border-neon-blue/60 shadow-neon-blue">
-            <div class="text-[10px] text-gray-400 font-mono uppercase tracking-wider mb-1">⏱️ Tiempo</div>
-            <div class="text-2xl font-display font-black text-neon-blue"
-                 style="text-shadow: 0 0 15px rgba(0,240,255,0.8);">
-              {{ formatearTiempo(tiempoTranscurrido) }}
-            </div>
-          </div>
-        </div>
-
-        <div *ngIf="(jugadores[0]?.velocidad || 0) > 20 || (jugadores[1]?.velocidad || 0) > 20"
-             class="absolute inset-0 pointer-events-none z-40 overflow-hidden">
-          <div *ngFor="let i of [0,1,2,3,4,5,6,7]"
-               class="absolute w-1.5 h-1.5 rounded-full animate-pulse-slow"
-               [style.background]="i % 2 === 0 ? '#FFF700' : '#00F0FF'"
-               [style.left]="(20 + Math.random() * 60) + '%'"
-               [style.top]="(10 + Math.random() * 80) + '%'"
-               [style.animation-delay]="i * 0.15 + 's'"
-               [style.box-shadow]="'0 0 10px ' + (i % 2 === 0 ? '#FFF700' : '#00F0FF')"></div>
-        </div>
-      </div>
-
-      <div class="mt-4 grid grid-cols-3 gap-4">
-        <div class="bg-gradient-to-br from-dark-800 to-dark-900 rounded-xl p-4 border-2 border-neon-yellow/40 shadow-lg">
-          <div class="flex items-center justify-between">
-            <div class="flex-1 min-w-0">
-              <div class="text-xs text-gray-400 font-mono uppercase tracking-wide mb-1">🏆 Líder</div>
-              <div class="text-xl font-display font-black text-neon-yellow truncate"
-                   style="text-shadow: 0 0 15px rgba(255,247,0,0.7);">
-                {{ jugadores.length > 0 ? (jugadores[0]!.nombre || 'J1') : '-' }}
-              </div>
-            </div>
-            <div class="text-3xl opacity-80 ml-2">👑</div>
-          </div>
-        </div>
-
-        <div class="bg-gradient-to-br from-dark-800 to-dark-900 rounded-xl p-4 border-2 border-neon-pink/40 shadow-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-xs text-gray-400 font-mono uppercase tracking-wide mb-1">🔥 Intensidad</div>
-              <div class="text-2xl font-display font-black text-neon-pink"
-                   style="text-shadow: 0 0 15px rgba(255,16,240,0.7);">
-                {{ ((jugadores[0]?.velocidad || 0) + (jugadores[1]?.velocidad || 0)) / 2 > 15 ? 'ALTA' : 'BAJA' }}
-              </div>
-            </div>
-            <div class="text-3xl opacity-80">⚡</div>
-          </div>
-        </div>
-
-        <div class="bg-gradient-to-br from-dark-800 to-dark-900 rounded-xl p-4 border-2 border-neon-green/40 shadow-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-xs text-gray-400 font-mono uppercase tracking-wide mb-1">📊 Distancia</div>
-              <div class="text-2xl font-display font-black text-neon-green"
-                   style="text-shadow: 0 0 15px rgba(57,255,20,0.7);">
-                {{ ((jugadores[0]?.distanciaReal || 0) + (jugadores[1]?.distanciaReal || 0)).toFixed(0) }}m
-              </div>
-            </div>
-            <div class="text-3xl opacity-80">🚴</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="space-y-4">
-      <div class="bg-dark-900 border border-dark-700 rounded-card p-4">
-        <div class="bg-gradient-to-br from-dark-800/60 to-dark-950/60 rounded-xl border-2 border-neon-blue/70 p-4 backdrop-blur-sm shadow-neon-blue">
-          <div class="text-center">
-            <div class="text-gray-400 text-xs mb-2 font-display uppercase">🔄 Total de Vueltas</div>
-            <div class="text-neon-blue font-bold text-5xl font-display drop-shadow-lg">
-              {{ configuracion.numeroVueltas }}
-            </div>
-            <div class="text-xs text-gray-500 font-mono mt-2">vueltas completas</div>
+          <div>
+            <p class="text-sm text-gray-400 mb-1">Ganador</p>
+            <p class="text-2xl font-display font-bold text-neon-green">{{ganadorActual.nombre}}</p>
+            <p class="text-sm text-gray-400 mt-1">Tiempo: {{formatearTiempo(tiempoTranscurrido)}}</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-dark-900 border border-dark-700 rounded-card p-4">
-        <h3 class="text-xl font-display font-bold text-white mb-4 flex items-center gap-2">
-          🏆 Ranking en Vivo
-        </h3>
+      <div class="flex gap-4">
+        <button *ngIf="modoModalHeat === 'inicio'" (click)="iniciarHeat()" class="flex-1 px-6 py-4 bg-neon-yellow hover:bg-neon-yellow/80 text-dark-950 rounded-xl transition-all text-lg font-bold font-display shadow-neon-yellow-lg">
+          Iniciar Carrera
+        </button>
 
-        <div class="space-y-3">
-          <div
-            *ngFor="let jugador of jugadores"
-            class="bg-dark-800 rounded-lg p-4 border-2 transition-all hover:scale-[1.02]"
-            [style.border-color]="jugador.color + '40'"
-          >
-            <div class="flex items-center gap-3">
-              <div
-                class="w-12 h-12 rounded-lg flex items-center justify-center text-lg font-display font-bold border-2"
-                [style.background-color]="jugador.posicion === 1 ? '#facc15' : jugador.posicion === 2 ? '#94a3b8' : '#fb923c'"
-                [style.color]="jugador.posicion === 1 ? '#0a0a0a' : '#ffffff'"
-                [style.border-color]="jugador.posicion === 1 ? '#facc15' : jugador.posicion === 2 ? '#94a3b8' : '#fb923c'"
-                [style.box-shadow]="jugador.posicion === 1 ? '0 0 20px rgba(250,204,21,0.5)' : 'none'">
-                {{ jugador.posicion }}
-              </div>
-
-              <div class="flex-1 min-w-0">
-                <p class="text-white font-bold text-base truncate">
-                  {{ jugador.nombre || ('Jugador ' + jugador.id) }}
-                </p>
-                <div class="flex items-center gap-2 text-sm font-mono mt-1">
-                  <span [style.color]="jugador.color" class="font-bold">{{ jugador.distanciaRecorrida.toFixed(0) }}m</span>
-                </div>
-              </div>
-
-              <div class="text-3xl">🚴</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-gradient-to-br from-dark-900 to-dark-800 border border-neon-green/30 rounded-card p-4">
-        <div class="text-center space-y-2">
-          <div class="text-4xl animate-bounce">
-            {{ carreraIniciada ? (carreraPausada ? '⏸️' : '🏁') : '⏳' }}
-          </div>
-          <div class="text-xs text-gray-400 font-display uppercase tracking-wider">Estado de Carrera</div>
-          <div class="text-lg font-display font-bold"
-               [style.color]="carreraIniciada ? (carreraPausada ? '#FFF700' : '#39FF14') : '#00F0FF'">
-            {{ carreraIniciada ? (carreraPausada ? 'PAUSADA' : 'EN CURSO') : 'PREPARADA' }}
-          </div>
-        </div>
+        <button *ngIf="modoModalHeat === 'fin'" (click)="cerrarModalHeatYVolverALlaves()" class="flex-1 px-6 py-4 bg-neon-green hover:bg-neon-green/80 text-dark-950 rounded-xl transition-all text-lg font-bold font-display shadow-neon-green-lg">
+          Continuar
+        </button>
       </div>
     </div>
   </div>

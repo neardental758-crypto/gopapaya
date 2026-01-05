@@ -117,6 +117,9 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   participantesRegistrados: any[] = [];
   participantesRecientes: string[] = [];
   tiempoTotalTorneo = 0;
+  Math = Math;
+
+  fondoCarrera = 'assets/images/fondo_carrera_1.jpg';
 
   constructor(
     private router: Router,
@@ -206,13 +209,25 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   }
 
   verificarFinCarrera(): void {
+    const distanciaTotal = this.configuracion.numeroVueltas * 100;
+
+    this.jugadores.forEach((jugador) => {
+      if (jugador.distanciaReal >= distanciaTotal) {
+        jugador.distanciaReal = distanciaTotal;
+        jugador.vueltaActual = this.configuracion.numeroVueltas + 1;
+      }
+    });
+
     const ganador = this.jugadores.find(
-      (j) => j.vueltaActual > this.configuracion.numeroVueltas
+      (j) => j.distanciaReal >= distanciaTotal
     );
+
     if (!ganador) return;
 
     this.detenerCarrera();
     this.ganadorActual = ganador;
+
+    this.audioService.reproducirSonidoLlegadaMeta();
 
     this.participantes.forEach((p) => {
       const jugadorEnCarrera = this.jugadores.find((j) => j.id === p.id);
@@ -626,14 +641,24 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     this.mostrarCuentaRegresiva = true;
     this.numeroCuentaRegresiva = 3;
 
+    this.audioService.reproducirMusicaCarrera();
+
     const intervaloCuenta = setInterval(() => {
+      if (this.numeroCuentaRegresiva > 0) {
+        this.audioService.reproducirSonidoCuentaRegresiva();
+      }
+
       this.numeroCuentaRegresiva--;
 
       if (this.numeroCuentaRegresiva < 0) {
         clearInterval(intervaloCuenta);
-        this.mostrarCuentaRegresiva = false;
-        this.carreraIniciada = true;
-        this.iniciarSimulacion();
+        this.audioService.reproducirSonidoMotorAcelerando();
+        setTimeout(() => {
+          this.audioService.reproducirSonidoBocinaCarrera();
+          this.mostrarCuentaRegresiva = false;
+          this.carreraIniciada = true;
+          this.iniciarSimulacion();
+        }, 500);
       }
     }, 1000);
   }
@@ -655,9 +680,16 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
         const distanciaMetros = velocidadMps;
 
         jugador.distanciaReal += distanciaMetros;
+
+        const distanciaPorVuelta = 100;
+        const vueltasCompletadas = Math.floor(
+          jugador.distanciaReal / distanciaPorVuelta
+        );
+        jugador.vueltaActual = vueltasCompletadas + 1;
       });
 
       this.actualizarPosiciones();
+      this.verificarFinCarrera();
     }, 1000);
   }
 
@@ -910,5 +942,10 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   }
   getJugadorPorId(id: number): Jugador | undefined {
     return this.llaveEnPantalla?.jugadores.find((j) => j.id === id);
+  }
+  calcularProgresoBarra(jugador: Jugador): number {
+    const distanciaTotal = this.configuracion.numeroVueltas * 100;
+    const progreso = (jugador.distanciaReal / distanciaTotal) * 100;
+    return Math.min(Math.max(progreso, 0), 100);
   }
 }

@@ -42,11 +42,8 @@ export class MainLayoutComponent implements OnInit {
 
   isInGame(): boolean {
     const url = this.router.url;
-    return (
-      url.includes('/brain-bike/juego') ||
-      url.includes('/brain-bike/countdown') ||
-      url.includes('/brain-bike/reglas')
-    );
+    const gameRoutes = ['/brain-bike', '/biketona'];
+    return gameRoutes.some((route) => url.includes(route));
   }
 
   logout(): void {

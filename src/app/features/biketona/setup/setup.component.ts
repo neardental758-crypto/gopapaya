@@ -178,11 +178,6 @@ export class SetupComponent implements OnInit {
   ): void {
     const sufijo = tipoPista === 'digital' ? 'digital' : 'fisica';
 
-    if (tipoPista === 'fisica') {
-      this.router.navigate(['/biketona/pista-fisica']);
-      return;
-    }
-
     if (tipoCompetencia === '1vs1') {
       this.router.navigate([`/biketona/pista-${sufijo}-unovsuno`]);
     } else if (tipoCompetencia === 'campeonato') {
