@@ -59,6 +59,8 @@ interface BiciUI {
 })
 export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
   paso = 1;
+  Math = Math;
+  fondoCarrera = 'assets/images/fondo_carrera_1.jpg';
 
   participantes: Jugador[] = [];
   jugadores: Jugador[] = [];
@@ -71,7 +73,6 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     numeroLlaves: 1,
   };
 
-  Math = Math;
   rondas: RondaCampeonato[] = [];
   currentRondaIndex = 0;
   currentLlaveIndex = 0;
@@ -1262,5 +1263,22 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     return participantesConTiempo.reduce((mejor, actual) => {
       return actual.mejorTiempo! < mejor.mejorTiempo! ? actual : mejor;
     });
+  }
+  calcularProgresoBarra(jugador: Jugador): number {
+    const distanciaTotal = this.configuracion.numeroVueltas * 100;
+    const progreso = (jugador.distanciaReal / distanciaTotal) * 100;
+    return Math.min(Math.max(progreso, 0), 100);
+  }
+  calcularVatios(jugador: Jugador): number {
+    return parseFloat((jugador.velocidad * 10).toFixed(0));
+  }
+
+  calcularCalorias(jugador: Jugador): number {
+    const MET = 8;
+    const pesoKg = 70;
+    const minutosTranscurridos = this.tiempoTranscurrido / 60;
+    return parseFloat(
+      (0.0175 * MET * pesoKg * minutosTranscurridos).toFixed(0)
+    );
   }
 }

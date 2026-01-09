@@ -30,6 +30,11 @@ import { PistaDigitalEquiposComponent } from './features/biketona/pista-digital-
 import { GestionAliadosComponent } from './features/aliados/gestion-aliados.component';
 import { PistaFisicaCampeonatoComponent } from './features/biketona/pista-fisica/pista-fisica-campeonato/pista-fisica-campeonato.component';
 import { PistaFisicaUnovsunoComponent } from './features/biketona/pista-fisica/pista-fisica-unovsuno/pista-fisica-unovsuno.component';
+import { BicilicuadoraComponent } from './features/bicilicuadora/bicilicuadora.component';
+import { BicilicuadoraParametrosComponent } from './features/bicilicuadora/bicilicuadora-parametros/bicilicuadora-parametros.component';
+import { BicilicuadoraRegistroComponent } from './features/bicilicuadora/bicilicuadora-registro/bicilicuadora-registro.component';
+import { BicilicuadoraConfigGuard } from './guards/bicilicuadora-config.guard';
+import { BicilicuadoraJuegoComponent } from './features/bicilicuadora/bicilicuadora-juego/bicilicuadora-juego.component';
 
 export const routes: Routes = [
   {
@@ -162,7 +167,6 @@ export const routes: Routes = [
         canActivate: [sesionActivaGuard, rolGuard],
         data: { roles: ['super_admin', 'admin'] },
       },
-      //Pista Fisica
       {
         path: 'biketona/pista-fisica-unovsuno',
         component: PistaFisicaUnovsunoComponent,
@@ -180,6 +184,31 @@ export const routes: Routes = [
         component: PistaFisicaCampeonatoComponent,
         canActivate: [sesionActivaGuard, rolGuard],
         data: { roles: ['super_admin', 'admin'] },
+      },
+      // ✅ BICILICUADORA - Movido aquí dentro
+      {
+        path: 'bicilicuadora/parametros',
+        component: BicilicuadoraParametrosComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'bicilicuadora/registro',
+        component: BicilicuadoraRegistroComponent,
+        canActivate: [sesionActivaGuard, rolGuard, BicilicuadoraConfigGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'bicilicuadora/juego',
+        component: BicilicuadoraJuegoComponent,
+        canActivate: [sesionActivaGuard, rolGuard, BicilicuadoraConfigGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'bicilicuadora/bebidas',
+        component: BicilicuadoraComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['super_admin'] },
       },
     ],
   },

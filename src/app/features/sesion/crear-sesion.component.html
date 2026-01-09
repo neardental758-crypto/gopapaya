@@ -142,34 +142,88 @@
         </div>
       </div>
 
-      <div *ngIf="paso === 2" class="space-y-6">
-        <div>
-          <label class="block text-white font-bold mb-4">Seleccionar Juego</label>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div
-              (click)="seleccionarJuego('brain-bike')"
-              class="p-6 border rounded-lg cursor-pointer transition-all group"
-              [class]="juegoAsignado === 'brain-bike' ? 'bg-neon-blue bg-opacity-10 border-neon-blue' : 'bg-dark-800 border-dark-600 hover:border-neon-blue'"
-            >
-              <div class="text-4xl mb-3">🧠</div>
-              <p class="text-white font-bold text-lg mb-1">Brain Bike</p>
-              <p class="text-gray-400 text-sm">Trivia interactiva con bicicletas</p>
-            </div>
-
-            <div
-              (click)="seleccionarJuego('biketona')"
-              class="p-6 border rounded-lg cursor-pointer transition-all group"
-              [class]="juegoAsignado === 'biketona'
-                ? 'bg-neon-pink bg-opacity-10 border-neon-pink'
-                : 'bg-dark-800 border-dark-600 hover:border-neon-pink'"
-            >
-              <div class="text-4xl mb-3">🚴</div>
-              <p class="text-white font-bold text-lg mb-1">Biketona</p>
-              <p class="text-gray-400 text-sm">Carrera digital 1 vs 1 , Campeonato o por equipos</p>
-            </div>
-          </div>
-        </div>
+<div *ngIf="paso === 2" class="space-y-6">
+  <div>
+    <label class="block text-white font-bold mb-4">Seleccionar Juego</label>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div
+        (click)="seleccionarJuego('brain-bike')"
+        class="p-6 border rounded-lg cursor-pointer transition-all group"
+        [class]="juegoAsignado === 'brain-bike' ? 'bg-neon-blue bg-opacity-10 border-neon-blue' : 'bg-dark-800 border-dark-600 hover:border-neon-blue'"
+      >
+        <div class="text-4xl mb-3">🧠</div>
+        <p class="text-white font-bold text-lg mb-1">Brain Bike</p>
+        <p class="text-gray-400 text-sm">Trivia interactiva con bicicletas</p>
       </div>
+
+      <div
+        (click)="seleccionarJuego('biketona')"
+        class="p-6 border rounded-lg cursor-pointer transition-all group"
+        [class]="juegoAsignado === 'biketona' ? 'bg-neon-pink bg-opacity-10 border-neon-pink' : 'bg-dark-800 border-dark-600 hover:border-neon-pink'"
+      >
+        <div class="text-4xl mb-3">🚴</div>
+        <p class="text-white font-bold text-lg mb-1">Biketona</p>
+        <p class="text-gray-400 text-sm">Carrera digital 1 vs 1, Campeonato o por equipos</p>
+      </div>
+
+      <div
+        (click)="seleccionarJuego('bicilicuadora')"
+        class="p-6 border rounded-lg cursor-pointer transition-all group"
+        [class]="juegoAsignado === 'bicilicuadora' ? 'bg-neon-orange bg-opacity-10 border-neon-orange' : 'bg-dark-800 border-dark-600 hover:border-neon-orange'"
+      >
+        <div class="text-4xl mb-3">🥤</div>
+        <p class="text-white font-bold text-lg mb-1">Bicilicuadora</p>
+        <p class="text-gray-400 text-sm">Preparación de bebidas saludables</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="paso === 3 && juegoAsignado === 'bicilicuadora'" class="space-y-6">
+  <div class="p-4 bg-neon-orange bg-opacity-10 border border-neon-orange rounded-lg">
+    <p class="text-white font-bold mb-1">🥤 Sesión Bicilicuadora</p>
+    <p class="text-gray-300 text-sm">
+      La parametrización detallada (bebidas, bicicletas, participantes) se configurará al momento de iniciar el juego.
+      Solo confirma la información básica de la sesión y haz clic en
+      <span class="font-bold text-neon-orange">"Crear Sesión"</span>.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Empresa</p>
+      <p class="text-white font-bold">
+        {{ nombreEmpresaSeleccionada }}
+      </p>
+    </div>
+
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Fecha y Hora</p>
+      <p class="text-white font-bold">
+        <ng-container *ngIf="fechaPreseleccionada">
+          {{ formatearFechaPreseleccionada() }} - {{ horaSesion }}
+        </ng-container>
+        <ng-container *ngIf="!fechaPreseleccionada">
+          {{ fechaHoraSesion | date: 'dd/MM/yyyy HH:mm' }}
+        </ng-container>
+      </p>
+    </div>
+
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Lugar</p>
+      <p class="text-white font-bold">
+        {{ lugarEjecucion || 'No definido' }}
+      </p>
+    </div>
+
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Admins asignados</p>
+      <p class="text-white font-bold">
+        {{ adminsSeleccionados.length }} admin(s)
+      </p>
+    </div>
+  </div>
+</div>
 
       <div *ngIf="paso === 3 && juegoAsignado === 'brain-bike'" class="space-y-6">
         <div>
@@ -198,33 +252,6 @@
             </option>
           </select>
         </div>
-
-        <!-- <div>
-          <label class="block text-white font-bold mb-2">Dificultad</label>
-          <div class="flex gap-3">
-            <button
-              (click)="parametrosBrainBike.dificultad = 'facil'"
-              class="flex-1 px-4 py-3 rounded-lg font-bold transition-all"
-              [class]="parametrosBrainBike.dificultad === 'facil' ? 'bg-neon-green text-dark-950' : 'bg-dark-800 text-gray-400 border border-dark-600 hover:border-neon-green'"
-            >
-              Fácil
-            </button>
-            <button
-              (click)="parametrosBrainBike.dificultad = 'media'"
-              class="flex-1 px-4 py-3 rounded-lg font-bold transition-all"
-              [class]="parametrosBrainBike.dificultad === 'media' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-gray-400 border border-dark-600 hover:border-neon-yellow'"
-            >
-              Media
-            </button>
-            <button
-              (click)="parametrosBrainBike.dificultad = 'dificil'"
-              class="flex-1 px-4 py-3 rounded-lg font-bold transition-all"
-              [class]="parametrosBrainBike.dificultad === 'dificil' ? 'bg-neon-red text-white' : 'bg-dark-800 text-gray-400 border border-dark-600 hover:border-neon-red'"
-            >
-              Difícil
-            </button>
-          </div>
-        </div> -->
       </div>
 
       <!-- bloque biketona -->

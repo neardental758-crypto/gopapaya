@@ -227,18 +227,18 @@ export class HomeComponent implements OnInit {
     return this.empresasAdminExpandidas.has(empresaId);
   }
 
-  continuarSesion(sesion: Sesion): void {
-    this.sesionService.setSesionSeleccionada(sesion);
+    continuarSesion(sesion: Sesion): void {
+      this.sesionService.setSesionSeleccionada(sesion);
+      localStorage.setItem('idSesion', sesion.id.toString());
 
-    // 👉 Guardamos el id de la sesión para usarlo luego en SetupComponent
-    localStorage.setItem('idSesion', sesion.id.toString());
-
-    if (sesion.juego_asignado === 'brain-bike') {
-      this.router.navigate(['/brain-bike/parametros']);
-    } else {
-      this.router.navigate(['/sesion/seleccionar-juego', sesion.id]);
+      if (sesion.juego_asignado === 'brain-bike') {
+        this.router.navigate(['/brain-bike/parametros']);
+      } else if (sesion.juego_asignado === 'bicilicuadora') {
+        this.router.navigate(['/bicilicuadora/parametros']);
+      } else {
+        this.router.navigate(['/sesion/seleccionar-juego', sesion.id]);
+      }
     }
-  }
 
   finalizarSesion(sesion: Sesion, event: Event): void {
     event.stopPropagation();
@@ -312,5 +312,8 @@ export class HomeComponent implements OnInit {
   abrirEvidencias(sesion: Sesion, event: Event): void {
     event.stopPropagation();
     this.evidenciasModal.open(sesion.id, sesion.nombreCliente);
+  }
+  irABicilicuadora(): void {
+    this.router.navigate(['/bicilicuadora/bebidas']);
   }
 }

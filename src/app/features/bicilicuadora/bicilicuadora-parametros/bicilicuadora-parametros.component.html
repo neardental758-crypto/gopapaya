@@ -1,0 +1,322 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8 shadow-neon-orange">
+     <div class="mb-8">
+      <div class="flex items-center gap-4 mb-4">
+        <button (click)="volver()" class="w-12 h-12 flex items-center justify-center bg-dark-700 hover:bg-dark-600 rounded-lg transition-all">
+          <span class="text-2xl">←</span>
+        </button>
+        <div class="text-5xl">🥤</div>
+        <div class="flex-1">
+          <h1 class="text-2xl sm:text-3xl font-display font-bold text-white flex items-center gap-3">
+            <span class="text-neon-orange">Bicilicuadora</span> - Configuración
+          </h1>
+          <p class="text-gray-400">Configura bicicletas, participantes y bebidas</p>
+        </div>
+      </div>
+    </div>
+
+      <div *ngIf="errorMessage" class="mb-6 p-4 bg-neon-red bg-opacity-10 border border-neon-red rounded-lg">
+        <p class="text-neon-red text-sm font-bold">{{ errorMessage }}</p>
+      </div>
+
+      <!-- Número de Bicicletas -->
+      <div class="bg-dark-800 border border-dark-600 rounded-card p-6 mb-6">
+        <h3 class="text-xl font-bold text-white mb-4">🚴 Número de Bicicletas</h3>
+        <div class="flex items-center justify-center gap-4">
+          <button
+            (click)="cambiarNumeroBicicletas(-1)"
+            [disabled]="numeroBicicletas <= 1"
+            class="w-12 h-12 bg-dark-700 text-white rounded-lg font-bold text-2xl hover:bg-dark-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            -
+          </button>
+          <div class="w-32 h-16 bg-dark-700 border-2 border-neon-orange rounded-lg flex items-center justify-center">
+            <span class="text-4xl font-bold text-neon-orange">{{ numeroBicicletas }}</span>
+          </div>
+          <button
+            (click)="cambiarNumeroBicicletas(1)"
+            [disabled]="numeroBicicletas >= 6"
+            class="w-12 h-12 bg-dark-700 text-white rounded-lg font-bold text-2xl hover:bg-dark-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          >
+            +
+          </button>
+        </div>
+        <p class="text-gray-400 text-sm mt-3 text-center">Selecciona entre 1 y 4 bicicletas</p>
+      </div>
+
+      <!-- Configuración por Bicicleta con Acordeones -->
+      <div class="space-y-3 mb-6">
+        <div
+          *ngFor="let bicicleta of configuracionBicicletas; let i = index"
+          class="bg-dark-800 border-2 rounded-card overflow-hidden transition-all"
+          [class.border-neon-orange]="isBicicletaExpandida(i)"
+          [class.border-dark-600]="!isBicicletaExpandida(i)"
+        >
+          <!-- Header del Acordeón -->
+          <div
+            (click)="toggleBicicleta(i)"
+            class="flex items-center justify-between p-4 cursor-pointer hover:bg-dark-750 transition-all"
+            [class.bg-dark-750]="isBicicletaExpandida(i)"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg border-2"
+                [class.bg-neon-orange]="isBicicletaExpandida(i)"
+                [class.text-dark-950]="isBicicletaExpandida(i)"
+                [class.border-neon-orange]="isBicicletaExpandida(i)"
+                [class.bg-dark-700]="!isBicicletaExpandida(i)"
+                [class.text-white]="!isBicicletaExpandida(i)"
+                [class.border-dark-600]="!isBicicletaExpandida(i)"
+              >
+                {{ bicicleta.numeroBicicleta }}
+              </div>
+              <div>
+                <h4 class="text-lg font-bold text-white">Bicicleta {{ bicicleta.numeroBicicleta }}</h4>
+                <p class="text-sm text-gray-400">
+                  {{ bicicleta.participantes }} participante{{ bicicleta.participantes > 1 ? 's' : '' }} •
+                  {{ bicicleta.bebidasSeleccionadas.length }} bebida{{ bicicleta.bebidasSeleccionadas.length !== 1 ? 's' : '' }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <!-- Badge de estado -->
+              <div
+                *ngIf="bicicleta.bebidasSeleccionadas.length > 0"
+                class="px-3 py-1 rounded-full text-xs font-bold"
+                [class.bg-neon-green]="bicicleta.bebidasSeleccionadas.length > 0"
+                [class.text-dark-950]="bicicleta.bebidasSeleccionadas.length > 0"
+              >
+                ✓ Configurada
+              </div>
+              <div
+                *ngIf="bicicleta.bebidasSeleccionadas.length === 0"
+                class="px-3 py-1 rounded-full text-xs font-bold bg-neon-red/20 text-neon-red"
+              >
+                Sin bebidas
+              </div>
+              <!-- Icono de acordeón -->
+              <div class="text-2xl text-white transition-transform" [class.rotate-180]="isBicicletaExpandida(i)">
+                ▼
+              </div>
+            </div>
+          </div>
+
+          <!-- Contenido del Acordeón -->
+          <div
+            *ngIf="isBicicletaExpandida(i)"
+            class="p-6 border-t border-dark-600 animate-fadeIn"
+          >
+            <!-- Número de Participantes -->
+            <div class="mb-4">
+              <label class="block text-sm font-bold text-gray-300 mb-2">
+                Número de Participantes
+              </label>
+              <div class="flex items-center gap-3">
+                <button
+                  (click)="cambiarParticipantes(i, -1)"
+                  [disabled]="bicicleta.participantes <= 1"
+                  class="w-10 h-10 bg-dark-700 text-white rounded-lg font-bold text-xl hover:bg-dark-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  -
+                </button>
+                <div class="flex-1 h-12 bg-dark-700 border border-dark-600 rounded-lg flex items-center justify-center">
+                  <span class="text-2xl font-bold text-white">{{ bicicleta.participantes }}</span>
+                </div>
+                <button
+                  (click)="cambiarParticipantes(i, 1)"
+                  [disabled]="bicicleta.participantes >= 4"
+                  class="w-10 h-10 bg-dark-700 text-white rounded-lg font-bold text-xl hover:bg-dark-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+<!-- Bebidas Seleccionadas -->
+<div class="mb-4">
+  <label class="block text-sm font-bold text-gray-300 mb-2">
+    Bebidas Seleccionadas
+  </label>
+
+  <div class="space-y-2 mb-3">
+    <div
+      *ngFor="let bebida of bicicleta.bebidasSeleccionadas; let j = index"
+      class="flex items-center gap-3 p-3 bg-dark-700 rounded-lg"
+    >
+      <!-- Imagen de la bebida -->
+      <img
+        *ngIf="getBebidaCompleta(bebida.bebidaId)?.foto_bebida"
+        [src]="getBebidaCompleta(bebida.bebidaId)?.foto_bebida"
+        alt="Bebida"
+        class="w-16 h-16 object-cover rounded-lg border-2 border-neon-orange"
+      />
+      <div
+        *ngIf="!getBebidaCompleta(bebida.bebidaId)?.foto_bebida"
+        class="w-16 h-16 bg-dark-600 rounded-lg flex items-center justify-center text-3xl"
+      >
+        🥤
+      </div>
+
+      <!-- Información -->
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="text-white font-semibold">{{ bebida.nombreBebida }}</span>
+          <span class="text-xs px-2 py-1 bg-neon-orange/20 text-neon-orange rounded">
+            {{ getBebidaCompleta(bebida.bebidaId)?.tiempo_pedaleo }}s
+          </span>
+        </div>
+        <div class="text-sm text-gray-400">
+          <span class="font-bold text-neon-orange">{{ bebida.cantidad }}</span> x
+          <span class="font-bold text-white">{{ bicicleta.participantes }}</span> participantes =
+          <span class="font-bold text-neon-green">{{ bebida.cantidad * bicicleta.participantes }}</span> bebidas
+        </div>
+        <!-- Ingredientes de esta bebida -->
+        <div class="flex flex-wrap gap-1 mt-2">
+          <span
+            *ngFor="let ingrediente of getBebidaCompleta(bebida.bebidaId)?.ingredientes"
+            class="text-xs px-2 py-1 bg-dark-600 text-gray-300 rounded"
+          >
+            {{ ingrediente.nombre_ingrediente }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Controles -->
+      <div class="flex items-center gap-2">
+        <button
+          (click)="cambiarCantidadBebida(i, j, -1)"
+          class="w-8 h-8 flex items-center justify-center bg-dark-600 text-white rounded hover:bg-dark-500 transition-all font-bold"
+        >
+          -
+        </button>
+        <span class="text-white font-bold min-w-[30px] text-center text-lg">{{ bebida.cantidad }}</span>
+        <button
+          (click)="cambiarCantidadBebida(i, j, 1)"
+          class="w-8 h-8 flex items-center justify-center bg-dark-600 text-white rounded hover:bg-dark-500 transition-all font-bold"
+        >
+          +
+        </button>
+        <button
+          (click)="eliminarBebidaDeBicicleta(i, j)"
+          class="ml-2 w-8 h-8 flex items-center justify-center bg-neon-red/20 text-neon-red rounded hover:bg-neon-red/30 transition-all"
+        >
+          🗑️
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="bicicleta.bebidasSeleccionadas.length === 0" class="text-center py-6 text-gray-500 bg-dark-700 rounded-lg border-2 border-dashed border-dark-600">
+      <div class="text-4xl mb-2">🥤</div>
+      <p class="font-semibold">No hay bebidas seleccionadas</p>
+      <p class="text-xs mt-1">Selecciona una bebida del menú abajo</p>
+    </div>
+  </div>
+
+  <!-- Selector de Bebidas -->
+  <select
+    (change)="onBebidaSeleccionada(i, $event)"
+    class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-orange focus:ring-1 focus:ring-neon-orange transition-all text-white"
+  >
+    <option value="">+ Agregar Bebida</option>
+    <option *ngFor="let bebida of bebidasDisponibles" [value]="bebida._id">
+      {{ bebida.nombre_bebida }} ({{ bebida.tiempo_pedaleo }}s) - {{ bebida.ingredientes?.length || 0 }} ingredientes
+    </option>
+  </select>
+</div>
+
+            <!-- Resumen de esta Bicicleta -->
+            <div class="mt-4 p-4 bg-neon-orange/10 border border-neon-orange rounded-lg">
+              <h5 class="text-sm font-bold text-white mb-2">📊 Resumen</h5>
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span class="text-gray-300">Participantes:</span>
+                  <span class="text-white font-bold ml-2">{{ bicicleta.participantes }}</span>
+                </div>
+                <div>
+                  <span class="text-gray-300">Total bebidas:</span>
+                  <span class="text-white font-bold ml-2">
+                    {{ calcularTotalBebidasBicicleta(bicicleta) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<!-- Resumen Global de Ingredientes -->
+<div class="bg-dark-800 border-2 border-neon-green rounded-card p-6 mb-6">
+  <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+    🥕 Ingredientes Necesarios
+  </h3>
+
+  <p class="text-gray-400 text-sm mb-4">
+    Basado en <span class="text-white font-bold">{{ calcularTotales().participantes }}</span> participantes y
+    <span class="text-white font-bold">{{ calcularTotales().totalBebidas }}</span> bebidas totales
+  </p>
+
+  <div *ngIf="calcularIngredientesNecesarios().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div
+      *ngFor="let ingrediente of calcularIngredientesNecesarios()"
+      class="p-4 bg-dark-700 rounded-lg border-2 border-neon-green hover:border-neon-green hover:shadow-lg hover:shadow-neon-green/20 transition-all"
+    >
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-2 h-2 bg-neon-green rounded-full"></div>
+        <h4 class="text-white font-bold">{{ ingrediente.nombre }}</h4>
+      </div>
+      <p class="text-neon-green text-2xl font-bold">
+        {{ ingrediente.cantidad_total }}
+      </p>
+      <p class="text-gray-400 text-sm">{{ ingrediente.unidad }} por unidad</p>
+    </div>
+  </div>
+
+  <!-- Totales Globales -->
+  <div class="mt-6 p-4 bg-neon-green/10 border border-neon-green rounded-lg">
+    <h4 class="text-lg font-bold text-white mb-3">📈 Resumen de la Sesión</h4>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="text-center">
+        <div class="text-4xl mb-2">🚴</div>
+        <p class="text-gray-400 text-sm">Bicicletas</p>
+        <p class="text-white text-2xl font-bold">{{ numeroBicicletas }}</p>
+      </div>
+      <div class="text-center">
+        <div class="text-4xl mb-2">👥</div>
+        <p class="text-gray-400 text-sm">Participantes</p>
+        <p class="text-white text-2xl font-bold">{{ calcularTotales().participantes }}</p>
+      </div>
+      <div class="text-center">
+        <div class="text-4xl mb-2">🥤</div>
+        <p class="text-gray-400 text-sm">Tipos de Bebidas</p>
+        <p class="text-white text-2xl font-bold">{{ calcularTotales().bebidasUnicas }}</p>
+      </div>
+      <div class="text-center">
+        <div class="text-4xl mb-2">🍹</div>
+        <p class="text-gray-400 text-sm">Total Bebidas</p>
+        <p class="text-white text-2xl font-bold">{{ calcularTotales().totalBebidas }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <!-- Botones -->
+      <div class="flex justify-between">
+        <button
+          (click)="volver()"
+          class="px-6 py-3 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 transition-all"
+        >
+          ← Volver
+        </button>
+        <button
+          (click)="guardarConfiguracion()"
+          [disabled]="loading || !isFormValid()"
+          class="px-6 py-3 bg-neon-orange text-dark-950 rounded-lg font-bold shadow-neon-orange hover:shadow-neon-orange-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        >
+          <span *ngIf="!loading">Continuar al Registro 🎮</span>
+          <span *ngIf="loading">Guardando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

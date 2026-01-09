@@ -38,12 +38,22 @@ export class DynamicFormComponent {
   initFormData() {
     this.formData = {};
     this.fields.forEach((field) => {
-      this.formData[field.name] = field.value || '';
+      if (field.value !== undefined && field.value !== null) {
+        this.formData[field.name] = field.value;
+      } else {
+        this.formData[field.name] = field.type === 'number' ? null : '';
+      }
     });
   }
 
   handleSubmit() {
-    this.onSubmit.emit(this.formData);
+    const cleanData = { ...this.formData };
+    Object.keys(cleanData).forEach((key) => {
+      if (cleanData[key] === '' || cleanData[key] === null) {
+        delete cleanData[key];
+      }
+    });
+    this.onSubmit.emit(cleanData);
   }
 
   handleCancel() {
@@ -53,6 +63,17 @@ export class DynamicFormComponent {
   isFormValid(): boolean {
     return this.fields
       .filter((field) => field.required)
-      .every((field) => this.formData[field.name]?.toString().trim());
+      .every((field) => {
+        const value = this.formData[field.name];
+        if (field.type === 'number') {
+          return value !== null && value !== '' && !isNaN(value);
+        }
+        return value && value.toString().trim();
+      });
+  }
+
+  getPlaceholder(field: FormField): string {
+    if (field.placeholder) return field.placeholder;
+    return `Ingrese ${field.label.toLowerCase()}`;
   }
 }

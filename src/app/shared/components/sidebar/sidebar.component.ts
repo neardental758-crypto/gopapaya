@@ -37,10 +37,18 @@ export class SidebarComponent {
       expanded: false,
       subItems: [{ label: 'Temáticas', icon: '📚', route: '/brain-bike' }],
     },
+    // {
+    //   label: 'Biketona',
+    //   icon: '🚴',
+    //   route: '/biketona',
+    // },
     {
-      label: 'Biketona',
-      icon: '🚴',
-      route: '/biketona',
+      label: 'Bicilicuadora',
+      icon: '🥤',
+      expanded: false,
+      subItems: [
+        { label: 'Bebidas', icon: '🍹', route: '/bicilicuadora/bebidas' },
+      ],
     },
     {
       label: 'Administración',

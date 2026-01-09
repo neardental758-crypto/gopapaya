@@ -1,0 +1,473 @@
+<div class="min-h-screen bg-dark-950 p-6 space-y-6">
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-8 shadow-neon-orange">
+    <h1 class="text-4xl font-display font-bold text-white mb-2 flex items-center gap-3">
+      🥤 <span class="text-neon-orange">Bicilicuadora</span>
+    </h1>
+    <p class="text-gray-400 font-body">Panel de Control - Gestión de Bebidas</p>
+  </div>
+
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-display font-bold text-white flex items-center gap-2">
+        🍹 Bebidas
+      </h2>
+      <button
+        (click)="toggleFormBebida()"
+        class="bg-neon-orange text-dark-950 px-6 py-3 rounded-lg font-bold shadow-neon-orange hover:shadow-neon-orange-lg hover:scale-105 transition-all"
+      >
+        ➕ Nueva Bebida
+      </button>
+    </div>
+
+    <div *ngIf="showFormBebida" class="bg-dark-800 border border-dark-600 rounded-card p-6 mb-6">
+      <h3 class="text-2xl font-display font-bold text-white mb-6">
+        {{ editMode ? '✏️ Editar' : '➕ Nueva' }} Bebida
+      </h3>
+
+      <form (ngSubmit)="onSubmitBebida()">
+        <div class="mb-5">
+          <label class="block text-sm font-bold text-gray-300 mb-2">
+            Nombre de la Bebida <span class="text-neon-red">*</span>
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="formDataBebida.nombre_bebida"
+            name="nombre_bebida"
+            placeholder="Ingrese nombre de la bebida"
+            required
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-orange focus:ring-1 focus:ring-neon-orange transition-all text-white placeholder-gray-500"
+          />
+        </div>
+
+        <div class="mb-5">
+          <label class="block text-sm font-bold text-gray-300 mb-2">Descripción</label>
+          <textarea
+            [(ngModel)]="formDataBebida.descripcion"
+            name="descripcion"
+            placeholder="Ingrese descripción"
+            rows="4"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-orange focus:ring-1 focus:ring-neon-orange transition-all resize-none text-white placeholder-gray-500"
+          ></textarea>
+        </div>
+
+        <div class="mb-5">
+          <label class="block text-sm font-bold text-gray-300 mb-2">
+            Foto de la Bebida
+          </label>
+          <div class="flex items-center gap-4">
+            <label class="cursor-pointer bg-dark-700 hover:bg-dark-600 text-white px-4 py-3 rounded-lg border border-dark-600 transition-all">
+              <span>📷 Seleccionar Imagen</span>
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onFileSelected($event)"
+                class="hidden"
+              />
+            </label>
+            <span *ngIf="fotoSeleccionada" class="text-sm text-gray-400">{{ fotoSeleccionada.name }}</span>
+          </div>
+          <div *ngIf="previewFoto" class="mt-3">
+            <img
+              [src]="previewFoto"
+              alt="Preview"
+              class="w-32 h-32 object-cover rounded-lg border-2 border-neon-orange"
+            />
+          </div>
+        </div>
+
+        <div class="mb-5">
+          <label class="block text-sm font-bold text-gray-300 mb-2">
+            Tiempo de Pedaleo (segundos) <span class="text-neon-red">*</span>
+          </label>
+          <input
+            type="number"
+            [(ngModel)]="formDataBebida.tiempo_pedaleo"
+            name="tiempo_pedaleo"
+            placeholder="Ej: 180"
+            required
+            step="1"
+            min="0"
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-orange focus:ring-1 focus:ring-neon-orange transition-all text-white placeholder-gray-500"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          <div>
+            <label class="block text-sm font-bold text-gray-300 mb-2">Calorías de la Bebida</label>
+            <input
+              type="number"
+              [(ngModel)]="formDataBebida.calorias_bebida"
+              name="calorias_bebida"
+              placeholder="Ej: 150"
+              step="0.01"
+              min="0"
+              class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-orange focus:ring-1 focus:ring-neon-orange transition-all text-white placeholder-gray-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-300 mb-2">Calorías a Quemar</label>
+            <input
+              type="number"
+              [(ngModel)]="formDataBebida.calorias_quemar"
+              name="calorias_quemar"
+              placeholder="Ej: 200"
+              step="0.01"
+              min="0"
+              class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-orange focus:ring-1 focus:ring-neon-orange transition-all text-white placeholder-gray-500"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-300 mb-2">Watts Aproximados</label>
+            <input
+              type="number"
+              [(ngModel)]="formDataBebida.watts_aproximados"
+              name="watts_aproximados"
+              placeholder="Ej: 75"
+              step="0.01"
+              min="0"
+              class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-orange focus:ring-1 focus:ring-neon-orange transition-all text-white placeholder-gray-500"
+            />
+          </div>
+        </div>
+
+        <div class="mb-5">
+          <label class="block text-sm font-bold text-gray-300 mb-2">Link del Video (YouTube)</label>
+          <input
+            type="url"
+            [(ngModel)]="formDataBebida.link_video"
+            name="link_video"
+            placeholder="https://www.youtube.com/watch?v=..."
+            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:outline-none focus:border-neon-orange focus:ring-1 focus:ring-neon-orange transition-all text-white placeholder-gray-500"
+          />
+          <div *ngIf="getVideoId(formDataBebida.link_video)" class="mt-3 flex items-center gap-3">
+            <iframe
+              [src]="'https://www.youtube.com/embed/' + getVideoId(formDataBebida.link_video) | safe: 'resourceUrl'"
+              class="w-80 h-64 rounded-lg border-2 border-neon-orange"
+              frameborder="0"
+              allowfullscreen
+            ></iframe>
+            <span class="text-xs text-neon-orange">✓ Video válido</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-dark-600">
+          <button
+            type="button"
+            (click)="cancelFormBebida()"
+            class="px-6 py-3 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 border border-dark-600 transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!isFormBebidaValid()"
+            class="px-6 py-3 bg-neon-orange text-dark-950 rounded-lg font-bold shadow-neon-orange hover:shadow-neon-orange-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            💾 {{ editMode ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="overflow-hidden border border-dark-700 rounded-card">
+      <table class="min-w-full divide-y divide-dark-700">
+        <thead class="bg-dark-800">
+          <tr>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Nombre</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Foto</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Tiempo</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Ingredientes</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Ritmos</th>
+            <th class="px-6 py-4 text-left text-xs font-bold uppercase text-gray-300">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="bg-dark-900 divide-y divide-dark-700">
+          <tr
+            *ngFor="let bebida of bebidas"
+            (click)="selectBebida(bebida)"
+            class="cursor-pointer transition-colors hover:bg-dark-800"
+            [class.bg-dark-800]="selectedBebida?._id === bebida._id"
+            [class.border-l-2]="selectedBebida?._id === bebida._id"
+            [class.border-neon-orange]="selectedBebida?._id === bebida._id"
+          >
+            <td class="px-6 py-4">
+              <span class="text-sm font-semibold text-white">{{ bebida.nombre_bebida }}</span>
+            </td>
+            <td class="px-6 py-4">
+              <img
+                *ngIf="bebida.foto_bebida"
+                [src]="bebida.foto_bebida"
+                alt="Foto"
+                class="w-12 h-12 object-cover rounded-lg border border-dark-600"
+              />
+              <span *ngIf="!bebida.foto_bebida" class="text-gray-600">-</span>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-400">{{ bebida.tiempo_pedaleo }}s</td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-neon-orange/10 text-neon-orange border border-neon-orange">
+                {{ bebida.ingredientes?.length || 0 }}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-neon-green/10 text-neon-green border border-neon-green">
+                {{ bebida.ritmos?.length || 0 }}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex gap-2">
+                <button
+                  (click)="verDetalleBebida(bebida); $event.stopPropagation()"
+                  class="p-2 bg-dark-700 text-neon-yellow rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+                  title="Ver Detalle"
+                >
+                  👁️
+                </button>
+                <button
+                  (click)="toggleFormBebida(bebida); $event.stopPropagation()"
+                  class="p-2 bg-dark-700 text-neon-blue rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+                  title="Editar"
+                >
+                  ✏️
+                </button>
+                <button
+                  (click)="deleteBebida(bebida); $event.stopPropagation()"
+                  class="p-2 bg-dark-700 text-neon-red rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+                  title="Eliminar"
+                >
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="bebidas.length === 0" class="text-center py-16 text-gray-500 bg-dark-800">
+        <div class="text-6xl mb-4 opacity-30">🥤</div>
+        <p class="text-lg font-medium">No hay bebidas registradas</p>
+        <p class="text-sm mt-2 text-gray-600">Crea tu primera bebida para comenzar</p>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="selectedBebida" class="bg-dark-900 border border-dark-700 rounded-card p-6 animate-fadeIn">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-display font-bold text-white flex items-center gap-2">
+        🥕 Ingredientes de <span class="text-neon-orange">{{ selectedBebida.nombre_bebida }}</span>
+      </h2>
+      <button
+        (click)="toggleFormIngrediente()"
+        class="bg-neon-orange text-dark-950 px-6 py-3 rounded-lg font-bold shadow-neon-orange hover:shadow-neon-orange-lg hover:scale-105 transition-all"
+      >
+        ➕ Nuevo Ingrediente
+      </button>
+    </div>
+
+    <app-dynamic-form
+      *ngIf="showFormIngrediente"
+      title="Ingrediente"
+      [fields]="ingredienteFields"
+      [isEditMode]="editModeIngrediente"
+      (onSubmit)="onSubmitIngrediente($event)"
+      (onCancel)="cancelFormIngrediente()"
+    ></app-dynamic-form>
+
+    <div class="grid gap-4 mb-8">
+      <div
+        *ngFor="let ingrediente of selectedBebida.ingredientes"
+        class="border rounded-card p-5 transition-all border-dark-600 bg-dark-850"
+      >
+        <div class="flex justify-between items-center">
+          <div class="flex-1">
+            <h3 class="font-bold text-lg text-white">{{ ingrediente.nombre_ingrediente }}</h3>
+            <p class="text-gray-400 text-sm">{{ ingrediente.cantidad }}</p>
+          </div>
+          <div class="flex gap-2">
+            <button
+              (click)="toggleFormIngrediente(ingrediente)"
+              class="p-2 bg-dark-700 text-neon-blue rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+            >
+              ✏️
+            </button>
+            <button
+              (click)="deleteIngrediente(ingrediente)"
+              class="p-2 bg-dark-700 text-neon-red rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+              title="Eliminar"
+            >
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!selectedBebida.ingredientes || selectedBebida.ingredientes.length === 0" class="text-center py-12 text-gray-500 bg-dark-800 rounded-card border border-dark-700">
+        <div class="text-4xl mb-3 opacity-30">🥕</div>
+        <p class="font-medium">No hay ingredientes en esta bebida</p>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-display font-bold text-white flex items-center gap-2">
+        ⚡ Ritmos de Pedaleo
+      </h2>
+      <button
+        (click)="toggleFormRitmo()"
+        class="bg-neon-green text-dark-950 px-6 py-3 rounded-lg font-bold shadow-neon-green hover:shadow-neon-green-lg hover:scale-105 transition-all"
+      >
+        ➕ Nuevo Ritmo
+      </button>
+    </div>
+
+    <app-dynamic-form
+      *ngIf="showFormRitmo"
+      title="Ritmo de Pedaleo"
+      [fields]="ritmoFields"
+      [isEditMode]="editModeRitmo"
+      (onSubmit)="onSubmitRitmo($event)"
+      (onCancel)="cancelFormRitmo()"
+    ></app-dynamic-form>
+
+    <div class="grid gap-4">
+        <div
+          *ngFor="let ritmo of selectedBebida.ritmos"
+          class="border rounded-card p-5 transition-all border-dark-600 bg-dark-850"
+        >
+          <div class="flex justify-between items-center">
+            <div class="flex-1">
+              <h3 class="font-bold text-lg text-white">
+                Ritmo {{ ritmo.orden }} - {{ ritmo.duracion }}s
+              </h3>
+              <p class="text-gray-400 text-sm">
+                Velocidad: {{ ritmo.velocidad_min }} - {{ ritmo.velocidad_max }} km/h
+              </p>
+            </div>
+            <div class="flex gap-2">
+              <button
+                (click)="toggleFormRitmo(ritmo)"
+                class="p-2 bg-dark-700 text-neon-blue rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+              >
+                ✏️
+              </button>
+              <button
+                (click)="deleteRitmo(ritmo)"
+                class="p-2 bg-dark-700 text-neon-red rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+                title="Eliminar"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+
+      <div *ngIf="!selectedBebida.ritmos || selectedBebida.ritmos.length === 0" class="text-center py-12 text-gray-500 bg-dark-800 rounded-card border border-dark-700">
+        <div class="text-4xl mb-3 opacity-30">⚡</div>
+        <p class="font-medium">No hay ritmos definidos para esta bebida</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALLE BEBIDA -->
+<div *ngIf="showModalDetalle" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" (click)="cerrarModal()">
+  <div class="bg-dark-900 border-2 border-neon-orange rounded-card max-w-4xl w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+    <div class="sticky top-0 bg-dark-900 border-b border-dark-700 p-6 flex justify-between items-center">
+      <h2 class="text-3xl font-display font-bold text-white flex items-center gap-3">
+        🥤 <span class="text-neon-orange">{{ bebidaDetalle?.nombre_bebida }}</span>
+      </h2>
+      <button
+        (click)="cerrarModal()"
+        class="p-2 bg-dark-700 text-gray-300 rounded-lg hover:bg-dark-600 border border-dark-600 transition-all"
+      >
+        ✕
+      </button>
+    </div>
+
+    <div class="p-6 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+      <img
+        *ngIf="bebidaDetalle?.foto_bebida"
+        [src]="bebidaDetalle?.foto_bebida"
+        alt="Foto bebida"
+        class="w-full h-64 object-cover rounded-lg border-2 border-neon-orange"
+      />
+          <div *ngIf="!bebidaDetalle?.foto_bebida" class="w-full h-64 bg-dark-800 rounded-lg border-2 border-dark-600 flex items-center justify-center">
+            <span class="text-6xl opacity-30">🥤</span>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="p-4 bg-dark-800 rounded-lg border border-dark-600">
+            <span class="text-gray-400 text-sm">⏱️ Tiempo de Pedaleo</span>
+            <p class="text-white text-2xl font-bold">{{ bebidaDetalle?.tiempo_pedaleo }}s</p>
+          </div>
+          <div class="p-4 bg-dark-800 rounded-lg border border-dark-600">
+            <span class="text-gray-400 text-sm">🔥 Calorías de la Bebida</span>
+            <p class="text-white text-2xl font-bold">{{ bebidaDetalle?.calorias_bebida || '-' }}</p>
+          </div>
+          <div class="p-4 bg-dark-800 rounded-lg border border-dark-600">
+            <span class="text-gray-400 text-sm">💪 Calorías a Quemar</span>
+            <p class="text-white text-2xl font-bold">{{ bebidaDetalle?.calorias_quemar || '-' }}</p>
+          </div>
+          <div class="p-4 bg-dark-800 rounded-lg border border-dark-600">
+            <span class="text-gray-400 text-sm">⚡ Watts Aproximados</span>
+            <p class="text-white text-2xl font-bold">{{ bebidaDetalle?.watts_aproximados || '-' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-dark-800 rounded-lg border border-dark-600">
+        <h3 class="text-lg font-bold text-white mb-2">📝 Descripción</h3>
+        <p class="text-gray-300">{{ bebidaDetalle?.descripcion || 'Sin descripción' }}</p>
+      </div>
+
+      <div *ngIf="bebidaDetalle?.link_video" class="p-4 bg-dark-800 rounded-lg border border-dark-600">
+        <h3 class="text-lg font-bold text-white mb-3">🎥 Video Instructivo</h3>
+    <iframe
+      *ngIf="bebidaDetalle?.link_video && getVideoId(bebidaDetalle?.link_video || '')"
+      [src]="'https://www.youtube.com/embed/' + getVideoId(bebidaDetalle?.link_video || '') | safe: 'resourceUrl'"
+      class="w-full aspect-video rounded-lg border-2 border-neon-orange"
+      frameborder="0"
+      allowfullscreen
+    ></iframe>
+      </div>
+
+      <div class="p-4 bg-dark-800 rounded-lg border border-dark-600">
+        <h3 class="text-lg font-bold text-white mb-3">🥕 Ingredientes ({{ bebidaDetalle?.ingredientes?.length || 0 }})</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div
+            *ngFor="let ingrediente of bebidaDetalle?.ingredientes"
+            class="p-3 bg-dark-700 rounded-lg"
+          >
+            <h4 class="font-bold text-white">{{ ingrediente.nombre_ingrediente }}</h4>
+            <p class="text-neon-orange text-sm">{{ ingrediente.cantidad }}</p>
+          </div>
+          <div *ngIf="!bebidaDetalle?.ingredientes || bebidaDetalle?.ingredientes?.length === 0" class="col-span-2 text-center py-4 text-gray-500">
+            Sin ingredientes registrados
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-dark-800 rounded-lg border border-dark-600">
+        <h3 class="text-lg font-bold text-white mb-3">⚡ Ritmos de Pedaleo ({{ bebidaDetalle?.ritmos?.length || 0 }})</h3>
+        <div class="space-y-2">
+          <div
+            *ngFor="let ritmo of bebidaDetalle?.ritmos; let i = index"
+            class="p-3 bg-dark-700 rounded-lg flex justify-between items-center"
+          >
+            <div class="flex items-center gap-3">
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-neon-green/10 text-neon-green text-xs font-bold border border-neon-green">
+                {{ ritmo.orden }}
+              </span>
+              <span class="text-white font-bold">{{ ritmo.duracion }} segundos</span>
+            </div>
+            <span class="text-neon-green font-bold">{{ ritmo.velocidad_min }} - {{ ritmo.velocidad_max }} km/h</span>
+          </div>
+          <div *ngIf="!bebidaDetalle?.ritmos || bebidaDetalle?.ritmos?.length === 0" class="text-center py-4 text-gray-500">
+            Sin ritmos de pedaleo registrados
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
