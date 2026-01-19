@@ -24,6 +24,7 @@ interface Jugador {
   mejorTiempo: number | null;
   equipoId: number | null;
   equipoNombre?: string;
+  video: string;
 }
 
 interface ConfiguracionCarrera {
@@ -100,17 +101,28 @@ export class PistaFisicaEquiposComponent implements OnInit, OnDestroy {
     { id: 2, nombre: '', color: '#f97316', llavesGanadas: 0 },
   ];
 
-  coloresVehiculos = [
-    '#fbbf24',
-    '#ef4444',
-    '#22c55e',
-    '#f97316',
-    '#eab308',
-    '#dc2626',
-    '#10b981',
-    '#fb923c',
+  coloresVehiculos = ['#ef4444', '#fbbf24', '#22c55e', '#3b82f6'];
+
+  iconosVehiculos = [
+    'assets/images/carro_rojo.png',
+    'assets/images/carro_amarillo.png',
+    'assets/images/carro_verde.png',
+    'assets/images/carro_azul.png',
   ];
-  iconosVehiculos = ['🏎️', '🚗', '🚙', '🚕', '🏁', '🚓', '🚑', '🚐'];
+
+  videosVehiculos = [
+    'assets/images/carro_movimiento_rojo.mp4',
+    'assets/images/carro_movimiento_amarillo.mp4',
+    'assets/images/carro_movimiento_verde.mp4',
+    'assets/images/carro_movimiento_azul.mp4',
+  ];
+
+  fondosCarrera = [
+    'assets/images/carro_movimiento_rojo.mp4',
+    'assets/images/carro_movimiento_amarillo.mp4',
+    'assets/images/carro_movimiento_verde.mp4',
+    'assets/images/carro_movimiento_azul.mp4',
+  ];
 
   carreraIniciada = false;
   carreraPausada = false;
@@ -150,8 +162,22 @@ export class PistaFisicaEquiposComponent implements OnInit, OnDestroy {
     { name: 'Azul', value: '#3b82f6' },
     { name: 'Verde', value: '#22c55e' },
     { name: 'Amarillo', value: '#eab308' },
-    { name: 'Violeta', value: '#8b5cf6' },
   ];
+
+  getIndiceColorEquipo(equipoId: number | null | undefined): number {
+    if (!equipoId) return 0;
+    const equipo = this.equipos.find((e) => e.id === equipoId);
+    if (!equipo) return 0;
+
+    const colorMap: { [key: string]: number } = {
+      '#ef4444': 0, // Rojo
+      '#eab308': 1, // Amarillo
+      '#22c55e': 2, // Verde
+      '#3b82f6': 3, // Azul
+    };
+
+    return colorMap[equipo.color] ?? 0;
+  }
 
   getColorEquipo(equipoId: number | null | undefined): string {
     if (!equipoId) return '#22c55e';
@@ -221,8 +247,9 @@ export class PistaFisicaEquiposComponent implements OnInit, OnDestroy {
         distanciaRecorrida: 0,
         distanciaReal: 0,
         posicion: i + 1,
-        color: this.coloresVehiculos[i % this.coloresVehiculos.length],
-        icono: this.iconosVehiculos[i % this.iconosVehiculos.length],
+        color: this.coloresVehiculos[i % 2],
+        icono: this.iconosVehiculos[i % 2],
+        video: this.videosVehiculos[i % 2],
         mejorTiempo: null,
         equipoId: null,
         equipoNombre: '',

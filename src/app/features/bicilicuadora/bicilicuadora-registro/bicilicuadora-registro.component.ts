@@ -11,6 +11,10 @@ import { ParticipanteBicilicuadoraService } from '../../services/bicilicuadora/p
 import { SesionService } from '../../services/sesion.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {
+  Bebida,
+  BebidasService,
+} from '../../services/bicilicuadora/bebidas.service';
 
 @Component({
   selector: 'app-bicilicuadora-registro',
@@ -20,42 +24,41 @@ import { FormsModule } from '@angular/forms';
 export class BicilicuadoraRegistroComponent implements OnInit {
   config: BicilicuadoraConfig | null = null;
   sesion: any = null;
-  participantes: ParticipanteBicilicuadora[] = [];
-  modoEdicion = false;
-  participanteSeleccionandoColor: number | null = null;
-  participanteSeleccionandoSexo: number | null = null;
+  participanteActual: ParticipanteBicilicuadora = {
+    idBicilicuadora: 0,
+    nombreParticipante: '',
+    sexo: undefined,
+    caloriasQuemadas: 0,
+    vatiosGenerados: 0,
+    duracionTotal: 0,
+    distanciaRecorrida: 0,
+    velocidadPromedio: 0,
+    velocidadMaxima: 0,
+    puntosTotales: 0,
+    bebidaSeleccionadaId: '',
+    cantidadBebidasSeleccionadas: 1,
+    documento: '',
+  };
+  totalParticipantesRegistrados = 0;
+  bebidasDisponibles: Bebida[] = [];
+  totalParticipantes = 0;
   logoEmpresa: string | null = null;
 
   coloresDisponibles: ColorBicicleta[] = [
-    {
-      nombre: 'Naranja',
-      valor: '#FF6B35',
-      sombra: '0 0 15px rgba(255, 107, 53, 0.5)',
-    },
-    {
-      nombre: 'Amarillo',
-      valor: '#FFF700',
-      sombra: '0 0 15px rgba(255, 247, 0, 0.5)',
-    },
-    {
-      nombre: 'Verde',
-      valor: '#39FF14',
-      sombra: '0 0 15px rgba(57, 255, 20, 0.5)',
-    },
     {
       nombre: 'Azul',
       valor: '#00F0FF',
       sombra: '0 0 15px rgba(0, 240, 255, 0.5)',
     },
     {
-      nombre: 'Rosa',
-      valor: '#FF10F0',
-      sombra: '0 0 15px rgba(255, 16, 240, 0.5)',
-    },
-    {
       nombre: 'Rojo',
       valor: '#FF003C',
       sombra: '0 0 15px rgba(255, 0, 60, 0.5)',
+    },
+    {
+      nombre: 'Verde',
+      valor: '#39FF14',
+      sombra: '0 0 15px rgba(57, 255, 20, 0.5)',
     },
   ];
 
@@ -66,39 +69,18 @@ export class BicilicuadoraRegistroComponent implements OnInit {
     private bicilicuadoraConfigService: BicilicuadoraConfigService,
     private participanteService: ParticipanteBicilicuadoraService,
     private sesionService: SesionService,
-    private router: Router
+    private bebidasService: BebidasService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.config = this.bicilicuadoraConfigService.getConfigActual();
+    this.sesion = this.sesionService.getSesionSeleccionada();
 
-    const sesionActualStr = localStorage.getItem('sesionActual');
-    this.sesion = sesionActualStr ? JSON.parse(sesionActualStr) : null;
-
-    if (!this.sesion) {
-      this.sesion = this.sesionService.getSesionSeleccionada();
-    }
-
-    if (!this.config) {
+    if (!this.config || !this.sesion) {
       this.router.navigate(['/bicilicuadora/parametros']);
       return;
     }
-
-    if (
-      !this.config.configuracionBicicletas ||
-      this.config.configuracionBicicletas.length === 0
-    ) {
-      this.config.configuracionBicicletas = [];
-      for (let i = 1; i <= (this.config.numeroBicicletas || 1); i++) {
-        this.config.configuracionBicicletas.push({
-          numeroBicicleta: i,
-          participantes: 1,
-          bebidasSeleccionadas: [],
-        });
-      }
-    }
-
-    console.log('📋 CONFIG EN REGISTRO:', this.config);
 
     if (this.sesion?.empresa?.logo) {
       this.logoEmpresa = this.sesion.empresa.logo;
@@ -106,174 +88,129 @@ export class BicilicuadoraRegistroComponent implements OnInit {
       this.logoEmpresa = this.sesion.logoCliente;
     }
 
-    this.verificarParticipantesExistentes();
-  }
+    const parametrosJuego = this.sesion.parametros_juego;
+    let params: any;
 
-  calcularTotalParticipantesEsperados(): number {
-    if (!this.config?.configuracionBicicletas) return 0;
-    return this.config.configuracionBicicletas.reduce(
-      (total, bici) => total + bici.participantes,
-      0
-    );
-  }
-
-  verificarParticipantesExistentes(): void {
-    if (!this.config?.id) {
-      this.inicializarParticipantes();
-      return;
+    if (typeof parametrosJuego === 'string') {
+      try {
+        params = JSON.parse(parametrosJuego);
+      } catch (e) {
+        console.error('Error parseando parametros_juego');
+      }
+    } else {
+      params = parametrosJuego;
     }
+
+    if (params) {
+      this.totalParticipantes = params.numero_participantes || 1;
+
+      if (params.bebidas_disponibles && params.bebidas_disponibles.length > 0) {
+        this.cargarBebidas(params.bebidas_disponibles);
+      }
+    }
+
+    this.participanteActual.idBicilicuadora = this.config.id!;
+
+    this.verificarSiYaCompletaron();
+  }
+
+  verificarSiYaCompletaron(): void {
+    if (!this.config?.id) return;
 
     this.participanteService.getByBicilicuadora(this.config.id).subscribe({
       next: (participantes) => {
-        const totalEsperado = this.calcularTotalParticipantesEsperados();
+        const participantesJugados = participantes.filter(
+          (p: any) => p.puntosTotales > 0 || p.caloriasQuemadas > 0,
+        );
 
-        if (
-          participantes &&
-          participantes.length > 0 &&
-          participantes.length >= totalEsperado
-        ) {
-          this.participantes = participantes;
-          this.modoEdicion = true;
-        } else {
-          this.inicializarParticipantes();
-          this.modoEdicion = false;
+        this.totalParticipantesRegistrados = participantesJugados.length;
+
+        if (participantesJugados.length >= this.totalParticipantes) {
+          console.log('✅ Todos completaron, redirigiendo a ranking');
+          this.router.navigate(['/bicilicuadora/juego']);
         }
       },
       error: () => {
-        this.inicializarParticipantes();
-        this.modoEdicion = false;
+        this.totalParticipantesRegistrados = 0;
       },
     });
   }
 
-  inicializarParticipantes(): void {
-    this.participantes = [];
-    this.modoEdicion = false;
+  cargarTotalRegistrados(): void {
+    if (!this.config?.id) return;
 
-    if (!this.config?.configuracionBicicletas) return;
-
-    this.config.configuracionBicicletas.forEach((bicicleta) => {
-      for (let i = 0; i < bicicleta.participantes; i++) {
-        this.participantes.push({
-          idBicilicuadora: this.config!.id!,
-          nombreParticipante: '',
-          numeroBicicleta: bicicleta.numeroBicicleta,
-          colorBicicleta:
-            this.coloresDisponibles[
-              this.participantes.length % this.coloresDisponibles.length
-            ].valor,
-          caloriasQuemadas: 0,
-          vatiosGenerados: 0,
-          duracionTotal: 0,
-          distanciaRecorrida: 0,
-          velocidadPromedio: 0,
-          velocidadMaxima: 0,
-        });
-      }
+    this.participanteService.getByBicilicuadora(this.config.id).subscribe({
+      next: (participantes) => {
+        const participantesJugados = participantes.filter(
+          (p: any) => p.puntosTotales > 0 || p.caloriasQuemadas > 0,
+        );
+        this.totalParticipantesRegistrados = participantesJugados.length;
+      },
+      error: () => {
+        this.totalParticipantesRegistrados = 0;
+      },
     });
   }
 
-  abrirSelectorColor(index: number): void {
-    this.participanteSeleccionandoColor =
-      this.participanteSeleccionandoColor === index ? null : index;
+  cargarBebidas(bebidaIds: string[]): void {
+    this.bebidasService.getAllBebidas().subscribe({
+      next: (todasLasBebidas) => {
+        this.bebidasDisponibles = todasLasBebidas.filter((b) =>
+          bebidaIds.includes(b._id),
+        );
+
+        if (this.bebidasDisponibles.length > 0) {
+          this.participanteActual.bebidaSeleccionadaId =
+            this.bebidasDisponibles[0]._id;
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar bebidas:', error);
+      },
+    });
   }
 
-  abrirSelectorSexo(index: number): void {
-    this.participanteSeleccionandoSexo =
-      this.participanteSeleccionandoSexo === index ? null : index;
-  }
-
-  seleccionarColor(index: number, color: ColorBicicleta): void {
-    const colorYaUsado = this.participantes.some(
-      (p, i) => i !== index && p.colorBicicleta === color.valor
-    );
-
-    if (colorYaUsado) {
-      this.errorMessage = `El color ${color.nombre} ya está siendo usado por otro participante`;
-      setTimeout(() => {
-        this.errorMessage = '';
-      }, 3000);
-      return;
+  cambiarCantidadBebidas(cambio: number): void {
+    const nuevo =
+      this.participanteActual.cantidadBebidasSeleccionadas! + cambio;
+    if (nuevo >= 1 && nuevo <= 5) {
+      this.participanteActual.cantidadBebidasSeleccionadas = nuevo;
     }
-
-    this.participantes[index].colorBicicleta = color.valor;
-    this.participanteSeleccionandoColor = null;
-    this.errorMessage = '';
-  }
-
-  seleccionarSexo(index: number, sexo: 'M' | 'F'): void {
-    this.participantes[index].sexo = sexo;
-    this.participanteSeleccionandoSexo = null;
-  }
-
-  isColorDisponible(colorValor: string, indexActual: number): boolean {
-    return !this.participantes.some(
-      (p, i) => i !== indexActual && p.colorBicicleta === colorValor
-    );
   }
 
   isFormValid(): boolean {
-    return this.participantes.every((p) => p.nombreParticipante.trim() !== '');
+    return (
+      this.participanteActual.nombreParticipante.trim() !== '' &&
+      (this.participanteActual.sexo === 'M' ||
+        this.participanteActual.sexo === 'F') &&
+      this.participanteActual.bebidaSeleccionadaId !== ''
+    );
   }
 
-  comenzarJuego(): void {
+  registrarParticipante(): void {
     if (!this.isFormValid()) {
-      this.errorMessage = 'Todos los participantes deben tener nombre';
+      this.errorMessage = 'Por favor completa todos los campos';
       return;
     }
 
     this.loading = true;
     this.errorMessage = '';
 
-    if (this.modoEdicion) {
-      this.actualizarParticipantes();
-    } else {
-      this.crearParticipantes();
-    }
-  }
-
-  crearParticipantes(): void {
-    this.participanteService.createBulk(this.participantes).subscribe({
+    this.participanteService.createBulk([this.participanteActual]).subscribe({
       next: (response) => {
         this.loading = false;
+        localStorage.setItem(
+          'participante_actual',
+          JSON.stringify(response[0]),
+        );
         this.router.navigate(['/bicilicuadora/juego']);
       },
       error: (error) => {
-        console.error('❌ ERROR CREANDO PARTICIPANTES:', error);
+        console.error('Error registrando participante:', error);
         this.loading = false;
-        this.errorMessage = 'Error al registrar participantes';
+        this.errorMessage = 'Error al registrar participante';
       },
     });
-  }
-
-  actualizarParticipantes(): void {
-    const updates = this.participantes.map((participante) => {
-      if (participante.id) {
-        return this.participanteService.update(participante.id, {
-          nombreParticipante: participante.nombreParticipante.trim(),
-          colorBicicleta: participante.colorBicicleta,
-          sexo: participante.sexo,
-        });
-      } else {
-        return this.participanteService.createBulk([participante]);
-      }
-    });
-
-    forkJoin(updates).subscribe({
-      next: (response) => {
-        this.loading = false;
-        this.router.navigate(['/bicilicuadora/juego']);
-      },
-      error: (error) => {
-        console.error('❌ ERROR ACTUALIZANDO:', error);
-        this.loading = false;
-        this.errorMessage = 'Error al actualizar participantes';
-      },
-    });
-  }
-
-  continuarConParticipantes(): void {
-    this.router.navigate(['/bicilicuadora/juego']);
   }
 
   volver(): void {

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   HistorialSesion,
   HistorialService,
+  SesionAgrupada,
 } from '../../../services/historial-sesion.service';
 import { FormsModule } from '@angular/forms';
 import { HistorialJuegoAdapter } from '../adapter/historial-juego.adapter';
@@ -37,7 +38,7 @@ export class HistorialDetalleComponent implements OnInit {
     private historialService: HistorialService,
     private route: ActivatedRoute,
     private router: Router,
-    private juegoAdapter: HistorialJuegoAdapter
+    private juegoAdapter: HistorialJuegoAdapter,
   ) {
     this.tabActiva = 'resumen';
   }
@@ -54,13 +55,41 @@ export class HistorialDetalleComponent implements OnInit {
       next: (data) => {
         this.historial = data;
         this.configuracionJuego = this.juegoAdapter.getConfiguracionJuego(
-          data.juego_jugado
+          data.juego_jugado,
         );
         this.participantesAdaptados =
           this.juegoAdapter.adaptarParticipantesBiketona(data);
 
-        // ORDENAR PARTICIPANTES SEGÚN TIPO DE JUEGO
-        if (data.juego_jugado === 'Biketona Campeonato') {
+        if (data.juego_jugado === 'VR') {
+          this.participantesAdaptados = this.participantesAdaptados.map(
+            (p: any, index: number) => ({
+              ...p,
+              posicionGeneral: index + 1,
+              totalParticipantesGeneral: this.participantesAdaptados.length,
+            }),
+          );
+        } else if (data.juego_jugado === 'Hit-Fit') {
+          this.participantesAdaptados = this.participantesAdaptados
+            .sort(
+              (a: any, b: any) =>
+                (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0),
+            )
+            .map((p: any, index: number) => ({
+              ...p,
+              posicionGeneral: index + 1,
+              totalParticipantesGeneral: this.participantesAdaptados.length,
+            }));
+        } else if (data.juego_jugado === 'Bicilicuadora') {
+          this.participantesAdaptados = this.participantesAdaptados
+            .sort((a: any, b: any) => {
+              return (b.puntosCarrera || 0) - (a.puntosCarrera || 0);
+            })
+            .map((p: any, index: number) => ({
+              ...p,
+              posicionGeneral: index + 1,
+              totalParticipantesGeneral: this.participantesAdaptados.length,
+            }));
+        } else if (data.juego_jugado === 'Biketona Campeonato') {
           this.participantesAdaptados = this.participantesAdaptados
             .sort((a: any, b: any) => {
               if (b.rondaMaximaAlcanzada !== a.rondaMaximaAlcanzada) {
@@ -123,15 +152,33 @@ export class HistorialDetalleComponent implements OnInit {
 
   getRankingLabel(): string {
     return this.juegoAdapter.getRankingLabel(
-      this.historial?.juego_jugado || ''
+      this.historial?.juego_jugado || '',
     );
   }
 
   formatearPuntos(puntos: number): string {
-    return this.juegoAdapter.formatearPuntos(
-      puntos,
-      this.historial?.juego_jugado || ''
-    );
+    if (this.historial?.juego_jugado === 'VR') {
+      return this.formatearTiempo(puntos);
+    }
+
+    if (
+      this.historial?.juego_jugado === 'Hit-Fit' ||
+      this.historial?.juego_jugado === 'Bicilicuadora'
+    ) {
+      return puntos ? puntos.toString() + ' pts' : '0 pts';
+    }
+
+    if (puntos >= 3600) {
+      const horas = Math.floor(puntos / 3600);
+      const minutos = Math.floor((puntos % 3600) / 60);
+      const segundos = Math.floor(puntos % 60);
+      return `${horas}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+    } else if (puntos >= 60) {
+      const minutos = Math.floor(puntos / 60);
+      const segundos = Math.floor(puntos % 60);
+      return `${minutos}:${segundos.toString().padStart(2, '0')}`;
+    }
+    return `${puntos.toFixed(2)}s`;
   }
 
   formatearDuracion(minutos: number): string {
@@ -286,27 +333,31 @@ export class HistorialDetalleComponent implements OnInit {
   }
 
   getRankingParaPodio(): any[] {
-    if (!this.historial?.ranking_final) return [];
-
-    let ranking = this.historial.ranking_final;
-    if (typeof ranking === 'string') {
-      ranking = JSON.parse(ranking);
+    if (
+      !this.participantesAdaptados ||
+      this.participantesAdaptados.length === 0
+    ) {
+      return [];
     }
 
-    if (this.historial.juego_jugado === 'Biketona Campeonato') {
-      return ranking.sort((a: any, b: any) => {
-        if (b.rondaMaximaAlcanzada !== a.rondaMaximaAlcanzada) {
-          return b.rondaMaximaAlcanzada - a.rondaMaximaAlcanzada;
-        }
-        return a.puntos - b.puntos;
-      });
-    }
+    return this.participantesAdaptados.map((p: any) => {
+      let puntosParaMostrar = 0;
 
-    return ranking.sort((a: any, b: any) => {
-      if (this.historial!.juego_jugado.includes('Biketona')) {
-        return a.puntos - b.puntos;
+      if (this.historial?.juego_jugado === 'VR') {
+        puntosParaMostrar = p.tiempoParticipacion || 0;
+      } else if (this.historial?.juego_jugado === 'Hit-Fit') {
+        puntosParaMostrar = p.puntosObtenidos || 0;
+      } else if (this.historial?.juego_jugado === 'Bicilicuadora') {
+        puntosParaMostrar = p.puntosTotales || 0;
+      } else {
+        puntosParaMostrar = p.puntosCarrera || p.mejorTiempo || 0;
       }
-      return b.puntos - a.puntos;
+
+      return {
+        ...p,
+        puntosCarrera: puntosParaMostrar,
+        puntos: puntosParaMostrar,
+      };
     });
   }
 
@@ -316,6 +367,13 @@ export class HistorialDetalleComponent implements OnInit {
 
   toggleInfoParticipantes(): void {
     this.mostrarInfoParticipantes = !this.mostrarInfoParticipantes;
+  }
+
+  esVRoHitFit(): boolean {
+    return (
+      this.historial?.juego_jugado === 'VR' ||
+      this.historial?.juego_jugado === 'Hit-Fit'
+    );
   }
 
   getParticipantesPorEquipo(equipoId: number): any[] {

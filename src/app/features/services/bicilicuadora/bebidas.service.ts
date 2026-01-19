@@ -23,16 +23,15 @@ export interface Ingrediente {
   bebida_id: string;
   nombre_ingrediente: string;
   cantidad: string;
-  orden: number;
+  notas?: string;
 }
 
 export interface RitmoPedaleo {
   _id: string;
   bebida_id: string;
-  duracion: number;
-  velocidad_min: number;
-  velocidad_max: number;
-  orden: number;
+  segundo_inicio: number;
+  segundo_fin: number;
+  velocidad_objetivo: number;
 }
 
 @Injectable({

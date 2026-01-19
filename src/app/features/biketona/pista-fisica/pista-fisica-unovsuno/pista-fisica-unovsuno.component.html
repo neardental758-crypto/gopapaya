@@ -336,16 +336,20 @@
               <div class="absolute inset-0 opacity-10 pointer-events-none" [style.background]="'radial-gradient(circle at left, ' + (jugador.color || '#facc15') + ', transparent 70%)'"></div>
 
               <div class="flex items-center gap-4 relative z-10">
-                <div class="relative">
-                  <div class="absolute inset-0 blur-xl animate-pulse" [style.background]="jugador.color + '40'"></div>
-                  <div
-                    class="relative w-16 h-16 rounded-full flex items-center justify-center text-4xl border-4 shadow-lg"
-                    [style.background]="'radial-gradient(circle, ' + jugador.color + '30, ' + jugador.color + '15)'"
-                    [style.border-color]="jugador.color"
-                    [style.box-shadow]="'0 0 25px ' + jugador.color + '70, inset 0 0 15px ' + jugador.color + '20'">
-                    {{ jugador.icono }}
-                  </div>
+              <div class="relative">
+                <div class="absolute inset-0 blur-xl animate-pulse" [style.background]="jugador.color + '40'"></div>
+                <div
+                  class="relative w-16 h-16 rounded-full flex items-center justify-center border-4 shadow-lg overflow-hidden"
+                  [style.background]="'radial-gradient(circle, ' + jugador.color + '30, ' + jugador.color + '15)'"
+                  [style.border-color]="jugador.color"
+                  [style.box-shadow]="'0 0 25px ' + jugador.color + '70, inset 0 0 15px ' + jugador.color + '20'">
+                  <img
+                    [src]="jugador.icono"
+                    [alt]="'Carro jugador ' + jugador.id"
+                    class="w-12 h-12 object-contain"
+                    style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3))">
                 </div>
+              </div>
 
                 <div class="flex-1 min-w-0">
                   <label class="block text-xs font-bold text-gray-400 mb-2.5 uppercase tracking-[0.15em] font-mono">
@@ -630,114 +634,84 @@
         </div>
       </div>
     </div>
-
-<div class="bg-gradient-to-br from-dark-900 via-dark-850 to-dark-900 border border-neon-yellow/30 rounded-xl p-6 shadow-neon-yellow-lg relative overflow-hidden">
+<div class="bg-gradient-to-br from-dark-900 via-dark-850 to-dark-900 border border-neon-yellow/30 rounded-xl p-4 shadow-neon-yellow-lg relative overflow-hidden">
   <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-neon-yellow/5 via-transparent to-neon-green/5 animate-pulse"></div>
-  <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 247, 0, 0.03) 2px, rgba(255, 247, 0, 0.03) 4px);"></div>
 
   <div class="relative z-10">
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-2xl font-display text-neon-yellow uppercase tracking-wider flex items-center gap-3">
-        <span class="text-3xl drop-shadow-[0_0_10px_rgba(255,247,0,0.6)]">🏁</span>
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-xl font-display text-neon-yellow uppercase tracking-wider flex items-center gap-2">
+        <span class="text-2xl drop-shadow-[0_0_10px_rgba(255,247,0,0.6)]">🏁</span>
         <span class="drop-shadow-[0_0_8px_rgba(255,247,0,0.5)]">PROGRESO DE LA CARRERA</span>
       </h3>
-      <div class="flex items-center gap-2.5">
-        <div *ngFor="let jugador of jugadores" class="flex items-center gap-2.5 px-4 py-2 rounded-lg border-2 transition-all duration-300 hover:scale-105"
-            [style.border-color]="jugador.color"
-            [style.background]="'linear-gradient(135deg, ' + jugador.color + '30, ' + jugador.color + '15)'">
-          <div class="w-3 h-3 rounded-full animate-pulse"
-               [style.background]="jugador.color"
-               [style.box-shadow]="'0 0 10px ' + jugador.color + ', 0 0 20px ' + jugador.color + '80'"></div>
-          <span class="font-display font-bold text-sm tracking-wide drop-shadow-[0_0_6px_currentColor]" [style.color]="jugador.color">{{ jugador.nombre }}</span>
-        </div>
-      </div>
     </div>
 
-    <div class="relative h-28 rounded-2xl mb-4 bg-gradient-to-br from-dark-850 via-dark-800 to-dark-850 border border-dark-600/40 px-8 py-6"
-         style="box-shadow: inset 0 2px 15px rgba(0,0,0,0.6), 0 4px 15px rgba(0,0,0,0.3);">
-
-      <div class="absolute inset-0 opacity-10 pointer-events-none">
-        <div class="absolute inset-0" style="background: repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255, 247, 0, 0.1) 40px, rgba(255, 247, 0, 0.1) 41px);"></div>
-      </div>
-
-      <div class="relative h-full flex items-center">
-        <div class="flex-1 h-16 relative">
-          <div class="absolute inset-0 bg-dark-900/80 rounded-lg border border-dark-600/60"
-               style="box-shadow: inset 0 2px 8px rgba(0,0,0,0.7);">
-
-            <div class="absolute inset-0 bg-gradient-to-r from-dark-800/50 via-dark-700/50 to-dark-800/50"></div>
-
-            <div class="absolute inset-0 overflow-visible">
-              <div *ngFor="let jugador of jugadores; let i = index"
-                  class="absolute left-0 top-0 h-full transition-all duration-500 ease-out"
-                  [style.width.%]="calcularProgresoBarra(jugador)"
-                  [style.z-index]="jugadores.length - i">
-
-                <div class="absolute inset-0 rounded-lg overflow-hidden"
-                     [style.background]="'linear-gradient(to right, ' + jugador.color + 'E0, ' + jugador.color + 'C0, ' + jugador.color + '90)'"></div>
-
-                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg overflow-hidden"></div>
-
-                <div class="absolute inset-y-0 right-0 w-0.5"
-                     [style.background]="jugador.color"
-                     [style.box-shadow]="'0 0 8px ' + jugador.color"></div>
-
-                <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-20">
-                  <div class="relative">
-                    <div class="absolute inset-0 blur-xl animate-pulse"
-                         [style.background]="jugador.color"
-                         style="opacity: 0.5;"></div>
-
-                    <div class="relative w-14 h-14 rounded-full flex items-center justify-center text-xl transform hover:scale-110 transition-all duration-300"
-                        [style.background]="'radial-gradient(circle at 35% 35%, ' + jugador.color + ', ' + jugador.color + 'E0 50%, ' + jugador.color + '95 100%)'"
-                        [style.box-shadow]="'0 0 20px ' + jugador.color + 'B0, 0 0 40px ' + jugador.color + '60, inset 0 2px 6px rgba(255,255,255,0.25)'">
-                      {{ jugador.icono }}
-                      <div class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-dark-950 border-2 flex items-center justify-center text-[10px] font-display font-black"
-                          [style.border-color]="jugador.color"
-                          [style.color]="jugador.color"
-                          [style.box-shadow]="'0 0 12px ' + jugador.color + ', inset 0 1px 2px rgba(255,255,255,0.2)'"
-                          [style.text-shadow]="'0 0 8px ' + jugador.color">
-                        {{ jugador.posicion }}
-                      </div>
-                    </div>
-
-                    <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                      <div class="px-2 py-0.5 rounded text-[10px] font-display font-bold border backdrop-blur-sm"
-                          [style.background]="jugador.color + '35'"
-                          [style.border-color]="jugador.color + '80'"
-                          [style.color]="jugador.color"
-                          [style.text-shadow]="'0 0 6px ' + jugador.color">
-                        {{ jugador.distanciaReal.toFixed(0) }}m
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <div class="space-y-3">
+      <div *ngFor="let jugador of jugadores; let i = index" class="relative">
+        <div class="flex items-center gap-2 mb-2">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center font-display font-black text-lg border-2 flex-shrink-0"
+               [style.background]="'linear-gradient(135deg, ' + jugador.color + '50, ' + jugador.color + '30)'"
+               [style.border-color]="jugador.color"
+               [style.color]="'#fff'"
+               [style.box-shadow]="'0 0 15px ' + jugador.color + '70'">
+            {{ jugador.posicion }}
           </div>
-
-          <div class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-30">
-            <div class="relative">
-              <div class="absolute inset-0 blur-2xl bg-neon-yellow animate-pulse" style="opacity: 0.6;"></div>
-
-              <div class="relative w-20 h-20 rounded-full flex items-center justify-center text-4xl bg-gradient-to-br from-neon-yellow/45 via-neon-yellow/30 to-neon-yellow/20 backdrop-blur-sm border-3 border-neon-yellow/70 animate-pulse"
-                  style="box-shadow: 0 0 30px rgba(255, 247, 0, 0.8), 0 0 60px rgba(255, 247, 0, 0.4), inset 0 0 20px rgba(255, 247, 0, 0.3);">
-                <span class="drop-shadow-[0_0_10px_rgba(255,247,0,0.8)]">🏁</span>
-              </div>
+          <img
+            [src]="jugador.icono"
+            [alt]="'Carro ' + jugador.nombre"
+            class="w-8 h-8 object-contain"
+            [style.filter]="'drop-shadow(0 2px 6px ' + jugador.color + ')'">
+          <div class="flex-1 flex items-center justify-between">
+            <span class="font-display font-bold text-white text-lg" [style.text-shadow]="'0 0 8px ' + jugador.color">
+              {{ jugador.nombre || 'PILOTO ' + jugador.id }}
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold px-2 py-1 rounded border-2"
+                    [style.background]="jugador.color + '25'"
+                    [style.border-color]="jugador.color"
+                    [style.color]="'#fff'"
+                    [style.text-shadow]="'0 0 6px ' + jugador.color">
+                V{{ jugador.vueltaActual }}/{{ configuracion.numeroVueltas }}
+              </span>
+              <span class="text-xs font-mono font-bold px-2 py-1 rounded border-2"
+                    [style.background]="jugador.color + '25'"
+                    [style.border-color]="jugador.color"
+                    [style.color]="'#fff'"
+                    [style.text-shadow]="'0 0 6px ' + jugador.color">
+                {{ jugador.distanciaReal.toFixed(0) }}m
+              </span>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="absolute -bottom-7 left-8 right-24 flex justify-between items-center text-[10px] font-mono font-bold">
-        <span class="text-neon-blue text-xs font-bold font-display drop-shadow-[0_0_10px_rgba(0,240,255,1)] px-2.5 py-0.5 rounded bg-neon-blue/20 border border-neon-blue/60"
-              style="box-shadow: 0 0 15px rgba(0,240,255,0.5);">INICIO</span>
-        <span *ngFor="let v of [1, 2, 3, 4, 5].slice(0, configuracion.numeroVueltas - 1)"
-              class="text-gray-500 drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]">
-          V{{ v }}
-        </span>
-        <span class="text-neon-yellow text-xs font-bold font-display drop-shadow-[0_0_10px_rgba(255,247,0,1)] px-2.5 py-0.5 rounded bg-neon-yellow/20 border border-neon-yellow/60"
-              style="box-shadow: 0 0 15px rgba(255,247,0,0.5);">META</span>
+        <div class="relative h-10 rounded-lg overflow-hidden bg-dark-900/90 border-2"
+             [style.border-color]="jugador.color + '40'"
+             style="box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);">
+
+          <div class="absolute inset-0 bg-gradient-to-r from-dark-850/60 via-dark-800/60 to-dark-850/60"></div>
+
+          <div class="absolute left-0 top-0 h-full transition-all duration-500 ease-out overflow-hidden"
+               [style.width.%]="calcularProgresoBarra(jugador)">
+            <div class="absolute inset-0"
+                 [style.background]="'linear-gradient(to right, ' + jugador.color + 'F0, ' + jugador.color + 'D0, ' + jugador.color + 'A0)'"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent animate-pulse"></div>
+          </div>
+
+          <div class="absolute right-3 top-1/2 -translate-y-1/2 z-20">
+            <div class="relative">
+              <div class="absolute inset-0 blur-xl bg-neon-yellow animate-pulse" style="opacity: 0.6;"></div>
+              <div class="relative w-9 h-9 rounded-full flex items-center justify-center text-xl bg-gradient-to-br from-neon-yellow/60 via-neon-yellow/40 to-neon-yellow/20 backdrop-blur-sm border-2 border-neon-yellow"
+                  style="box-shadow: 0 0 20px rgba(255, 247, 0, 0.8);">
+                <span class="drop-shadow-[0_0_10px_rgba(255,247,0,1)]">🏁</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-black text-neon-blue flex items-center gap-1 px-2 py-0.5 bg-dark-950/90 rounded border-2 border-neon-blue/60"
+               style="box-shadow: 0 0 12px rgba(0,240,255,0.5);">
+            <span class="drop-shadow-[0_0_8px_rgba(0,240,255,1)]">START</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -746,13 +720,19 @@
 <div *ngFor="let jugador of jugadores; let i = index"
   class="relative rounded-xl p-4 shadow-2xl flex flex-col overflow-hidden border-2"
   [style.border-color]="jugador.color"
-  [style.box-shadow]="'0 0 30px ' + jugador.color + '40, inset 0 0 40px ' + jugador.color + '10'"
-  [style.backgroundImage]="'linear-gradient(rgba(10, 10, 10, 0.50), rgba(10, 10, 10, 0.50)), url(' + fondoCarrera + ')'"
-  [style.backgroundSize]="'cover'"
-  [style.backgroundPosition]="'center'">
-        <div class="absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none"
-          [style.background]="'radial-gradient(circle, ' + jugador.color + ' 0%, transparent 70%)'">
-        </div>
+  [style.box-shadow]="'0 0 30px ' + jugador.color + '40, inset 0 0 40px ' + jugador.color + '10'">
+
+<video
+  [src]="fondosCarrera[i % 2]"
+  autoplay
+  loop
+  muted
+  playsinline
+  class="absolute inset-0 w-full h-full object-cover"
+  style="z-index: 0;">
+</video>
+
+<div class="absolute inset-0 bg-gradient-to-br from-dark-950/60 to-dark-900/60" style="z-index: 1;"></div>
 
         <div class="absolute inset-0 opacity-5 pointer-events-none">
           <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -772,13 +752,19 @@
                 [style.background]="jugador.posicion === 1 ? '#facc15' : '#64748b'"
                 [style.opacity]="jugador.posicion === 1 ? '0.8' : '0.4'">
               </div>
-              <div class="relative w-16 h-16 rounded-xl flex items-center justify-center text-3xl font-display font-black border-2 transform -rotate-3 transition-all"
-                [style.background]="jugador.posicion === 1 ? 'linear-gradient(135deg, #facc15 0%, #f59e0b 50%, #eab308 100%)' : 'linear-gradient(135deg, #64748b 0%, #475569 100%)'"
-                [style.color]="jugador.posicion === 1 ? '#0a0a0a' : '#ffffff'"
-                [style.border-color]="jugador.posicion === 1 ? '#facc15' : '#64748b'"
-                [style.box-shadow]="jugador.posicion === 1 ? '0 8px 40px rgba(250,204,21,0.6), 0 0 0 3px rgba(250,204,21,0.3)' : '0 8px 20px rgba(0,0,0,0.5)'">
-                {{ jugador.posicion }}
-              </div>
+      <div class="relative w-16 h-16 rounded-xl flex items-center justify-center text-3xl font-display font-black border-2 transform -rotate-3 transition-all"
+        [style.background]="'linear-gradient(135deg, ' + jugador.color + 'E0, ' + jugador.color + 'B0, ' + jugador.color + '90)'"
+        [style.color]="'#ffffff'"
+        [style.border-color]="jugador.color"
+        [style.box-shadow]="'0 8px 30px ' + jugador.color + '60, 0 0 0 3px ' + jugador.color + '30'">
+        {{ jugador.posicion }}
+      </div>
+      <div *ngIf="jugador.posicion === 1" class="absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center animate-bounce border-2"
+        [style.background]="'linear-gradient(135deg, ' + jugador.color + ', ' + jugador.color + 'D0)'"
+        [style.border-color]="jugador.color"
+        [style.box-shadow]="'0 0 15px ' + jugador.color">
+        <span class="text-white text-base drop-shadow-lg">👑</span>
+      </div>
               <div *ngIf="jugador.posicion === 1" class="absolute -top-1 -right-1 w-7 h-7 bg-gradient-to-br from-neon-yellow to-yellow-600 rounded-full flex items-center justify-center shadow-neon-yellow animate-bounce border border-yellow-400">
                 <span class="text-dark-950 text-base">👑</span>
               </div>
@@ -796,7 +782,13 @@
               </div>
             </div>
           </div>
-          <div class="text-5xl animate-bounce-slow drop-shadow-lg">{{ jugador.icono }}</div>
+          <div class="relative w-16 h-16">
+          <img
+            [src]="jugador.icono"
+            [alt]="'Carro ' + jugador.nombre"
+            class="w-full h-full object-contain animate-bounce-slow"
+            [style.filter]="'drop-shadow(0 4px 12px ' + jugador.color + ')'">
+        </div>
         </div>
 
         <div class="relative z-10 flex-1 flex items-center justify-center mb-3">

@@ -227,18 +227,22 @@ export class HomeComponent implements OnInit {
     return this.empresasAdminExpandidas.has(empresaId);
   }
 
-    continuarSesion(sesion: Sesion): void {
-      this.sesionService.setSesionSeleccionada(sesion);
-      localStorage.setItem('idSesion', sesion.id.toString());
+  continuarSesion(sesion: Sesion): void {
+    this.sesionService.setSesionSeleccionada(sesion);
+    localStorage.setItem('idSesion', sesion.id.toString());
 
-      if (sesion.juego_asignado === 'brain-bike') {
-        this.router.navigate(['/brain-bike/parametros']);
-      } else if (sesion.juego_asignado === 'bicilicuadora') {
-        this.router.navigate(['/bicilicuadora/parametros']);
-      } else {
-        this.router.navigate(['/sesion/seleccionar-juego', sesion.id]);
-      }
+    if (sesion.juego_asignado === 'brain-bike') {
+      this.router.navigate(['/brain-bike/parametros']);
+    } else if (sesion.juego_asignado === 'bicilicuadora') {
+      this.router.navigate(['/bicilicuadora/parametros']);
+    } else if (sesion.juego_asignado === 'vr') {
+      this.router.navigate(['/vr/registro']);
+    } else if (sesion.juego_asignado === 'hit-fit') {
+      this.router.navigate(['/hit-fit/registro']);
+    } else {
+      this.router.navigate(['/sesion/seleccionar-juego', sesion.id]);
     }
+  }
 
   finalizarSesion(sesion: Sesion, event: Event): void {
     event.stopPropagation();

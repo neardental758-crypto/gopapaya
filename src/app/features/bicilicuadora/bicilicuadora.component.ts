@@ -13,6 +13,7 @@ import {
 } from '../../shared/components/dynamic-form/dynamic-form.component';
 import { RouterModule } from '@angular/router';
 import { SafePipe } from './safeUrl/safe.pipe';
+import { RitmoPedaleoManagerComponent } from './ritmo-pedaleo/ritmo-pedaleo-manager.component';
 
 @Component({
   selector: 'app-bicilicuadora',
@@ -22,6 +23,7 @@ import { SafePipe } from './safeUrl/safe.pipe';
     RouterModule,
     SafePipe,
     DynamicFormComponent,
+    RitmoPedaleoManagerComponent,
   ],
   templateUrl: './bicilicuadora.component.html',
 })
@@ -60,37 +62,31 @@ export class BicilicuadoraComponent implements OnInit {
       required: true,
     },
     {
-      name: 'orden',
-      label: 'Orden',
-      type: 'number' as const,
+      name: 'notas',
+      label: 'Notas',
+      type: 'textarea' as const,
       required: false,
     },
   ];
 
   ritmoFields: FormField[] = [
     {
-      name: 'duracion',
-      label: 'Duración (segundos)',
+      name: 'segundo_inicio',
+      label: 'Segundo Inicio',
       type: 'number' as const,
       required: true,
     },
     {
-      name: 'velocidad_min',
-      label: 'Velocidad Mínima (km/h)',
+      name: 'segundo_fin',
+      label: 'Segundo Fin',
       type: 'number' as const,
       required: true,
     },
     {
-      name: 'velocidad_max',
-      label: 'Velocidad Máxima (km/h)',
+      name: 'velocidad_objetivo',
+      label: 'Velocidad Objetivo (km/h)',
       type: 'number' as const,
       required: true,
-    },
-    {
-      name: 'orden',
-      label: 'Orden',
-      type: 'number' as const,
-      required: false,
     },
   ];
 
@@ -401,7 +397,7 @@ export class BicilicuadoraComponent implements OnInit {
 
     if (
       confirm(
-        `¿Eliminar ritmo de ${ritmo.duracion}s (${ritmo.velocidad_min}-${ritmo.velocidad_max} km/h)?`
+        `¿Eliminar ritmo del segundo ${ritmo.segundo_inicio} al ${ritmo.segundo_fin} (${ritmo.velocidad_objetivo} km/h)?`
       )
     ) {
       this.bebidasService
@@ -425,5 +421,67 @@ export class BicilicuadoraComponent implements OnInit {
   cerrarModal(): void {
     this.showModalDetalle = false;
     this.bebidaDetalle = null;
+  }
+  showRitmoManager = false;
+
+  toggleRitmoManager(): void {
+    this.showRitmoManager = !this.showRitmoManager;
+    if (!this.showRitmoManager) {
+      this.showFormRitmo = false;
+    }
+  }
+
+  onSaveRitmosManager(ritmos: any[]): void {
+    if (!this.selectedBebida) return;
+
+    const ritmosParaEliminar =
+      this.selectedBebida.ritmos?.filter(
+        (ritmoExistente) => !ritmos.find((r) => r._id === ritmoExistente._id)
+      ) || [];
+
+    const promesasEliminacion = ritmosParaEliminar.map((ritmo) =>
+      this.bebidasService
+        .deleteRitmo(this.selectedBebida!._id, ritmo._id)
+        .toPromise()
+    );
+
+    Promise.all(promesasEliminacion)
+      .then(() => {
+        const promesasGuardado = ritmos.map((ritmo) => {
+          if (ritmo._id && !ritmo._id.startsWith('temp_')) {
+            return this.bebidasService
+              .updateRitmo(this.selectedBebida!._id, ritmo._id, {
+                segundo_inicio: ritmo.segundo_inicio,
+                segundo_fin: ritmo.segundo_fin,
+                velocidad_objetivo: ritmo.velocidad_objetivo,
+              })
+              .toPromise();
+          } else {
+            return this.bebidasService
+              .createRitmo(this.selectedBebida!._id, {
+                segundo_inicio: ritmo.segundo_inicio,
+                segundo_fin: ritmo.segundo_fin,
+                velocidad_objetivo: ritmo.velocidad_objetivo,
+              })
+              .toPromise();
+          }
+        });
+
+        Promise.all(promesasGuardado)
+          .then(() => {
+            this.cargarBebidas();
+            this.showRitmoManager = false;
+          })
+          .catch((error) => {
+            console.error('Error al guardar ritmos:', error);
+          });
+      })
+      .catch((error) => {
+        console.error('Error al eliminar ritmos:', error);
+      });
+  }
+
+  cancelRitmoManager(): void {
+    this.showRitmoManager = false;
   }
 }

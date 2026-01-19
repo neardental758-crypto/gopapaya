@@ -29,8 +29,6 @@ export interface ParticipanteBicilicuadora {
   id?: number;
   idBicilicuadora: number;
   nombreParticipante: string;
-  numeroBicicleta: number;
-  colorBicicleta: string;
   sexo?: 'M' | 'F';
   caloriasQuemadas?: number;
   vatiosGenerados?: number;
@@ -38,6 +36,11 @@ export interface ParticipanteBicilicuadora {
   distanciaRecorrida?: number;
   velocidadPromedio?: number;
   velocidadMaxima?: number;
+  puntosTotales?: number;
+  bebidaSeleccionadaId?: string;
+  cantidadBebidasSeleccionadas?: number;
+  bebidasCompletadas?: number;
+  documento?: string;
 }
 
 export interface ColorBicicleta {
@@ -52,7 +55,7 @@ export interface ColorBicicleta {
 export class BicilicuadoraConfigService {
   private apiUrl = `${environment.apiUrl}/bicilicuadora`;
   private configActualSubject = new BehaviorSubject<BicilicuadoraConfig | null>(
-    null
+    null,
   );
   public configActual$ = this.configActualSubject.asObservable();
 
@@ -64,7 +67,7 @@ export class BicilicuadoraConfigService {
         const data = response.data || response;
         this.setConfigActual(data);
         return data;
-      })
+      }),
     );
   }
 

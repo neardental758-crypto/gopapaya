@@ -145,83 +145,181 @@
 <div *ngIf="paso === 2" class="space-y-6">
   <div>
     <label class="block text-white font-bold mb-4">Seleccionar Juego</label>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div
-        (click)="seleccionarJuego('brain-bike')"
-        class="p-6 border rounded-lg cursor-pointer transition-all group"
-        [class]="juegoAsignado === 'brain-bike' ? 'bg-neon-blue bg-opacity-10 border-neon-blue' : 'bg-dark-800 border-dark-600 hover:border-neon-blue'"
-      >
-        <div class="text-4xl mb-3">🧠</div>
-        <p class="text-white font-bold text-lg mb-1">Brain Bike</p>
-        <p class="text-gray-400 text-sm">Trivia interactiva con bicicletas</p>
-      </div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div
+    (click)="seleccionarJuego('brain-bike')"
+    class="p-6 border rounded-lg cursor-pointer transition-all group"
+    [class]="juegoAsignado === 'brain-bike' ? 'bg-neon-blue bg-opacity-10 border-neon-blue' : 'bg-dark-800 border-dark-600 hover:border-neon-blue'"
+  >
+    <div class="text-4xl mb-3">🧠</div>
+    <p class="text-white font-bold text-lg mb-1">Brain Bike</p>
+    <p class="text-gray-400 text-sm">Trivia interactiva con bicicletas</p>
+  </div>
 
-      <div
-        (click)="seleccionarJuego('biketona')"
-        class="p-6 border rounded-lg cursor-pointer transition-all group"
-        [class]="juegoAsignado === 'biketona' ? 'bg-neon-pink bg-opacity-10 border-neon-pink' : 'bg-dark-800 border-dark-600 hover:border-neon-pink'"
-      >
-        <div class="text-4xl mb-3">🚴</div>
-        <p class="text-white font-bold text-lg mb-1">Biketona</p>
-        <p class="text-gray-400 text-sm">Carrera digital 1 vs 1, Campeonato o por equipos</p>
-      </div>
+  <div
+    (click)="seleccionarJuego('biketona')"
+    class="p-6 border rounded-lg cursor-pointer transition-all group"
+    [class]="juegoAsignado === 'biketona' ? 'bg-neon-pink bg-opacity-10 border-neon-pink' : 'bg-dark-800 border-dark-600 hover:border-neon-pink'"
+  >
+    <div class="text-4xl mb-3">🚴</div>
+    <p class="text-white font-bold text-lg mb-1">Biketona</p>
+    <p class="text-gray-400 text-sm">Carrera digital 1 vs 1, Campeonato o por equipos</p>
+  </div>
 
-      <div
-        (click)="seleccionarJuego('bicilicuadora')"
-        class="p-6 border rounded-lg cursor-pointer transition-all group"
-        [class]="juegoAsignado === 'bicilicuadora' ? 'bg-neon-orange bg-opacity-10 border-neon-orange' : 'bg-dark-800 border-dark-600 hover:border-neon-orange'"
-      >
-        <div class="text-4xl mb-3">🥤</div>
-        <p class="text-white font-bold text-lg mb-1">Bicilicuadora</p>
-        <p class="text-gray-400 text-sm">Preparación de bebidas saludables</p>
-      </div>
-    </div>
+  <div
+    (click)="seleccionarJuego('bicilicuadora')"
+    class="p-6 border rounded-lg cursor-pointer transition-all group"
+    [class]="juegoAsignado === 'bicilicuadora' ? 'bg-neon-orange bg-opacity-10 border-neon-orange' : 'bg-dark-800 border-dark-600 hover:border-neon-orange'"
+  >
+    <div class="text-4xl mb-3">🥤</div>
+    <p class="text-white font-bold text-lg mb-1">Bicilicuadora</p>
+    <p class="text-gray-400 text-sm">Preparación de bebidas saludables</p>
+  </div>
+
+  <div
+    (click)="seleccionarJuego('vr')"
+    class="p-6 border rounded-lg cursor-pointer transition-all group"
+    [class]="juegoAsignado === 'vr' ? 'bg-purple-500 bg-opacity-10 border-purple-500' : 'bg-dark-800 border-dark-600 hover:border-purple-500'"
+  >
+    <div class="text-4xl mb-3">🥽</div>
+    <p class="text-white font-bold text-lg mb-1">VR</p>
+    <p class="text-gray-400 text-sm">Experiencia de realidad virtual</p>
+  </div>
+
+  <div
+    (click)="seleccionarJuego('hit-fit')"
+    class="p-6 border rounded-lg cursor-pointer transition-all group"
+    [class]="juegoAsignado === 'hit-fit' ? 'bg-neon-green bg-opacity-10 border-neon-green' : 'bg-dark-800 border-dark-600 hover:border-neon-green'"
+  >
+    <div class="text-4xl mb-3">🥊</div>
+    <p class="text-white font-bold text-lg mb-1">Hit-Fit</p>
+    <p class="text-gray-400 text-sm">Entrenamiento de alto impacto</p>
+  </div>
+</div>
   </div>
 </div>
 
-<div *ngIf="paso === 3 && juegoAsignado === 'bicilicuadora'" class="space-y-6">
-  <div class="p-4 bg-neon-orange bg-opacity-10 border border-neon-orange rounded-lg">
-    <p class="text-white font-bold mb-1">🥤 Sesión Bicilicuadora</p>
-    <p class="text-gray-300 text-sm">
-      La parametrización detallada (bebidas, bicicletas, participantes) se configurará al momento de iniciar el juego.
-      Solo confirma la información básica de la sesión y haz clic en
-      <span class="font-bold text-neon-orange">"Crear Sesión"</span>.
+<div *ngIf="paso === 3 && juegoAsignado === 'bicilicuadora'" class="animate-fadeIn">
+  <h3 class="text-xl font-display font-bold text-neon-blue mb-6">
+    Configuración Bicilicuadora
+  </h3>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">
+        Número de Bicicletas
+      </label>
+      <div class="flex items-center space-x-3">
+        <button
+          type="button"
+          (click)="parametrosBicilicuadora.numero_bicicletas = parametrosBicilicuadora.numero_bicicletas > 1 ? parametrosBicilicuadora.numero_bicicletas - 1 : 1"
+          class="w-12 h-12 bg-dark-700 border border-dark-600 rounded-lg text-white font-bold hover:bg-dark-600 hover:border-neon-blue transition-all flex items-center justify-center"
+        >
+          -
+        </button>
+        <input
+          type="number"
+          [(ngModel)]="parametrosBicilicuadora.numero_bicicletas"
+          min="1"
+          class="flex-1 bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white text-center font-bold text-lg focus:outline-none focus:border-neon-blue transition-colors"
+        />
+        <button
+          type="button"
+          (click)="parametrosBicilicuadora.numero_bicicletas = parametrosBicilicuadora.numero_bicicletas + 1"
+          class="w-12 h-12 bg-dark-700 border border-dark-600 rounded-lg text-white font-bold hover:bg-dark-600 hover:border-neon-blue transition-all flex items-center justify-center"
+        >
+          +
+        </button>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">
+        Número Total de Participantes
+      </label>
+      <div class="flex items-center space-x-3">
+        <button
+          type="button"
+          (click)="parametrosBicilicuadora.numero_participantes = parametrosBicilicuadora.numero_participantes > 1 ? parametrosBicilicuadora.numero_participantes - 1 : 1"
+          class="w-12 h-12 bg-dark-700 border border-dark-600 rounded-lg text-white font-bold hover:bg-dark-600 hover:border-neon-blue transition-all flex items-center justify-center"
+        >
+          -
+        </button>
+        <input
+          type="number"
+          [(ngModel)]="parametrosBicilicuadora.numero_participantes"
+          min="1"
+          class="flex-1 bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-white text-center font-bold text-lg focus:outline-none focus:border-neon-blue transition-colors"
+        />
+        <button
+          type="button"
+          (click)="parametrosBicilicuadora.numero_participantes = parametrosBicilicuadora.numero_participantes + 1"
+          class="w-12 h-12 bg-dark-700 border border-dark-600 rounded-lg text-white font-bold hover:bg-dark-600 hover:border-neon-blue transition-all flex items-center justify-center"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-6">
+    <label class="block text-sm font-medium text-gray-300 mb-3">
+      Bebidas Disponibles en la Sesión
+    </label>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div
+        *ngFor="let bebida of bebidasDisponibles"
+        (click)="toggleBebida(bebida._id)"
+        class="bg-dark-800 border rounded-lg overflow-hidden cursor-pointer transition-all hover:scale-105"
+        [ngClass]="{
+          'border-neon-green shadow-neon-green': isBebidaSeleccionada(bebida._id),
+          'border-dark-600': !isBebidaSeleccionada(bebida._id)
+        }"
+      >
+        <div class="relative aspect-square">
+          <img
+            *ngIf="bebida.foto_bebida"
+            [src]="bebida.foto_bebida"
+            [alt]="bebida.nombre_bebida"
+            class="w-full h-full object-cover"
+          />
+          <div
+            *ngIf="!bebida.foto_bebida"
+            class="w-full h-full bg-dark-700 flex items-center justify-center"
+          >
+            <svg class="w-12 h-12 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+            </svg>
+          </div>
+          <div
+            *ngIf="isBebidaSeleccionada(bebida._id)"
+            class="absolute top-2 right-2 w-8 h-8 bg-neon-green rounded-full flex items-center justify-center shadow-neon-green"
+          >
+            <svg class="w-5 h-5 text-dark-900" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fill-rule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+        </div>
+        <div class="p-3">
+          <p class="font-medium text-white text-sm truncate">{{ bebida.nombre_bebida }}</p>
+          <p class="text-xs text-gray-400 mt-1">{{ bebida.tiempo_pedaleo }}s de pedaleo</p>
+        </div>
+      </div>
+    </div>
+    <p class="text-sm text-gray-400 mt-3">
+      {{ bebidasSeleccionadas.length }} bebida(s) seleccionada(s)
     </p>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
-      <p class="text-gray-400">Empresa</p>
-      <p class="text-white font-bold">
-        {{ nombreEmpresaSeleccionada }}
-      </p>
-    </div>
-
-    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
-      <p class="text-gray-400">Fecha y Hora</p>
-      <p class="text-white font-bold">
-        <ng-container *ngIf="fechaPreseleccionada">
-          {{ formatearFechaPreseleccionada() }} - {{ horaSesion }}
-        </ng-container>
-        <ng-container *ngIf="!fechaPreseleccionada">
-          {{ fechaHoraSesion | date: 'dd/MM/yyyy HH:mm' }}
-        </ng-container>
-      </p>
-    </div>
-
-    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
-      <p class="text-gray-400">Lugar</p>
-      <p class="text-white font-bold">
-        {{ lugarEjecucion || 'No definido' }}
-      </p>
-    </div>
-
-    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
-      <p class="text-gray-400">Admins asignados</p>
-      <p class="text-white font-bold">
-        {{ adminsSeleccionados.length }} admin(s)
-      </p>
-    </div>
+  <div
+    *ngIf="errorMensaje"
+    class="bg-red-500/10 border border-red-500 rounded-lg p-4 mb-6"
+  >
+    <p class="text-red-500 text-sm">{{ errorMensaje }}</p>
   </div>
 </div>
 
@@ -254,8 +352,7 @@
         </div>
       </div>
 
-      <!-- bloque biketona -->
-      <!--------------------->
+
       <div *ngIf="paso === 3 && juegoAsignado === 'biketona'" class="space-y-6">
         <div class="p-4 bg-neon-yellow bg-opacity-10 border border-neon-yellow rounded-lg">
           <p class="text-white font-bold mb-1">🚴 Parámetros Biketona</p>
@@ -302,8 +399,90 @@
         </div>
       </div>
 
-      <!------------------>
-      <!------------------>
+      <div *ngIf="paso === 3 && juegoAsignado === 'vr'" class="space-y-6">
+  <div class="p-4 bg-purple-500 bg-opacity-10 border border-purple-500 rounded-lg">
+    <p class="text-white font-bold mb-3">🥽 Configuración VR</p>
+    <p class="text-gray-300 text-sm mb-4">
+      Selecciona los tipos de experiencias VR disponibles para esta sesión.
+    </p>
+  </div>
+
+  <div>
+    <label class="block text-white font-bold mb-3">Tipo de VR</label>
+    <select
+      [(ngModel)]="tipoVRSeleccionado"
+      class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+    >
+      <option value="">Seleccionar tipo de VR...</option>
+      <option *ngFor="let tipo of tiposVR" [value]="tipo.id">
+        {{ tipo.nombre }} - {{ tipo.descripcion }}
+      </option>
+    </select>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Empresa</p>
+      <p class="text-white font-bold">{{ nombreEmpresaSeleccionada }}</p>
+    </div>
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Fecha y Hora</p>
+      <p class="text-white font-bold">
+        <ng-container *ngIf="fechaPreseleccionada">
+          {{ formatearFechaPreseleccionada() }} - {{ horaSesion }}
+        </ng-container>
+        <ng-container *ngIf="!fechaPreseleccionada">
+          {{ fechaHoraSesion | date: 'dd/MM/yyyy HH:mm' }}
+        </ng-container>
+      </p>
+    </div>
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Lugar</p>
+      <p class="text-white font-bold">{{ lugarEjecucion || 'No definido' }}</p>
+    </div>
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Admins asignados</p>
+      <p class="text-white font-bold">{{ adminsSeleccionados.length }} admin(s)</p>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="paso === 3 && juegoAsignado === 'hit-fit'" class="space-y-6">
+  <div class="p-4 bg-neon-green bg-opacity-10 border border-neon-green rounded-lg">
+    <p class="text-white font-bold mb-1">🥊 Parámetros Hit-Fit</p>
+    <p class="text-gray-300 text-sm">
+      Por ahora Hit-Fit no requiere configuración adicional desde este panel.
+      Solo confirma la información de la sesión y haz clic en
+      <span class="font-bold text-neon-green">"Crear Sesión"</span>.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Empresa</p>
+      <p class="text-white font-bold">{{ nombreEmpresaSeleccionada }}</p>
+    </div>
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Fecha y Hora</p>
+      <p class="text-white font-bold">
+        <ng-container *ngIf="fechaPreseleccionada">
+          {{ formatearFechaPreseleccionada() }} - {{ horaSesion }}
+        </ng-container>
+        <ng-container *ngIf="!fechaPreseleccionada">
+          {{ fechaHoraSesion | date: 'dd/MM/yyyy HH:mm' }}
+        </ng-container>
+      </p>
+    </div>
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Lugar</p>
+      <p class="text-white font-bold">{{ lugarEjecucion || 'No definido' }}</p>
+    </div>
+    <div class="p-3 rounded-lg bg-dark-800 border border-dark-600">
+      <p class="text-gray-400">Admins asignados</p>
+      <p class="text-white font-bold">{{ adminsSeleccionados.length }} admin(s)</p>
+    </div>
+  </div>
+</div>
 
       <div class="flex justify-between mt-8 pt-6 border-t border-dark-700">
         <button

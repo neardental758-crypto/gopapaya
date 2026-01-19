@@ -1,0 +1,94 @@
+<div class="min-h-screen bg-dark-950 p-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 mb-6">
+      <div class="flex items-center gap-4 mb-4">
+        <button (click)="router.navigate(['/bicilicuadora/parametros'])"
+          class="w-12 h-12 flex items-center justify-center bg-dark-700 hover:bg-dark-600 rounded-lg transition-all">
+          <span class="text-2xl">←</span>
+        </button>
+        <div class="text-5xl">🥤</div>
+        <div>
+          <h1 class="text-2xl font-bold text-white mb-2">
+            <span class="text-neon-blue">🔌 Conexión Bluetooth</span>
+          </h1>
+          <p class="text-gray-400">
+            <span class="font-bold" [class.text-neon-green]="todasBicisConectadas()"
+              [class.text-neon-yellow]="!todasBicisConectadas()">
+              {{ todasBicisConectadas() ? '✓ Listo para continuar' : '⚠ Conecta todas las bicis' }}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div *ngFor="let bici of bicis"
+        class="bg-dark-900 rounded-card p-6 border-2 transition-all"
+        [class.border-neon-green]="bici.conectado"
+        [class.border-dark-700]="!bici.conectado">
+
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="text-xs text-gray-400 uppercase">Dispositivo</p>
+            <h4 class="text-white font-bold text-xl">{{ bici.label }}</h4>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-bold"
+            [class.bg-green-400]="bici.conectado"
+            [class.text-white]="bici.conectado"
+            [class.border-2]="bici.conectado"
+            [class.border-green-400]="bici.conectado"
+            [class.bg-dark-700]="!bici.conectado"
+            [class.text-gray-300]="!bici.conectado">
+            {{ bici.conectado ? '✓ Conectado' : bici.status }}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-center gap-4 my-6">
+          <div class="text-6xl" [class.text-green-400]="bici.conectado" [class.animate-pulse]="bici.conectado">💻</div>
+          <div class="flex-1 h-1 rounded-full"
+            [class.bg-gradient-to-r]="bici.conectado"
+            [class.from-green-400]="bici.conectado"
+            [class.to-neon-yellow]="bici.conectado"
+            [class.bg-dark-700]="!bici.conectado"></div>
+          <div class="text-6xl" [class.text-neon-yellow]="bici.conectado" [class.animate-bounce]="bici.conectado">🚴</div>
+        </div>
+
+        <div *ngIf="bici.deviceId" class="mb-4 p-2 bg-dark-800 rounded border border-dark-700">
+          <p class="text-xs text-gray-400">ID</p>
+          <p class="text-sm text-white font-mono truncate">{{ bici.deviceId }}</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <button (click)="buscarBici(bici.key)"
+            class="px-3 py-2 bg-neon-blue text-dark-950 rounded font-bold text-sm hover:scale-105 transition-all">
+            🔍 Buscar
+          </button>
+          <button (click)="conectarBici(bici.key)"
+            class="px-3 py-2 bg-neon-yellow text-dark-950 rounded font-bold text-sm hover:scale-105 transition-all">
+            📡 Conectar
+          </button>
+          <button (click)="desconectarBici(bici.key)"
+            class="px-3 py-2 bg-dark-700 text-gray-300 rounded font-bold text-sm hover:border-neon-red transition-all">
+            ❌
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-between">
+      <button (click)="router.navigate(['/bicilicuadora/parametros'])"
+        class="px-6 py-3 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 transition-all">
+        ← Atrás
+      </button>
+      <button (click)="irARegistro()"
+        [disabled]="!todasBicisConectadas()"
+        class="px-8 py-4 rounded-lg font-bold text-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+        [class.bg-neon-green]="todasBicisConectadas()"
+        [class.text-dark-950]="todasBicisConectadas()"
+        [class.bg-dark-700]="!todasBicisConectadas()"
+        [class.text-gray-500]="!todasBicisConectadas()">
+        Siguiente → Registro
+      </button>
+    </div>
+  </div>
+</div>

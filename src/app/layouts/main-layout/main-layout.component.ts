@@ -42,7 +42,7 @@ export class MainLayoutComponent implements OnInit {
 
   isInGame(): boolean {
     const url = this.router.url;
-    const gameRoutes = ['/brain-bike', '/biketona'];
+    const gameRoutes = ['/brain-bike', '/biketona', '/bicilicuadora'];
     return gameRoutes.some((route) => url.includes(route));
   }
 

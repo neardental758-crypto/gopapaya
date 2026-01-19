@@ -149,4 +149,10 @@ export class HistorialService {
 
     return this.http.get<HistorialResponse>(this.apiUrl, { params });
   }
+
+  actualizarHistorial(id: number, historial: any): Observable<HistorialSesion> {
+    return this.http
+      .put<{ data: HistorialSesion }>(`${this.apiUrl}/${id}`, historial)
+      .pipe(map((response) => response.data));
+  }
 }

@@ -23,6 +23,7 @@ interface Jugador {
   color: string;
   icono: string;
   mejorTiempo: number | null;
+  video: string;
 }
 interface ConfiguracionCarrera {
   numeroBicicletas: number;
@@ -97,18 +98,22 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
 
   idBiketona: string | null = null;
 
-  coloresVehiculos = [
-    '#fbbf24',
-    '#ef4444',
-    '#22c55e',
-    '#3b82f6',
-    '#f97316',
-    '#a855f7',
-    '#ec4899',
-    '#14b8a6',
+  coloresVehiculos = ['#ef4444', '#fbbf24'];
+
+  iconosVehiculos = [
+    'assets/images/carro_rojo.png',
+    'assets/images/carro_amarillo.png',
   ];
 
-  iconosVehiculos = ['🏎️', '🏎️', '🏎️', '🏎️', '🏎️', '🏎️', '🏎️', '🏎️'];
+  videosVehiculos = [
+    'assets/images/carro_movimiento_rojo.mp4',
+    'assets/images/carro_movimiento_amarillo.mp4',
+  ];
+
+  fondosCarrera = [
+    'assets/images/carro_movimiento_rojo.mp4',
+    'assets/images/carro_movimiento_amarillo.mp4',
+  ];
 
   bicis: BiciUI[] = [
     {
@@ -199,8 +204,9 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
         distanciaRecorrida: 0,
         distanciaReal: 0,
         posicion: i + 1,
-        color: this.coloresVehiculos[i % this.coloresVehiculos.length],
-        icono: this.iconosVehiculos[i % this.iconosVehiculos.length],
+        color: this.coloresVehiculos[i % 2],
+        icono: this.iconosVehiculos[i % 2],
+        video: this.videosVehiculos[i % 2],
         mejorTiempo: null,
       });
     }
@@ -623,13 +629,6 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     this.detenerCarrera();
     this.ganadorActual = ganador;
     this.audioService.reproducirSonidoVictoria();
-
-    console.log(
-      '🏁 Carrera finalizada - Tiempo:',
-      this.tiempoTranscurrido,
-      'Ganador:',
-      ganador.nombre
-    );
 
     this.jugadores.forEach((jugador) => {
       const participante = this.participantes.find((p) => p.id === jugador.id);

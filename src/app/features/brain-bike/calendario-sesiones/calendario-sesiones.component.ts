@@ -55,7 +55,6 @@ export class CalendarioSesionesComponent implements OnInit {
     if (this.isSuperAdmin()) {
       this.sesionService.getSesiones().subscribe({
         next: (sesiones) => {
-          console.log('Sesiones recibidas:', sesiones);
           this.sesiones = sesiones;
           this.actualizarVista();
           this.cargando = false;
@@ -67,7 +66,6 @@ export class CalendarioSesionesComponent implements OnInit {
     } else {
       this.sesionService.getMisSesiones().subscribe({
         next: (sesiones) => {
-          console.log('Sesiones recibidas:', sesiones);
           this.sesiones = sesiones;
           this.actualizarVista();
           this.cargando = false;

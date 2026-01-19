@@ -55,20 +55,40 @@ export class CrearSesionComponent implements OnInit {
   cronograma: string = '';
   secuencia: string = '';
 
+  parametrosBicilicuadora = {
+    numero_bicicletas: 1,
+    numero_participantes: 1,
+    bebidas_disponibles: [] as string[],
+  };
+
+  bebidasDisponibles: Bebida[] = [];
+  bebidasSeleccionadas: string[] = [];
+
+  parametrosVR = {
+    tipos_vr: [] as string[],
+  };
+
+  tiposVR = [
+    { id: 'vr-1', nombre: 'VR 1', descripcion: 'Experiencia VR tipo 1' },
+    { id: 'vr-2', nombre: 'VR 2', descripcion: 'Experiencia VR tipo 2' },
+  ];
+
+  tipoVRSeleccionado: string = '';
   constructor(
     private sesionService: SesionService,
     private empresaService: EmpresaService,
     private usuarioService: UsuarioService,
     private tematicaService: TematicaService,
+    private bebidasService: BebidasService,
     private router: Router,
-    private location: Location
+    private location: Location,
   ) {}
 
   ngOnInit(): void {
     this.establecerFechaHoraMinima();
 
     const fechaPreseleccionada = localStorage.getItem(
-      'fecha_sesion_preseleccionada'
+      'fecha_sesion_preseleccionada',
     );
     if (fechaPreseleccionada) {
       this.fechaSesionPreseleccionada = fechaPreseleccionada;
@@ -131,6 +151,15 @@ export class CrearSesionComponent implements OnInit {
         console.error('Error al cargar temáticas:', error);
       },
     });
+
+    this.bebidasService.getAllBebidasActivas().subscribe({
+      next: (bebidas) => {
+        this.bebidasDisponibles = bebidas;
+      },
+      error: (error) => {
+        console.error('Error al cargar bebidas:', error);
+      },
+    });
   }
 
   seleccionarJuego(juego: string): void {
@@ -142,6 +171,22 @@ export class CrearSesionComponent implements OnInit {
         contenido_id: '',
         dificultad: 'media',
       };
+    }
+
+    if (juego !== 'bicilicuadora') {
+      this.parametrosBicilicuadora = {
+        numero_bicicletas: 1,
+        numero_participantes: 1,
+        bebidas_disponibles: [],
+      };
+      this.bebidasSeleccionadas = [];
+    }
+
+    if (juego !== 'vr') {
+      this.parametrosVR = {
+        tipos_vr: [],
+      };
+      this.tipoVRSeleccionado = '';
     }
   }
 
@@ -161,7 +206,7 @@ export class CrearSesionComponent implements OnInit {
         }
 
         const fechaHoraCompleta = new Date(
-          `${this.fechaSesionPreseleccionada}T${this.horaSesion}:00`
+          `${this.fechaSesionPreseleccionada}T${this.horaSesion}:00`,
         );
         const ahora = new Date();
 
@@ -209,6 +254,29 @@ export class CrearSesionComponent implements OnInit {
         return false;
       }
     }
+
+    if (this.paso === 3 && this.juegoAsignado === 'bicilicuadora') {
+      if (this.parametrosBicilicuadora.numero_bicicletas < 1) {
+        this.errorMensaje = 'Debe haber al menos 1 bicicleta';
+        return false;
+      }
+      if (this.parametrosBicilicuadora.numero_participantes < 1) {
+        this.errorMensaje = 'Debe haber al menos 1 participante';
+        return false;
+      }
+      if (this.bebidasSeleccionadas.length === 0) {
+        this.errorMensaje = 'Debe seleccionar al menos una bebida';
+        return false;
+      }
+    }
+
+    if (this.paso === 3 && this.juegoAsignado === 'vr') {
+      if (!this.tipoVRSeleccionado) {
+        this.errorMensaje = 'Debe seleccionar un tipo de VR';
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -238,6 +306,16 @@ export class CrearSesionComponent implements OnInit {
 
     if (this.juegoAsignado === 'brain-bike') {
       parametrosJuego = this.parametrosBrainBike;
+    } else if (this.juegoAsignado === 'bicilicuadora') {
+      parametrosJuego = {
+        numero_bicicletas: this.parametrosBicilicuadora.numero_bicicletas,
+        numero_participantes: this.parametrosBicilicuadora.numero_participantes,
+        bebidas_disponibles: this.bebidasSeleccionadas,
+      };
+    } else if (this.juegoAsignado === 'vr') {
+      parametrosJuego = {
+        tipo_vr: this.tipoVRSeleccionado,
+      };
     }
 
     const nuevaSesion: any = {
@@ -262,6 +340,19 @@ export class CrearSesionComponent implements OnInit {
         this.errorMensaje = error.error?.message || 'Error al crear la sesión';
       },
     });
+  }
+
+  toggleBebida(bebidaId: string): void {
+    const index = this.bebidasSeleccionadas.indexOf(bebidaId);
+    if (index > -1) {
+      this.bebidasSeleccionadas.splice(index, 1);
+    } else {
+      this.bebidasSeleccionadas.push(bebidaId);
+    }
+  }
+
+  isBebidaSeleccionada(bebidaId: string): boolean {
+    return this.bebidasSeleccionadas.includes(bebidaId);
   }
 
   formatearFechaPreseleccionada(): string {
@@ -290,7 +381,7 @@ export class CrearSesionComponent implements OnInit {
 
     if (this.parametrosBrainBike.tematica_id) {
       const tematicaSeleccionada = this.tematicas.find(
-        (t) => t._id === this.parametrosBrainBike.tematica_id
+        (t) => t._id === this.parametrosBrainBike.tematica_id,
       );
 
       if (tematicaSeleccionada?.contenidos) {
@@ -324,7 +415,7 @@ export class CrearSesionComponent implements OnInit {
 
   get nombreEmpresaSeleccionada(): string {
     const empresa = this.empresas.find(
-      (e) => e._id === this.empresaSeleccionada
+      (e) => e._id === this.empresaSeleccionada,
     );
     return empresa ? empresa.nombre : 'Sin nombre';
   }

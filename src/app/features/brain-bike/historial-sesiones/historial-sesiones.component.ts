@@ -632,6 +632,12 @@ export class HistorialSesionesComponent implements OnInit {
     });
   }
 
+  esVRoHitFit(grupo: SesionAgrupada): boolean {
+    return grupo.carreras.some(
+      (c) => c.juego_jugado === 'VR' || c.juego_jugado === 'Hit-Fit'
+    );
+  }
+
   descargarPlanilla(sesionId: number): void {
     const planilla = this.getPlanilla(sesionId);
     if (!planilla || !planilla.url_archivo) return;

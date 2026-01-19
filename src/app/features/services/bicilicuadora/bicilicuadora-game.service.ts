@@ -45,26 +45,30 @@ export class BicilicuadoraGameService {
 
   actualizarVelocidad(numeroBicicleta: number, velocidad: number): void {
     const participantes = this.participantesSubject.value.map((p) => {
-      if (p.numeroBicicleta === numeroBicicleta) {
-        // Incrementos por segundo (el ESP envía cada ~1 segundo)
-        const caloriasIncremento = velocidad * 0.014; // ~0.84 cal/min a 60 km/h
-        const vatiosIncremento = velocidad * 1.5; // ~90 W a 60 km/h
-        const distanciaIncremento = velocidad / 3600; // km/s
-
-        const nuevasCalorias = (p.caloriasQuemadas || 0) + caloriasIncremento;
-        const nuevosVatios = (p.vatiosGenerados || 0) + vatiosIncremento;
-        const nuevaDistancia =
-          (p.distanciaRecorrida || 0) + distanciaIncremento;
-        const nuevaVelocidadMaxima = Math.max(
-          p.velocidadMaxima || 0,
-          velocidad
-        );
-
-        // Calcular promedio móvil de velocidad
+      if (p.id === numeroBicicleta) {
         const muestras = (p.duracionTotal || 0) + 1;
         const sumaVelocidades =
           (p.velocidadPromedio || 0) * (p.duracionTotal || 0) + velocidad;
         const nuevaVelocidadPromedio = sumaVelocidades / muestras;
+        const nuevaVelocidadMaxima = Math.max(
+          p.velocidadMaxima || 0,
+          velocidad,
+        );
+
+        const MET =
+          velocidad < 16 ? 4 : velocidad < 20 ? 6.8 : velocidad < 25 ? 8 : 10;
+
+        const pesoKg = 70;
+        const minutosIncremento = 1 / 60;
+        const caloriasIncremento = 0.0175 * MET * pesoKg * minutosIncremento;
+        const nuevasCalorias = (p.caloriasQuemadas || 0) + caloriasIncremento;
+
+        const vatiosIncremento = velocidad * 0.25;
+        const nuevosVatios = (p.vatiosGenerados || 0) + vatiosIncremento;
+
+        const distanciaIncremento = velocidad / 3600;
+        const nuevaDistancia =
+          (p.distanciaRecorrida || 0) + distanciaIncremento;
 
         return {
           ...p,
@@ -90,10 +94,10 @@ export class BicilicuadoraGameService {
       vatios?: number;
       distancia?: number;
       velocidadPromedio?: number;
-    }
+    },
   ): void {
     const participantes = this.participantesSubject.value.map((p) => {
-      if (p.numeroBicicleta === numeroBicicleta) {
+      if (p.id === numeroBicicleta) {
         return {
           ...p,
           caloriasQuemadas:
@@ -120,7 +124,7 @@ export class BicilicuadoraGameService {
 
   completarBebida(numeroBicicleta: number): void {
     const participantes = this.participantesSubject.value.map((p) => {
-      if (p.numeroBicicleta === numeroBicicleta) {
+      if (p.id === numeroBicicleta) {
         return {
           ...p,
           bebidasCompletadas: p.bebidasCompletadas + 1,

@@ -35,6 +35,12 @@ import { BicilicuadoraParametrosComponent } from './features/bicilicuadora/bicil
 import { BicilicuadoraRegistroComponent } from './features/bicilicuadora/bicilicuadora-registro/bicilicuadora-registro.component';
 import { BicilicuadoraConfigGuard } from './guards/bicilicuadora-config.guard';
 import { BicilicuadoraJuegoComponent } from './features/bicilicuadora/bicilicuadora-juego/bicilicuadora-juego.component';
+import { BicilicuadoraConexionComponent } from './features/bicilicuadora/bicilicuadora-conexion/bicilicuadora-conexion.component';
+import { PistaFisicaEquiposComponent } from './features/biketona/pista-fisica/pista-fisica-equipos/pista-fisica-equipos.component';
+import { VrRegistroComponent } from './features/Vr/vr-registro/vr-registro.component';
+import { VrJuegoComponent } from './features/Vr/juego/vr-juego.component';
+import { HitFitRegistroComponent } from './features/hit-fit/registro/hit-fit-registro.component';
+import { HitFitJuegoComponent } from './features/hit-fit/juego/hit-fit-juego.component';
 
 export const routes: Routes = [
   {
@@ -175,7 +181,7 @@ export const routes: Routes = [
       },
       {
         path: 'biketona/pista-fisica-equipos',
-        component: PistaDigitalEquiposComponent,
+        component: PistaFisicaEquiposComponent,
         canActivate: [sesionActivaGuard, rolGuard],
         data: { roles: ['super_admin', 'admin'] },
       },
@@ -209,6 +215,34 @@ export const routes: Routes = [
         component: BicilicuadoraComponent,
         canActivate: [rolGuard],
         data: { roles: ['super_admin'] },
+      },
+      {
+        path: 'bicilicuadora/conexion',
+        component: BicilicuadoraConexionComponent,
+      },
+      {
+        path: 'vr/registro',
+        component: VrRegistroComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'vr/juego',
+        component: VrJuegoComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'hit-fit/registro',
+        component: HitFitRegistroComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'hit-fit/juego',
+        component: HitFitJuegoComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
     ],
   },

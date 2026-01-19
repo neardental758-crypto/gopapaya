@@ -12,6 +12,7 @@ import {
 import { SesionService } from '../../services/sesion.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ParticipanteBicilicuadoraService } from '../../services/bicilicuadora/participante-bicilicuadora.service';
 
 @Component({
   selector: 'app-bicilicuadora-parametros',
@@ -19,18 +20,18 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule, FormsModule],
 })
 export class BicilicuadoraParametrosComponent implements OnInit {
-  numeroBicicletas = 1;
-  configuracionBicicletas: ConfiguracionBicicleta[] = [];
+  numeroBicicletas = 0;
+  totalParticipantes = 0;
   bebidasDisponibles: Bebida[] = [];
   loading = false;
   errorMessage = '';
-  bicicletaExpandida: number | null = 0;
 
   constructor(
     private sesionService: SesionService,
     private bebidasService: BebidasService,
     private bicilicuadoraConfigService: BicilicuadoraConfigService,
-    private router: Router
+    private router: Router,
+    private participanteService: ParticipanteBicilicuadoraService
   ) {}
 
   ngOnInit(): void {
@@ -41,15 +42,65 @@ export class BicilicuadoraParametrosComponent implements OnInit {
       return;
     }
 
-    this.cargarBebidas();
-    this.inicializarBicicletas();
+    const parametrosJuego = sesion.parametros_juego;
+    if (parametrosJuego) {
+      let params: any;
+      if (typeof parametrosJuego === 'string') {
+        try {
+          params = JSON.parse(parametrosJuego);
+        } catch (e) {
+          console.error('Error parseando parametros_juego');
+        }
+      } else {
+        params = parametrosJuego;
+      }
+
+      if (params) {
+        this.numeroBicicletas = params.numero_bicicletas || 0;
+        this.totalParticipantes = params.numero_participantes || 0;
+
+        if (
+          params.bebidas_disponibles &&
+          params.bebidas_disponibles.length > 0
+        ) {
+          this.cargarBebidas(params.bebidas_disponibles);
+        }
+      }
+    }
+
+    this.verificarSiYaCompletaron();
   }
 
-  cargarBebidas(): void {
+  verificarSiYaCompletaron(): void {
+    const sesion = this.sesionService.getSesionSeleccionada();
+    const sesionData = (sesion as any).data || sesion;
+
+    if (!sesionData.id) return;
+
+    this.bicilicuadoraConfigService.getConfigBySesion(sesionData.id).subscribe({
+      next: (config: any) => {
+        if (config && config.id) {
+          this.participanteService.getByBicilicuadora(config.id).subscribe({
+            next: (participantes) => {
+              if (participantes.length >= this.totalParticipantes) {
+                this.bicilicuadoraConfigService.setConfigActual(config);
+                this.router.navigate(['/bicilicuadora/juego']);
+              }
+            },
+            error: () => {},
+          });
+        }
+      },
+      error: () => {},
+    });
+  }
+  cargarBebidas(bebidaIds: string[]): void {
     this.loading = true;
     this.bebidasService.getAllBebidas().subscribe({
-      next: (bebidas) => {
-        this.bebidasDisponibles = bebidas;
+      next: (todasLasBebidas) => {
+        this.bebidasDisponibles = todasLasBebidas.filter((b) =>
+          bebidaIds.includes(b._id)
+        );
         this.loading = false;
       },
       error: (error) => {
@@ -60,163 +111,7 @@ export class BicilicuadoraParametrosComponent implements OnInit {
     });
   }
 
-  cambiarNumeroBicicletas(cambio: number): void {
-    const nuevo = this.numeroBicicletas + cambio;
-    if (nuevo >= 1 && nuevo <= 4) {
-      this.numeroBicicletas = nuevo;
-      this.inicializarBicicletas();
-    }
-  }
-
-  inicializarBicicletas(): void {
-    const bicicletasAnteriores = this.configuracionBicicletas.length;
-    this.configuracionBicicletas = [];
-    for (let i = 1; i <= this.numeroBicicletas; i++) {
-      this.configuracionBicicletas.push({
-        numeroBicicleta: i,
-        participantes: 1,
-        bebidasSeleccionadas: [],
-      });
-    }
-    if (this.numeroBicicletas > 0) {
-      this.bicicletaExpandida = 0;
-    }
-
-    this.configuracionBicicletas = [];
-    for (let i = 1; i <= this.numeroBicicletas; i++) {
-      this.configuracionBicicletas.push({
-        numeroBicicleta: i,
-        participantes: 1,
-        bebidasSeleccionadas: [],
-      });
-    }
-  }
-
-  cambiarParticipantes(indiceBicicleta: number, cambio: number): void {
-    const bicicleta = this.configuracionBicicletas[indiceBicicleta];
-    const nuevo = bicicleta.participantes + cambio;
-    if (nuevo >= 1 && nuevo <= 4) {
-      bicicleta.participantes = nuevo;
-    }
-  }
-
-  agregarBebidaABicicleta(indiceBicicleta: number, bebida: Bebida): void {
-    const bicicleta = this.configuracionBicicletas[indiceBicicleta];
-
-    const bebidaExistente = bicicleta.bebidasSeleccionadas.find(
-      (b) => b.bebidaId === bebida._id
-    );
-
-    if (bebidaExistente) {
-      bebidaExistente.cantidad++;
-    } else {
-      bicicleta.bebidasSeleccionadas.push({
-        bebidaId: bebida._id,
-        nombreBebida: bebida.nombre_bebida,
-        cantidad: 1,
-      });
-    }
-  }
-
-  eliminarBebidaDeBicicleta(
-    indiceBicicleta: number,
-    indiceBebida: number
-  ): void {
-    this.configuracionBicicletas[indiceBicicleta].bebidasSeleccionadas.splice(
-      indiceBebida,
-      1
-    );
-  }
-
-  cambiarCantidadBebida(
-    indiceBicicleta: number,
-    indiceBebida: number,
-    cambio: number
-  ): void {
-    const bebida =
-      this.configuracionBicicletas[indiceBicicleta].bebidasSeleccionadas[
-        indiceBebida
-      ];
-    const nuevo = bebida.cantidad + cambio;
-    if (nuevo >= 1) {
-      bebida.cantidad = nuevo;
-    }
-  }
-
-  calcularIngredientesNecesarios(): any[] {
-    const ingredientesTotales: {
-      [key: string]: { nombre: string; cantidad_total: number; unidad: string };
-    } = {};
-
-    this.configuracionBicicletas.forEach((bicicleta) => {
-      bicicleta.bebidasSeleccionadas.forEach((bebidaSeleccionada) => {
-        const bebida = this.bebidasDisponibles.find(
-          (b) => b._id === bebidaSeleccionada.bebidaId
-        );
-        if (bebida && bebida.ingredientes) {
-          const cantidadTotal =
-            bebidaSeleccionada.cantidad * bicicleta.participantes;
-
-          bebida.ingredientes.forEach((ingrediente) => {
-            const key = ingrediente.nombre_ingrediente;
-
-            if (!ingredientesTotales[key]) {
-              ingredientesTotales[key] = {
-                nombre: ingrediente.nombre_ingrediente,
-                cantidad_total: 0,
-                unidad: ingrediente.cantidad,
-              };
-            }
-
-            ingredientesTotales[key].cantidad_total += cantidadTotal;
-          });
-        }
-      });
-    });
-
-    return Object.values(ingredientesTotales);
-  }
-
-  calcularTotales(): any {
-    const totalParticipantes = this.configuracionBicicletas.reduce(
-      (sum, b) => sum + b.participantes,
-      0
-    );
-    const bebidasUnicas = new Set(
-      this.configuracionBicicletas.flatMap((b) =>
-        b.bebidasSeleccionadas.map((bs) => bs.bebidaId)
-      )
-    );
-    const totalBebidas = this.configuracionBicicletas.reduce(
-      (sum, b) =>
-        sum +
-        b.bebidasSeleccionadas.reduce(
-          (s, bs) => s + bs.cantidad * b.participantes,
-          0
-        ),
-      0
-    );
-
-    return {
-      participantes: totalParticipantes,
-      bebidasUnicas: bebidasUnicas.size,
-      totalBebidas: totalBebidas,
-    };
-  }
-
-  isFormValid(): boolean {
-    if (this.numeroBicicletas < 1) return false;
-
-    for (const bici of this.configuracionBicicletas) {
-      if (bici.bebidasSeleccionadas.length === 0) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  guardarConfiguracion(): void {
+  continuar(): void {
     const sesion = this.sesionService.getSesionSeleccionada();
     if (!sesion) {
       this.errorMessage = 'No hay sesión activa';
@@ -230,21 +125,10 @@ export class BicilicuadoraParametrosComponent implements OnInit {
       return;
     }
 
-    const bicicletasSinBebidas = this.configuracionBicicletas.filter(
-      (b) => b.bebidasSeleccionadas.length === 0
-    );
-
-    if (bicicletasSinBebidas.length > 0) {
-      this.errorMessage = `Falta asignar bebidas a la(s) bicicleta(s): ${bicicletasSinBebidas
-        .map((b) => b.numeroBicicleta)
-        .join(', ')}`;
-      return;
-    }
-
     const config: BicilicuadoraConfig = {
       idSesion: sesionData.id,
       numeroBicicletas: this.numeroBicicletas,
-      configuracionBicicletas: this.configuracionBicicletas,
+      configuracionBicicletas: [],
       estado: 'configurando',
     };
 
@@ -253,7 +137,7 @@ export class BicilicuadoraParametrosComponent implements OnInit {
       next: (nuevaConfig: any) => {
         this.bicilicuadoraConfigService.setConfigActual(nuevaConfig);
         this.loading = false;
-        this.router.navigate(['/bicilicuadora/registro']);
+        this.router.navigate(['/bicilicuadora/conexion']);
       },
       error: (error: { error: { message: string } }) => {
         this.loading = false;
@@ -265,34 +149,5 @@ export class BicilicuadoraParametrosComponent implements OnInit {
 
   volver(): void {
     this.router.navigate(['/home']);
-  }
-  onBebidaSeleccionada(indiceBicicleta: number, event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    const bebidaId = select.value;
-
-    if (bebidaId) {
-      const bebida = this.bebidasDisponibles.find((b) => b._id === bebidaId);
-      if (bebida) {
-        this.agregarBebidaABicicleta(indiceBicicleta, bebida);
-      }
-      select.value = '';
-    }
-  }
-  calcularTotalBebidasBicicleta(bicicleta: ConfiguracionBicicleta): number {
-    return bicicleta.bebidasSeleccionadas.reduce(
-      (acc, b) => acc + b.cantidad * bicicleta.participantes,
-      0
-    );
-  }
-
-  toggleBicicleta(index: number): void {
-    this.bicicletaExpandida = this.bicicletaExpandida === index ? null : index;
-  }
-
-  isBicicletaExpandida(index: number): boolean {
-    return this.bicicletaExpandida === index;
-  }
-  getBebidaCompleta(bebidaId: string): Bebida | undefined {
-    return this.bebidasDisponibles.find((b) => b._id === bebidaId);
   }
 }
