@@ -120,6 +120,9 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   tiempoTotalTorneo = 0;
   Math = Math;
 
+  private sensorAnterior1 = 0;
+  private sensorAnterior2 = 0;
+
   fondosCarrera = [
     'assets/images/carro_movimiento_rojo.mp4',
     'assets/images/carro_movimiento_amarillo.mp4',
@@ -541,6 +544,9 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
       j.posicion = idx + 1;
     });
 
+    this.sensorAnterior1 = 0;
+    this.sensorAnterior2 = 0;
+
     llave.estado = 'en_curso';
     this.ganadorActual = null;
     this.paso = 3;
@@ -620,6 +626,10 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
         if (this.jugadores[1]) this.jugadores[1].velocidad = vel2;
       });
 
+      await this.ble.subscribeSensores(key, (sensor1, sensor2, estadoID) => {
+        this.procesarSensores(sensor1, sensor2, estadoID);
+      });
+
       const bici2UI = this.getBiciUI('bici2');
       bici2UI.status = 'Conectado (usa datos de Bici 1)';
       bici2UI.conectado = true;
@@ -629,6 +639,41 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
       biciUI.status = 'Error al conectar';
       biciUI.conectado = false;
     }
+  }
+
+  private procesarSensores(
+    sensor1: number,
+    sensor2: number,
+    estadoID: number,
+  ): void {
+    if (!this.carreraIniciada || this.carreraPausada) {
+      this.sensorAnterior1 = sensor1;
+      this.sensorAnterior2 = sensor2;
+      return;
+    }
+
+    const distanciaPorVuelta = 100;
+
+    if (sensor1 === 1 && this.sensorAnterior1 === 0) {
+      if (this.jugadores[0]) {
+        this.jugadores[0].vueltaActual++;
+        this.jugadores[0].distanciaRecorrida += distanciaPorVuelta;
+        this.jugadores[0].distanciaReal += distanciaPorVuelta;
+      }
+    }
+
+    if (sensor2 === 1 && this.sensorAnterior2 === 0) {
+      if (this.jugadores[1]) {
+        this.jugadores[1].vueltaActual++;
+        this.jugadores[1].distanciaRecorrida += distanciaPorVuelta;
+        this.jugadores[1].distanciaReal += distanciaPorVuelta;
+      }
+    }
+
+    this.sensorAnterior1 = sensor1;
+    this.sensorAnterior2 = sensor2;
+
+    this.actualizarPosiciones();
   }
 
   desconectarBici(key: BikeKey) {
@@ -708,19 +753,16 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     return parseFloat((jugador.velocidad * 10).toFixed(0));
   }
 
-  actualizarPosiciones(): void {
+  private actualizarPosiciones(): void {
     const ordenados = [...this.jugadores].sort((a, b) => {
-      if (b.vueltaActual !== a.vueltaActual) {
+      if (a.vueltaActual !== b.vueltaActual) {
         return b.vueltaActual - a.vueltaActual;
       }
       return b.distanciaReal - a.distanciaReal;
     });
 
     ordenados.forEach((jugador, index) => {
-      const original = this.jugadores.find((j) => j.id === jugador.id);
-      if (original) {
-        original.posicion = index + 1;
-      }
+      jugador.posicion = index + 1;
     });
   }
 

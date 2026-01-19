@@ -74,27 +74,92 @@
           </button>
         </div>
 
-        <div *ngIf="tipoNueva === 'texto'">
-          <div class="mb-2 flex justify-between items-center">
-            <label class="text-gray-400 text-sm">Contenido del texto</label>
-            <span
-              class="text-sm"
-              [class.text-gray-500]="contarPalabras() <= obtenerMaxPalabrasSeccionActual()"
-              [class.text-neon-red]="contarPalabras() > obtenerMaxPalabrasSeccionActual()"
-            >
-              {{ contarPalabras() }} / {{ obtenerMaxPalabrasSeccionActual() }} palabras
-            </span>
-          </div>
-          <textarea
-            [(ngModel)]="contenidoTexto"
-            placeholder="Escribe una nota o descripción..."
-            class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white placeholder-gray-500 focus:border-neon-yellow focus:outline-none resize-none"
-            rows="4"
-          ></textarea>
-          <p *ngIf="contarPalabras() > obtenerMaxPalabrasSeccionActual()" class="text-neon-red text-xs mt-1">
-            ⚠️ Has excedido el límite de palabras
-          </p>
+<div *ngIf="tipoNueva === 'texto'">
+  <div *ngIf="seccionSeleccionada === 'observaciones'">
+    <div class="mb-3 p-3 bg-dark-800 border border-neon-blue/30 rounded-lg">
+      <p class="text-sm text-gray-300 mb-2">💬 Comentarios registrados: {{ obtenerComentariosActuales().length }} / 3</p>
+    </div>
+
+    <div *ngIf="!puedeAgregarComentario()" class="mb-4 p-3 bg-dark-800 border border-neon-orange rounded-lg">
+      <p class="text-neon-orange text-sm">⚠️ Ya has alcanzado el máximo de 3 comentarios</p>
+    </div>
+
+    <div *ngIf="puedeAgregarComentario()">
+      <div class="mb-3">
+        <label class="text-gray-400 text-sm block mb-2">Comentario del participante</label>
+        <div class="mb-1 flex justify-between items-center">
+          <span class="text-xs text-gray-500">Máximo 100 caracteres</span>
+          <span
+            class="text-sm"
+            [class.text-gray-500]="contarCaracteresComentario() <= 150"
+            [class.text-neon-red]="contarCaracteresComentario() > 150"
+          >
+            {{ contarCaracteresComentario() }} / 100
+          </span>
         </div>
+        <textarea
+          [(ngModel)]="comentarioTexto"
+          placeholder='"La actividad fue increíble, me sentí con mucha energía..."'
+          class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white placeholder-gray-500 focus:border-neon-yellow focus:outline-none resize-none"
+          rows="3"
+          maxlength="100"
+        ></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="text-gray-400 text-sm block mb-2">Nombre del participante</label>
+        <input
+          [(ngModel)]="comentarioAutor"
+          type="text"
+          placeholder="María González"
+          maxlength="50"
+          class="w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg text-white placeholder-gray-500 focus:border-neon-yellow focus:outline-none"
+        />
+      </div>
+    </div>
+
+    <div *ngIf="obtenerComentariosActuales().length > 0" class="mt-4 space-y-2">
+      <p class="text-sm text-gray-400 font-bold">Comentarios guardados:</p>
+      <div *ngFor="let comentario of obtenerComentariosActuales(); let i = index"
+           class="bg-dark-800 border border-dark-600 rounded-lg p-3">
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <p class="text-gray-300 text-sm mb-1">"{{ comentario.texto }}"</p>
+            <p class="text-neon-blue text-xs font-bold">- {{ comentario.autor }}</p>
+          </div>
+          <button
+            (click)="eliminarComentario(i)"
+            class="text-neon-red hover:text-red-400 ml-2"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="seccionSeleccionada !== 'observaciones'">
+    <div class="mb-2 flex justify-between items-center">
+      <label class="text-gray-400 text-sm">Contenido del texto</label>
+      <span
+        class="text-sm"
+        [class.text-gray-500]="contarPalabras() <= obtenerMaxPalabrasSeccionActual()"
+        [class.text-neon-red]="contarPalabras() > obtenerMaxPalabrasSeccionActual()"
+      >
+        {{ contarPalabras() }} / {{ obtenerMaxPalabrasSeccionActual() }} palabras
+      </span>
+    </div>
+    <textarea
+      [(ngModel)]="contenidoTexto"
+      placeholder="Escribe una nota o descripción..."
+      class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white placeholder-gray-500 focus:border-neon-yellow focus:outline-none resize-none"
+      rows="4"
+    ></textarea>
+    <p *ngIf="contarPalabras() > obtenerMaxPalabrasSeccionActual()" class="text-neon-red text-xs mt-1">
+      ⚠️ Has excedido el límite de palabras
+    </p>
+  </div>
+</div>
 
         <div *ngIf="tipoNueva === 'foto'">
           <div *ngIf="obtenerFotosActuales() >= obtenerMaxFotos()" class="mb-4 p-3 bg-dark-800 border border-neon-orange rounded-lg">

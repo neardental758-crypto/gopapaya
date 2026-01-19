@@ -65,14 +65,19 @@ export class EvidenciasModalComponent implements OnInit {
     },
     {
       valor: 'observaciones',
-      label: 'Notas y Observaciones',
+      label: 'Comentarios de Participantes',
       maxFotos: 0,
       minFotos: 0,
       permiteFotos: false,
       permiteTexto: true,
-      maxPalabras: 200,
+      maxComentarios: 3,
+      maxCaracteresPorComentario: 100,
     },
   ];
+
+  comentarioTexto: string = '';
+  comentarioAutor: string = '';
+  comentariosActuales: Array<{ texto: string; autor: string }> = [];
 
   constructor(private sesionService: SesionService) {}
 
@@ -121,7 +126,7 @@ export class EvidenciasModalComponent implements OnInit {
       ([seccion, evidencias]) => ({
         seccion,
         evidencias,
-      })
+      }),
     );
   }
 
@@ -132,7 +137,7 @@ export class EvidenciasModalComponent implements OnInit {
 
   seleccionarTipo(tipo: 'foto' | 'texto'): void {
     const seccion = this.secciones.find(
-      (s) => s.valor === this.seccionSeleccionada
+      (s) => s.valor === this.seccionSeleccionada,
     );
 
     if (!seccion) {
@@ -157,13 +162,13 @@ export class EvidenciasModalComponent implements OnInit {
   onFileSelected(event: any): void {
     const files = Array.from(event.target.files) as File[];
     const seccion = this.secciones.find(
-      (s) => s.valor === this.seccionSeleccionada
+      (s) => s.valor === this.seccionSeleccionada,
     );
 
     if (!seccion) return;
 
     const fotosActuales = this.evidencias.filter(
-      (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'foto'
+      (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'foto',
     ).length;
 
     const espacioDisponible =
@@ -171,7 +176,7 @@ export class EvidenciasModalComponent implements OnInit {
 
     if (espacioDisponible <= 0) {
       alert(
-        `Ya tienes el máximo de ${seccion.maxFotos} foto(s) permitidas en "${seccion.label}"`
+        `Ya tienes el máximo de ${seccion.maxFotos} foto(s) permitidas en "${seccion.label}"`,
       );
       return;
     }
@@ -181,7 +186,7 @@ export class EvidenciasModalComponent implements OnInit {
         alert(
           `Solo se permiten ${seccion.maxFotos} foto(s) en "${
             seccion.label
-          }". Ya tienes ${fotosActuales + this.archivosSeleccionados.length}`
+          }". Ya tienes ${fotosActuales + this.archivosSeleccionados.length}`,
         );
         return;
       }
@@ -212,95 +217,6 @@ export class EvidenciasModalComponent implements OnInit {
     });
   }
 
-  guardarEvidencia(): void {
-    if (!this.sesionId || !this.seccionSeleccionada) {
-      alert('Selecciona una sección');
-      return;
-    }
-
-    const seccion = this.secciones.find(
-      (s) => s.valor === this.seccionSeleccionada
-    );
-    if (!seccion) return;
-
-    if (this.tipoNueva === 'texto') {
-      if (!seccion.permiteTexto) {
-        alert(`No se pueden agregar textos en "${seccion.label}"`);
-        return;
-      }
-
-      if (!this.contenidoTexto.trim()) {
-        alert('Ingresa un texto');
-        return;
-      }
-
-      const palabras = this.contenidoTexto.trim().split(/\s+/).length;
-      if (seccion.maxPalabras && palabras > seccion.maxPalabras) {
-        alert(
-          `El texto no debe superar ${seccion.maxPalabras} palabras. Actualmente tiene ${palabras} palabras.`
-        );
-        return;
-      }
-
-      const textoExistente = this.evidencias.find(
-        (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'texto'
-      );
-
-      if (textoExistente) {
-        alert(
-          `Ya existe un texto para la sección "${seccion.label}". Solo puede haber un texto por sección.`
-        );
-        return;
-      }
-
-      this.subiendoArchivo = true;
-      this.sesionService
-        .crearEvidenciaTexto(
-          this.sesionId,
-          this.contenidoTexto,
-          this.seccionSeleccionada
-        )
-        .subscribe({
-          next: () => {
-            this.subiendoArchivo = false;
-            this.resetForm();
-            this.cargarEvidencias();
-          },
-          error: () => {
-            this.subiendoArchivo = false;
-            alert('Error al guardar la evidencia');
-          },
-        });
-    } else {
-      if (!seccion.permiteFotos) {
-        alert(`No se pueden agregar fotos en "${seccion.label}"`);
-        return;
-      }
-
-      if (this.archivosSeleccionados.length === 0) {
-        alert('Selecciona al menos una foto');
-        return;
-      }
-
-      const fotosActuales = this.evidencias.filter(
-        (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'foto'
-      ).length;
-
-      if (
-        fotosActuales + this.archivosSeleccionados.length >
-        seccion.maxFotos
-      ) {
-        alert(
-          `Solo se permite(n) ${seccion.maxFotos} foto(s) en "${seccion.label}"`
-        );
-        return;
-      }
-
-      this.subiendoArchivo = true;
-      this.subirFotos(0);
-    }
-  }
-
   contarPalabras(): number {
     return this.contenidoTexto
       .trim()
@@ -326,7 +242,7 @@ export class EvidenciasModalComponent implements OnInit {
         this.sesionId!,
         this.archivosSeleccionados[index],
         this.seccionSeleccionada,
-        index
+        index,
       )
       .subscribe({
         next: () => {
@@ -355,7 +271,7 @@ export class EvidenciasModalComponent implements OnInit {
   permiteTextoSeccionActual(): boolean {
     if (!this.seccionSeleccionada) return false;
     const seccion = this.secciones.find(
-      (s) => s.valor === this.seccionSeleccionada
+      (s) => s.valor === this.seccionSeleccionada,
     );
     return seccion?.permiteTexto || false;
   }
@@ -363,7 +279,7 @@ export class EvidenciasModalComponent implements OnInit {
   permiteFotoSeccionActual(): boolean {
     if (!this.seccionSeleccionada) return false;
     const seccion = this.secciones.find(
-      (s) => s.valor === this.seccionSeleccionada
+      (s) => s.valor === this.seccionSeleccionada,
     );
     return seccion?.permiteFotos || false;
   }
@@ -371,20 +287,15 @@ export class EvidenciasModalComponent implements OnInit {
   obtenerMaxPalabrasSeccionActual(): number {
     if (!this.seccionSeleccionada) return 0;
     const seccion = this.secciones.find(
-      (s) => s.valor === this.seccionSeleccionada
+      (s) => s.valor === this.seccionSeleccionada,
     );
     return seccion?.maxPalabras || 0;
   }
 
-  resetForm(): void {
-    this.contenidoTexto = '';
-    this.archivosSeleccionados = [];
-    this.previsualizaciones = [];
-  }
   obtenerMinFotos(): number {
     if (!this.seccionSeleccionada) return 0;
     const seccion = this.secciones.find(
-      (s) => s.valor === this.seccionSeleccionada
+      (s) => s.valor === this.seccionSeleccionada,
     );
     return seccion?.minFotos || 0;
   }
@@ -392,31 +303,269 @@ export class EvidenciasModalComponent implements OnInit {
   obtenerMaxFotos(): number {
     if (!this.seccionSeleccionada) return 0;
     const seccion = this.secciones.find(
-      (s) => s.valor === this.seccionSeleccionada
+      (s) => s.valor === this.seccionSeleccionada,
     );
     return seccion?.maxFotos || 0;
   }
 
   obtenerFotosActuales(): number {
     return this.evidencias.filter(
-      (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'foto'
+      (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'foto',
     ).length;
   }
 
   contarFotosSeccion(seccion: string): number {
     return this.evidencias.filter(
-      (e) => e.seccion === seccion && e.tipo === 'foto'
+      (e) => e.seccion === seccion && e.tipo === 'foto',
     ).length;
   }
 
   contarTextosSeccion(seccion: string): number {
     return this.evidencias.filter(
-      (e) => e.seccion === seccion && e.tipo === 'texto'
+      (e) => e.seccion === seccion && e.tipo === 'texto',
     ).length;
+  }
+
+  obtenerComentariosActuales(): Array<{ texto: string; autor: string }> {
+    const evidencia = this.evidencias.find(
+      (e) => e.seccion === 'observaciones' && e.tipo === 'texto',
+    );
+
+    if (!evidencia || !evidencia.contenido) return [];
+
+    try {
+      return JSON.parse(evidencia.contenido);
+    } catch {
+      return [];
+    }
+  }
+
+  contarCaracteresComentario(): number {
+    return this.comentarioTexto.length;
+  }
+
+  puedeAgregarComentario(): boolean {
+    if (this.seccionSeleccionada !== 'observaciones') return true;
+
+    const comentarios = this.obtenerComentariosActuales();
+    const seccion = this.secciones.find((s) => s.valor === 'observaciones');
+
+    return comentarios.length < (seccion?.maxComentarios || 3);
+  }
+
+  guardarEvidencia(): void {
+    if (!this.sesionId || !this.seccionSeleccionada) {
+      alert('Selecciona una sección');
+      return;
+    }
+
+    const seccion = this.secciones.find(
+      (s) => s.valor === this.seccionSeleccionada,
+    );
+    if (!seccion) return;
+
+    if (this.tipoNueva === 'texto') {
+      if (!seccion.permiteTexto) {
+        alert(`No se pueden agregar textos en "${seccion.label}"`);
+        return;
+      }
+
+      if (this.seccionSeleccionada === 'observaciones') {
+        if (!this.comentarioTexto.trim() || !this.comentarioAutor.trim()) {
+          alert('Ingresa el comentario y el nombre del participante');
+          return;
+        }
+
+        if (
+          this.comentarioTexto.length >
+          (seccion.maxCaracteresPorComentario || 150)
+        ) {
+          alert(
+            `El comentario no debe superar ${seccion.maxCaracteresPorComentario} caracteres`,
+          );
+          return;
+        }
+
+        const comentariosExistentes = this.obtenerComentariosActuales();
+
+        if (comentariosExistentes.length >= (seccion.maxComentarios || 3)) {
+          alert(
+            `Solo se permiten ${seccion.maxComentarios} comentarios máximo`,
+          );
+          return;
+        }
+
+        comentariosExistentes.push({
+          texto: this.comentarioTexto.trim(),
+          autor: this.comentarioAutor.trim(),
+        });
+
+        const evidenciaExistente = this.evidencias.find(
+          (e) => e.seccion === 'observaciones' && e.tipo === 'texto',
+        );
+
+        this.subiendoArchivo = true;
+
+        if (evidenciaExistente) {
+          this.sesionService
+            .eliminarEvidencia(evidenciaExistente.id)
+            .subscribe({
+              next: () => {
+                this.sesionService
+                  .crearEvidenciaTexto(
+                    this.sesionId!,
+                    JSON.stringify(comentariosExistentes),
+                    'observaciones',
+                  )
+                  .subscribe({
+                    next: () => {
+                      this.subiendoArchivo = false;
+                      this.resetForm();
+                      this.cargarEvidencias();
+                    },
+                    error: () => {
+                      this.subiendoArchivo = false;
+                      alert('Error al guardar');
+                    },
+                  });
+              },
+            });
+        } else {
+          this.sesionService
+            .crearEvidenciaTexto(
+              this.sesionId,
+              JSON.stringify(comentariosExistentes),
+              'observaciones',
+            )
+            .subscribe({
+              next: () => {
+                this.subiendoArchivo = false;
+                this.resetForm();
+                this.cargarEvidencias();
+              },
+              error: () => {
+                this.subiendoArchivo = false;
+                alert('Error al guardar');
+              },
+            });
+        }
+      } else {
+        if (!this.contenidoTexto.trim()) {
+          alert('Ingresa un texto');
+          return;
+        }
+
+        const palabras = this.contenidoTexto.trim().split(/\s+/).length;
+        if (seccion.maxPalabras && palabras > seccion.maxPalabras) {
+          alert(`El texto no debe superar ${seccion.maxPalabras} palabras`);
+          return;
+        }
+
+        const textoExistente = this.evidencias.find(
+          (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'texto',
+        );
+
+        if (textoExistente) {
+          alert(`Ya existe un texto para "${seccion.label}"`);
+          return;
+        }
+
+        this.subiendoArchivo = true;
+        this.sesionService
+          .crearEvidenciaTexto(
+            this.sesionId,
+            this.contenidoTexto,
+            this.seccionSeleccionada,
+          )
+          .subscribe({
+            next: () => {
+              this.subiendoArchivo = false;
+              this.resetForm();
+              this.cargarEvidencias();
+            },
+            error: () => {
+              this.subiendoArchivo = false;
+              alert('Error al guardar');
+            },
+          });
+      }
+    } else {
+      if (!seccion.permiteFotos) {
+        alert(`No se pueden agregar fotos en "${seccion.label}"`);
+        return;
+      }
+
+      if (this.archivosSeleccionados.length === 0) {
+        alert('Selecciona al menos una foto');
+        return;
+      }
+
+      const fotosActuales = this.evidencias.filter(
+        (e) => e.seccion === this.seccionSeleccionada && e.tipo === 'foto',
+      ).length;
+
+      if (
+        fotosActuales + this.archivosSeleccionados.length >
+        seccion.maxFotos
+      ) {
+        alert(`Solo se permite(n) ${seccion.maxFotos} foto(s)`);
+        return;
+      }
+
+      this.subiendoArchivo = true;
+      this.subirFotos(0);
+    }
+  }
+
+  eliminarComentario(index: number): void {
+    if (!confirm('¿Eliminar este comentario?')) return;
+
+    const comentarios = this.obtenerComentariosActuales();
+    comentarios.splice(index, 1);
+
+    const evidencia = this.evidencias.find(
+      (e) => e.seccion === 'observaciones' && e.tipo === 'texto',
+    );
+
+    if (!evidencia) return;
+
+    this.sesionService.eliminarEvidencia(evidencia.id).subscribe({
+      next: () => {
+        if (comentarios.length > 0) {
+          this.sesionService
+            .crearEvidenciaTexto(
+              this.sesionId!,
+              JSON.stringify(comentarios),
+              'observaciones',
+            )
+            .subscribe({
+              next: () => this.cargarEvidencias(),
+              error: () => alert('Error al actualizar'),
+            });
+        } else {
+          this.cargarEvidencias();
+        }
+      },
+    });
+  }
+
+  resetForm(): void {
+    this.contenidoTexto = '';
+    this.comentarioTexto = '';
+    this.comentarioAutor = '';
+    this.archivosSeleccionados = [];
+    this.previsualizaciones = [];
   }
 
   puedeGuardar(): boolean {
     if (this.tipoNueva === 'texto') {
+      if (this.seccionSeleccionada === 'observaciones') {
+        return (
+          this.comentarioTexto.trim().length > 0 &&
+          this.comentarioAutor.trim().length > 0 &&
+          this.comentarioTexto.length <= 100
+        );
+      }
       return (
         this.contenidoTexto.trim().length > 0 &&
         this.contarPalabras() <= this.obtenerMaxPalabrasSeccionActual()

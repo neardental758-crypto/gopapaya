@@ -33,7 +33,7 @@ export class BleEsp32Service {
   // ------------------------
   async requestDevice(bike: BikeKey) {
     const device = await navigator.bluetooth.requestDevice({
-      filters: [{ name: 'BIKETONA_BLE_TEST' }], // ✅ Nombre actualizado
+      filters: [{ name: 'BIKETONA_BLE' }], // ✅ Nombre actualizado
       optionalServices: [this.SERVICE_UUID],
     });
 
@@ -73,7 +73,7 @@ export class BleEsp32Service {
       } catch (e) {
         console.error(
           `❌ [${bike}] NO se encontró characteristic ${key} (${uuid})`,
-          e
+          e,
         );
       }
     }
@@ -107,7 +107,7 @@ export class BleEsp32Service {
   async subscribe(
     bike: BikeKey,
     key: string,
-    callback: (value: string) => void
+    callback: (value: string) => void,
   ) {
     const ch = this.characteristics[bike][key];
     if (!ch) {
@@ -141,7 +141,7 @@ export class BleEsp32Service {
   async subscribeRaw(
     bike: BikeKey,
     key: string,
-    callback: (value: DataView) => void
+    callback: (value: DataView) => void,
   ) {
     const ch = this.characteristics[bike][key];
     if (!ch) return;
@@ -180,5 +180,27 @@ export class BleEsp32Service {
   async getBikeId(bike: BikeKey): Promise<string> {
     // El ESP32 ahora siempre retorna "3" como ID fijo
     return await this.readValue(bike, 'id');
+  }
+
+  async subscribeSensores(
+    bike: BikeKey,
+    callback: (sensor1: number, sensor2: number, estadoID: number) => void,
+  ) {
+    const ch = this.characteristics[bike]['btns'];
+    if (!ch) {
+      console.warn(`⚠️ [${bike}] Characteristic btns no encontrada`);
+      return;
+    }
+
+    await ch.startNotifications();
+
+    const handler = (event: any) => {
+      const text = new TextDecoder().decode(event.target.value).trim();
+      const [s1, s2, estado] = text.split(',').map((v) => parseInt(v) || 0);
+      callback(s1, s2, estado);
+    };
+
+    this.subscriptionHandlers[bike]['btns'] = handler;
+    ch.addEventListener('characteristicvaluechanged', handler);
   }
 }
