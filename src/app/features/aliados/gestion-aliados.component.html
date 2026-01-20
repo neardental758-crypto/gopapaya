@@ -130,63 +130,74 @@
         </div>
       </div>
 
-      <div *ngIf="currentEntityType === 'empresa'" class="space-y-4">
-        <div>
-          <label class="block text-sm font-bold text-gray-300 mb-2">Nombre *</label>
-          <input
-            type="text"
-            [(ngModel)]="empresaForm.nombre"
-            name="nombre"
-            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
-            placeholder="Nombre de la empresa"
-            required
-          />
-        </div>
+<div *ngIf="currentEntityType === 'empresa'" class="space-y-4">
+  <div>
+    <label class="block text-sm font-bold text-gray-300 mb-2">Nombre *</label>
+    <input
+      type="text"
+      [(ngModel)]="empresaForm.nombre"
+      name="nombre"
+      class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+      placeholder="Nombre de la empresa"
+      required
+    />
+  </div>
 
-        <div>
-          <label class="block text-sm font-bold text-gray-300 mb-2">URL del Logo</label>
-          <input
-            type="text"
-            [(ngModel)]="empresaForm.logo"
-            name="logo"
-            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
-            placeholder="https://ejemplo.com/logo.png"
-          />
-        </div>
+  <div>
+    <label class="block text-sm font-bold text-gray-300 mb-2">URL del Logo</label>
+    <input
+      type="text"
+      [(ngModel)]="empresaForm.logo"
+      name="logo"
+      class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+      placeholder="https://ejemplo.com/logo.png"
+    />
+  </div>
 
-        <div>
-          <label class="block text-sm font-bold text-gray-300 mb-2">Email</label>
-          <input
-            type="email"
-            [(ngModel)]="empresaForm.email"
-            name="email"
-            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
-            placeholder="empresa@ejemplo.com"
-          />
-        </div>
+  <div>
+    <label class="block text-sm font-bold text-gray-300 mb-2">Nombre del POC</label>
+    <input
+      type="text"
+      [(ngModel)]="empresaForm.nombre_poc"
+      name="nombre_poc"
+      class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+      placeholder="Nombre del punto de contacto"
+    />
+  </div>
 
-        <div>
-          <label class="block text-sm font-bold text-gray-300 mb-2">Teléfono</label>
-          <input
-            type="text"
-            [(ngModel)]="empresaForm.telefono"
-            name="telefono"
-            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
-            placeholder="+57 300 123 4567"
-          />
-        </div>
+  <div>
+    <label class="block text-sm font-bold text-gray-300 mb-2">Email</label>
+    <input
+      type="email"
+      [(ngModel)]="empresaForm.email"
+      name="email"
+      class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+      placeholder="empresa@ejemplo.com"
+    />
+  </div>
 
-        <div>
-          <label class="block text-sm font-bold text-gray-300 mb-2">Notas</label>
-          <textarea
-            [(ngModel)]="empresaForm.notas"
-            name="notas"
-            rows="3"
-            class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
-            placeholder="Notas adicionales..."
-          ></textarea>
-        </div>
-      </div>
+  <div>
+    <label class="block text-sm font-bold text-gray-300 mb-2">Teléfono</label>
+    <input
+      type="text"
+      [(ngModel)]="empresaForm.telefono"
+      name="telefono"
+      class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+      placeholder="+57 300 123 4567"
+    />
+  </div>
+
+  <div>
+    <label class="block text-sm font-bold text-gray-300 mb-2">Notas</label>
+    <textarea
+      [(ngModel)]="empresaForm.notas"
+      name="notas"
+      rows="3"
+      class="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-neon-yellow focus:ring-1 focus:ring-neon-yellow focus:outline-none text-white placeholder-gray-500"
+      placeholder="Notas adicionales..."
+    ></textarea>
+  </div>
+</div>
 
       <div class="flex flex-col sm:flex-row gap-3 justify-end pt-2">
         <button
@@ -300,44 +311,49 @@
         </div>
       </div>
 
-      <div *ngIf="currentEntityType === 'empresa' && detailsItem" class="space-y-4">
-        <div *ngIf="detailsItem.logo" class="flex justify-center mb-6">
-          <img [src]="detailsItem.logo" [alt]="detailsItem.nombre" class="max-w-xs max-h-48 object-contain rounded-lg border border-dark-600" />
-        </div>
+<div *ngIf="currentEntityType === 'empresa' && detailsItem" class="space-y-4">
+  <div *ngIf="detailsItem.logo" class="flex justify-center mb-6">
+    <img [src]="detailsItem.logo" [alt]="detailsItem.nombre" class="max-w-xs max-h-48 object-contain rounded-lg border border-dark-600" />
+  </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="text-xs font-bold text-gray-400 uppercase">Nombre</label>
-            <p class="text-white font-semibold mt-1">{{ detailsItem.nombre }}</p>
-          </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <label class="text-xs font-bold text-gray-400 uppercase">Nombre</label>
+      <p class="text-white font-semibold mt-1">{{ detailsItem.nombre }}</p>
+    </div>
 
-          <div *ngIf="detailsItem.email">
-            <label class="text-xs font-bold text-gray-400 uppercase">Email</label>
-            <p class="text-white font-semibold mt-1">{{ detailsItem.email }}</p>
-          </div>
+    <div *ngIf="detailsItem.nombre_poc">
+      <label class="text-xs font-bold text-gray-400 uppercase">Nombre POC</label>
+      <p class="text-white font-semibold mt-1">{{ detailsItem.nombre_poc }}</p>
+    </div>
 
-          <div *ngIf="detailsItem.telefono">
-            <label class="text-xs font-bold text-gray-400 uppercase">Teléfono</label>
-            <p class="text-white font-semibold mt-1">{{ detailsItem.telefono }}</p>
-          </div>
-        </div>
+    <div *ngIf="detailsItem.email">
+      <label class="text-xs font-bold text-gray-400 uppercase">Email</label>
+      <p class="text-white font-semibold mt-1">{{ detailsItem.email }}</p>
+    </div>
 
-        <div *ngIf="detailsItem.notas">
-          <label class="text-xs font-bold text-gray-400 uppercase">Notas</label>
-          <p class="text-gray-300 mt-1">{{ detailsItem.notas }}</p>
-        </div>
+    <div *ngIf="detailsItem.telefono">
+      <label class="text-xs font-bold text-gray-400 uppercase">Teléfono</label>
+      <p class="text-white font-semibold mt-1">{{ detailsItem.telefono }}</p>
+    </div>
+  </div>
 
-        <div class="grid grid-cols-2 gap-4 pt-4 border-t border-dark-700">
-          <div>
-            <label class="text-xs font-bold text-gray-400 uppercase">Creado</label>
-            <p class="text-gray-300 text-sm mt-1">{{ detailsItem.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
-          </div>
-          <div>
-            <label class="text-xs font-bold text-gray-400 uppercase">Actualizado</label>
-            <p class="text-gray-300 text-sm mt-1">{{ detailsItem.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
-          </div>
-        </div>
-      </div>
+  <div *ngIf="detailsItem.notas">
+    <label class="text-xs font-bold text-gray-400 uppercase">Notas</label>
+    <p class="text-gray-300 mt-1">{{ detailsItem.notas }}</p>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 pt-4 border-t border-dark-700">
+    <div>
+      <label class="text-xs font-bold text-gray-400 uppercase">Creado</label>
+      <p class="text-gray-300 text-sm mt-1">{{ detailsItem.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+    </div>
+    <div>
+      <label class="text-xs font-bold text-gray-400 uppercase">Actualizado</label>
+      <p class="text-gray-300 text-sm mt-1">{{ detailsItem.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+    </div>
+  </div>
+</div>
     </div>
   </div>
 
@@ -539,7 +555,8 @@
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-white font-semibold truncate">{{ empresa.nombre }}</p>
-                <p *ngIf="empresa.email" class="text-gray-400 text-xs truncate">{{ empresa.email }}</p>
+                <p *ngIf="empresa.nombre_poc" class="text-gray-400 text-xs truncate">{{ empresa.nombre_poc }}</p>
+                <p *ngIf="empresa.email && !empresa.nombre_poc" class="text-gray-400 text-xs truncate">{{ empresa.email }}</p>
               </div>
             </div>
             <div class="flex gap-1 flex-shrink-0">

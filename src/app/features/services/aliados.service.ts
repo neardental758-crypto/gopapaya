@@ -35,6 +35,7 @@ export interface Empresa {
   _id: string;
   agr_id: string;
   nombre: string;
+  nombre_poc?: string;
   logo?: string;
   email?: string;
   telefono?: string;

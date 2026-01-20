@@ -57,6 +57,7 @@ export class GestionAliadosComponent implements OnInit {
   empresaForm = {
     nombre: '',
     logo: '',
+    nombre_poc: '',
     email: '',
     telefono: '',
     notas: '',
@@ -110,7 +111,7 @@ export class GestionAliadosComponent implements OnInit {
       (a) =>
         a.nombre.toLowerCase().includes(search) ||
         (a.nombre_poc && a.nombre_poc.toLowerCase().includes(search)) ||
-        (a.email_poc && a.email_poc.toLowerCase().includes(search))
+        (a.email_poc && a.email_poc.toLowerCase().includes(search)),
     );
   }
 
@@ -119,7 +120,7 @@ export class GestionAliadosComponent implements OnInit {
     this.filteredAGRs = this.agrs.filter(
       (a) =>
         a.nombre.toLowerCase().includes(search) ||
-        a.email.toLowerCase().includes(search)
+        a.email.toLowerCase().includes(search),
     );
   }
 
@@ -128,7 +129,7 @@ export class GestionAliadosComponent implements OnInit {
     this.filteredEmpresas = this.empresas.filter(
       (e) =>
         e.nombre.toLowerCase().includes(search) ||
-        (e.email && e.email.toLowerCase().includes(search))
+        (e.email && e.email.toLowerCase().includes(search)),
     );
   }
 
@@ -193,6 +194,7 @@ export class GestionAliadosComponent implements OnInit {
         this.empresaForm = {
           nombre: item.nombre,
           logo: item.logo || '',
+          nombre_poc: item.nombre_poc || '',
           email: item.email || '',
           telefono: item.telefono || '',
           notas: item.notas || '',
@@ -223,6 +225,7 @@ export class GestionAliadosComponent implements OnInit {
     this.empresaForm = {
       nombre: '',
       logo: '',
+      nombre_poc: '',
       email: '',
       telefono: '',
       notas: '',
@@ -321,7 +324,7 @@ export class GestionAliadosComponent implements OnInit {
     if (this.editMode && this.selectedEmpresa) {
       const data: any = { ...empresaData };
       Object.keys(data).forEach((key) => {
-        if (!data[key]) delete data[key];
+        if (!data[key] && key !== 'agr_id') delete data[key];
       });
 
       this.aliadosService
