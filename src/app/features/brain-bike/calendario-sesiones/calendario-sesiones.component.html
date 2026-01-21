@@ -28,6 +28,59 @@
         </button>
       </div>
 
+      <div class="flex flex-col gap-3 mb-6">
+        <div class="flex flex-wrap items-center gap-3">
+          <select
+            [(ngModel)]="filtroAliado"
+            (ngModelChange)="aplicarFiltros()"
+            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Todos los Aliados</option>
+            <option *ngFor="let aliado of aliados" [value]="aliado._id">{{ aliado.nombre }}</option>
+          </select>
+
+          <select
+            [(ngModel)]="filtroAGR"
+            (ngModelChange)="aplicarFiltros()"
+            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Todos los AGR</option>
+            <option *ngFor="let agr of agrsDisponibles" [value]="agr._id">{{ agr.nombre }}</option>
+          </select>
+
+          <select
+            [(ngModel)]="filtroEmpresa"
+            (ngModelChange)="aplicarFiltros()"
+            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Todas las Empresas</option>
+            <option *ngFor="let empresa of empresasDisponibles" [value]="empresa._id">{{ empresa.nombre }}</option>
+          </select>
+
+          <select
+            [(ngModel)]="filtroAdmin"
+            (ngModelChange)="aplicarFiltros()"
+            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Todos los Admins</option>
+            <option *ngFor="let admin of adminsDisponibles" [value]="admin._id">{{ admin.nombre }}</option>
+          </select>
+
+          <select
+            [(ngModel)]="filtroJuego"
+            (ngModelChange)="aplicarFiltros()"
+            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none"
+          >
+            <option value="">Todos los Juegos</option>
+            <option value="brain-bike">Brain Bike</option>
+            <option value="biketona">Biketona</option>
+            <option value="bicilicuadora">Bicilicuadora</option>
+            <option value="vr">VR</option>
+            <option value="hit-fit">Hit Fit</option>
+          </select>
+        </div>
+      </div>
+
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div class="flex items-center gap-2">
           <button
@@ -123,29 +176,28 @@
               </button>
             </div>
 
-           <div class="space-y-1">
-        <div
-          *ngFor="let evento of dia.eventos.slice(0, 2)"
-          (click)="verDetalleSesion(evento.sesion, $event)"
-          class="p-1 rounded text-xs border-l-2 bg-dark-900 hover:bg-dark-800 transition-all"
-          [class]="obtenerColorJuego(evento.sesion.juego_asignado)"
-          [class.opacity-50]="evento.sesion.estadoSesion === 'finalizada'"
-        >
-          <p class="text-white font-bold truncate">
-            {{ obtenerHoraFormateada(evento.inicio) }} - {{ evento.sesion.nombreCliente }}
-            <span *ngIf="evento.sesion.estadoSesion === 'finalizada'" class="text-gray-500">✓</span>
-          </p>
-          <p class="text-gray-400 truncate text-[10px]">
-            {{ evento.sesion.lugarEjecucion || 'Sin ubicación' }}
-          </p>
-        </div>
-  <div
-    *ngIf="dia.eventos.length > 2"
-    class="text-xs text-neon-yellow font-bold"
-  >
-    +{{ dia.eventos.length - 2 }} más
-  </div>
-</div>
+            <div class="space-y-1">
+              <div
+                *ngFor="let evento of dia.eventos.slice(0, 2)"
+                class="p-1 rounded text-xs border-l-2 bg-dark-900 transition-all"
+                [class]="obtenerColorJuego(evento.sesion.juego_asignado)"
+                [class.opacity-50]="evento.sesion.estadoSesion === 'finalizada'"
+              >
+                <p class="text-white font-bold truncate">
+                  {{ obtenerHoraFormateada(evento.inicio) }} - {{ evento.sesion.nombreCliente }}
+                  <span *ngIf="evento.sesion.estadoSesion === 'finalizada'" class="text-gray-500">✓</span>
+                </p>
+                <p class="text-gray-400 truncate text-[10px]">
+                  {{ evento.sesion.lugarEjecucion || 'Sin ubicación' }}
+                </p>
+              </div>
+              <div
+                *ngIf="dia.eventos.length > 2"
+                class="text-xs text-neon-yellow font-bold"
+              >
+                +{{ dia.eventos.length - 2 }} más
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -190,8 +242,7 @@
 
             <div
               *ngFor="let evento of dia.eventos"
-              (click)="verDetalleSesion(evento.sesion)"
-              class="absolute left-0 right-0 mx-1 p-2 rounded border-l-4 bg-dark-900 hover:bg-dark-800 cursor-pointer transition-all shadow-lg z-10"
+              class="absolute left-0 right-0 mx-1 p-2 rounded border-l-4 bg-dark-900 transition-all shadow-lg z-10"
               [class]="obtenerColorJuego(evento.sesion.juego_asignado)"
               [style.top.px]="(evento.inicio.getHours() * 64) + (evento.inicio.getMinutes() / 60 * 64)"
               [style.height.px]="evento.duracion * 64"
@@ -228,7 +279,7 @@
           <div class="space-y-3">
             <div
               *ngFor="let evento of eventosDia"
-              class="bg-dark-900 border-l-4 rounded-lg p-4 hover:bg-dark-850 transition-all"
+              class="bg-dark-900 border-l-4 rounded-lg p-4 transition-all"
               [class]="obtenerColorJuego(evento.sesion.juego_asignado)"
             >
               <div class="flex justify-between items-start mb-3">
@@ -242,30 +293,30 @@
                     {{ evento.fin.getHours() }}:{{ evento.fin.getMinutes().toString().padStart(2, '0') }}
                   </p>
                 </div>
-               <div class="flex gap-2">
-                <span
-                  *ngIf="evento.sesion.estadoSesion === 'finalizada'"
-                  class="px-3 py-1 bg-dark-700 text-gray-400 rounded text-xs font-bold border border-dark-600"
-                >
-                  ✓ Sesión Finalizada
-                </span>
+                <div class="flex gap-2">
+                  <span
+                    *ngIf="evento.sesion.estadoSesion === 'finalizada'"
+                    class="px-3 py-1 bg-dark-700 text-gray-400 rounded text-xs font-bold border border-dark-600"
+                  >
+                    ✓ Sesión Finalizada
+                  </span>
 
-                <button
-                  *ngIf="isSuperAdmin() && evento.sesion.estadoSesion !== 'finalizada' && puedeEditarSesion(evento.sesion)"
-                  (click)="editarParametros(evento.sesion, $event)"
-                  class="px-3 py-1 bg-neon-blue text-white rounded text-xs font-bold hover:shadow-neon-blue transition-all"
-                >
-                  Editar
-                </button>
+                  <button
+                    *ngIf="isSuperAdmin() && evento.sesion.estadoSesion !== 'finalizada' && puedeEditarSesion(evento.sesion)"
+                    (click)="editarParametros(evento.sesion, $event)"
+                    class="px-3 py-1 bg-neon-blue text-white rounded text-xs font-bold hover:shadow-neon-blue transition-all"
+                  >
+                    Editar
+                  </button>
 
-                <button
-                  *ngIf="evento.sesion.estadoSesion !== 'finalizada'"
-                  (click)="finalizarSesion(evento.sesion, $event)"
-                  class="px-3 py-1 bg-neon-red text-white rounded text-xs font-bold hover:shadow-neon-red transition-all"
-                >
-                  Finalizar
-                </button>
-              </div>
+                  <button
+                    *ngIf="evento.sesion.estadoSesion !== 'finalizada'"
+                    (click)="finalizarSesion(evento.sesion, $event)"
+                    class="px-3 py-1 bg-neon-red text-white rounded text-xs font-bold hover:shadow-neon-red transition-all"
+                  >
+                    Finalizar
+                  </button>
+                </div>
               </div>
 
               <div *ngIf="evento.sesion.juego_asignado" class="mb-2 px-3 py-2 bg-dark-800 rounded">
@@ -289,13 +340,13 @@
               </div>
 
               <button
-              *ngIf="evento.sesion.estadoSesion !== 'finalizada'"
-              (click)="verDetalleSesion(evento.sesion)"
-              class="mt-3 w-full px-4 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold hover:shadow-neon-yellow transition-all"
-            >
-              <span *ngIf="isSuperAdmin()">Editar Parámetros →</span>
-              <span *ngIf="!isSuperAdmin()">Continuar Sesión →</span>
-            </button>
+                *ngIf="evento.sesion.estadoSesion !== 'finalizada'"
+                (click)="verDetalleSesion(evento.sesion)"
+                class="mt-3 w-full px-4 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold hover:shadow-neon-yellow transition-all"
+              >
+                <span *ngIf="isSuperAdmin()">Editar Parámetros →</span>
+                <span *ngIf="!isSuperAdmin()">Continuar Sesión →</span>
+              </button>
             </div>
           </div>
         </div>

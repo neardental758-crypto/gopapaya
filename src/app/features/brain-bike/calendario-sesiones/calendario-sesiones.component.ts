@@ -4,6 +4,10 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { SesionService } from '../../services/sesion.service';
 import { Location } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
+import { UsuarioService } from '../../../services/usuario.service';
+import { AliadosService } from '../../services/aliados.service';
 interface EventoCalendario {
   sesion: any;
   inicio: Date;
@@ -23,7 +27,7 @@ type VistaCalendario = 'mes' | 'semana' | 'dia';
 @Component({
   selector: 'app-brain-bike-countdown',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './calendario-sesiones.component.html',
 })
 export class CalendarioSesionesComponent implements OnInit {
@@ -31,22 +35,94 @@ export class CalendarioSesionesComponent implements OnInit {
   vista: VistaCalendario = 'mes';
   fechaActual: Date = new Date();
   sesiones: any[] = [];
+  sesionesFiltradas: any[] = [];
   diasCalendario: DiaCalendario[] = [];
   diasSemana: DiaCalendario[] = [];
   eventosDia: EventoCalendario[] = [];
   horasDelDia: number[] = Array.from({ length: 24 }, (_, i) => i);
   cargando = false;
 
+  aliados: any[] = [];
+  agrsDisponibles: any[] = [];
+  empresasDisponibles: any[] = [];
+  adminsDisponibles: any[] = [];
+
+  filtroAliado = '';
+  filtroAGR = '';
+  filtroEmpresa = '';
+  filtroAdmin = '';
+  filtroJuego = '';
+
   constructor(
     private sesionService: SesionService,
+    private aliadosService: AliadosService,
+    private usuarioService: UsuarioService,
     private authService: AuthService,
     private router: Router,
-    private location: Location
+    private location: Location,
   ) {}
 
   ngOnInit(): void {
     this.usuario = this.authService.getUsuario();
-    this.cargarSesiones();
+    this.cargarDatosIniciales();
+  }
+
+  cargarDatosIniciales(): void {
+    forkJoin({
+      aliados: this.aliadosService.getAliados(),
+      agrs: this.aliadosService.getAGRs(),
+      empresas: this.aliadosService.getEmpresas(),
+      admins: this.usuarioService.getAdmins(),
+    }).subscribe({
+      next: (results) => {
+        this.aliados = results.aliados;
+        this.agrsDisponibles = results.agrs;
+        this.empresasDisponibles = results.empresas;
+        this.adminsDisponibles = results.admins;
+        this.cargarSesiones();
+      },
+      error: () => {
+        this.cargarSesiones();
+      },
+    });
+  }
+
+  aplicarFiltros(): void {
+    this.sesionesFiltradas = this.sesiones.filter((sesion) => {
+      let cumpleFiltros = true;
+
+      if (this.filtroAliado && sesion.empresa) {
+        const agrDeEmpresa = this.agrsDisponibles.find(
+          (agr) => agr._id === sesion.empresa.agr_id,
+        );
+        cumpleFiltros =
+          cumpleFiltros && agrDeEmpresa?.aliado_id === this.filtroAliado;
+      }
+
+      if (this.filtroAGR && sesion.empresa) {
+        cumpleFiltros =
+          cumpleFiltros && sesion.empresa.agr_id === this.filtroAGR;
+      }
+
+      if (this.filtroEmpresa) {
+        cumpleFiltros =
+          cumpleFiltros && sesion.empresa_id === this.filtroEmpresa;
+      }
+
+      if (this.filtroAdmin) {
+        const adminIds = JSON.parse(sesion.admins_asignados || '[]');
+        cumpleFiltros = cumpleFiltros && adminIds.includes(this.filtroAdmin);
+      }
+
+      if (this.filtroJuego) {
+        cumpleFiltros =
+          cumpleFiltros && sesion.juego_asignado === this.filtroJuego;
+      }
+
+      return cumpleFiltros;
+    });
+
+    this.actualizarVista();
   }
 
   cargarSesiones(): void {
@@ -56,6 +132,7 @@ export class CalendarioSesionesComponent implements OnInit {
       this.sesionService.getSesiones().subscribe({
         next: (sesiones) => {
           this.sesiones = sesiones;
+          this.sesionesFiltradas = [...sesiones];
           this.actualizarVista();
           this.cargando = false;
         },
@@ -67,6 +144,7 @@ export class CalendarioSesionesComponent implements OnInit {
       this.sesionService.getMisSesiones().subscribe({
         next: (sesiones) => {
           this.sesiones = sesiones;
+          this.sesionesFiltradas = [...sesiones];
           this.actualizarVista();
           this.cargando = false;
         },
@@ -151,7 +229,7 @@ export class CalendarioSesionesComponent implements OnInit {
   }
 
   obtenerEventosDia(fecha: Date): EventoCalendario[] {
-    return this.sesiones
+    return this.sesionesFiltradas
       .filter((sesion) => {
         if (!sesion.fecha_sesion) return false;
 
@@ -211,7 +289,7 @@ export class CalendarioSesionesComponent implements OnInit {
 
     if (!this.puedeEditarSesion(sesion)) {
       alert(
-        'No se puede editar la sesión. Falta menos de 1 hora para su inicio.'
+        'No se puede editar la sesión. Falta menos de 1 hora para su inicio.',
       );
       return;
     }
@@ -238,7 +316,7 @@ export class CalendarioSesionesComponent implements OnInit {
 
     if (!this.puedeFinalizarSesion(sesion)) {
       alert(
-        'Solo se puede finalizar la sesión faltando menos de 1 hora para su inicio o después de haber comenzado'
+        'Solo se puede finalizar la sesión faltando menos de 1 hora para su inicio o después de haber comenzado',
       );
       return;
     }
@@ -253,17 +331,6 @@ export class CalendarioSesionesComponent implements OnInit {
         },
       });
     }
-  }
-
-  editarSesion(sesion: any, event: Event): void {
-    event.stopPropagation();
-    if (!this.puedeEditarSesion(sesion)) {
-      alert(
-        'No se puede editar la sesión. Falta menos de 1 hora para su inicio.'
-      );
-      return;
-    }
-    this.router.navigate(['/sesion/editar-parametros', sesion.id]);
   }
 
   obtenerHoraFormateada(fecha: Date): string {
@@ -300,15 +367,15 @@ export class CalendarioSesionesComponent implements OnInit {
       this.fechaActual = new Date(
         this.fechaActual.getFullYear(),
         this.fechaActual.getMonth() - 1,
-        1
+        1,
       );
     } else if (this.vista === 'semana') {
       this.fechaActual = new Date(
-        this.fechaActual.getTime() - 7 * 24 * 60 * 60 * 1000
+        this.fechaActual.getTime() - 7 * 24 * 60 * 60 * 1000,
       );
     } else {
       this.fechaActual = new Date(
-        this.fechaActual.getTime() - 24 * 60 * 60 * 1000
+        this.fechaActual.getTime() - 24 * 60 * 60 * 1000,
       );
     }
     this.actualizarVista();
@@ -319,15 +386,15 @@ export class CalendarioSesionesComponent implements OnInit {
       this.fechaActual = new Date(
         this.fechaActual.getFullYear(),
         this.fechaActual.getMonth() + 1,
-        1
+        1,
       );
     } else if (this.vista === 'semana') {
       this.fechaActual = new Date(
-        this.fechaActual.getTime() + 7 * 24 * 60 * 60 * 1000
+        this.fechaActual.getTime() + 7 * 24 * 60 * 60 * 1000,
       );
     } else {
       this.fechaActual = new Date(
-        this.fechaActual.getTime() + 24 * 60 * 60 * 1000
+        this.fechaActual.getTime() + 24 * 60 * 60 * 1000,
       );
     }
     this.actualizarVista();
@@ -344,7 +411,7 @@ export class CalendarioSesionesComponent implements OnInit {
       this.fechaActual = new Date(
         dia.fecha.getFullYear(),
         dia.fecha.getMonth(),
-        1
+        1,
       );
       this.actualizarVista();
     } else {
@@ -364,16 +431,18 @@ export class CalendarioSesionesComponent implements OnInit {
       return;
     }
 
-    this.sesionService.setSesionSeleccionada(sesion);
-
-    if (sesion.juego_asignado === 'brain-bike') {
-      if (this.isSuperAdmin()) {
-        this.router.navigate(['/sesion/editar-parametros', sesion.id]);
-      } else {
-        this.router.navigate(['/brain-bike/parametros']);
-      }
+    if (this.isSuperAdmin()) {
+      this.router.navigate(['/sesion/editar-parametros', sesion.id]);
     } else {
-      this.router.navigate(['/sesion/seleccionar-juego', sesion.id]);
+      this.sesionService.setSesionSeleccionada(sesion);
+
+      if (sesion.juego_asignado === 'brain-bike') {
+        this.router.navigate(['/brain-bike/parametros']);
+      } else if (sesion.juego_asignado) {
+        this.router.navigate(['/sesion/ejecutar', sesion.id]);
+      } else {
+        this.router.navigate(['/sesion/seleccionar-juego', sesion.id]);
+      }
     }
   }
 
