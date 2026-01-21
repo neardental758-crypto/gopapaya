@@ -54,6 +54,7 @@ export class HistorialDetalleComponent implements OnInit {
     this.historialService.getHistorialDetalle(id).subscribe({
       next: (data) => {
         this.historial = data;
+
         this.configuracionJuego = this.juegoAdapter.getConfiguracionJuego(
           data.juego_jugado,
         );

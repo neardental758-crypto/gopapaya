@@ -7,6 +7,7 @@ import { BiketonaParticipantesService } from '../../../services/biketona-partici
 import { BiketonaService } from '../../../services/biketona.service';
 import { BleEsp32Service } from '../../../services/ble-esp32.service';
 import { SesionService } from '../../../services/sesion.service';
+import { BleEsp32PistaFisicaService } from '../../../services/pista-fisica/ble-esp32-pista-fisica.service';
 
 type BikeKey = 'bici1' | 'bici2';
 
@@ -24,6 +25,8 @@ interface Jugador {
   icono: string;
   mejorTiempo: number | null;
   video: string;
+  velocidadAcumulada?: number;
+  muestrasVelocidad?: number;
 }
 
 interface ConfiguracionCarrera {
@@ -93,6 +96,11 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   mostrarCuentaRegresiva = false;
   numeroCuentaRegresiva = 3;
 
+  cuentaRegresivaIniciada = false;
+
+  velocidadAcumulada?: number;
+  muestrasVelocidad?: number;
+
   mostrarModalHeat = false;
   tituloModalHeat = '';
   textoModalHeat = '';
@@ -120,6 +128,9 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   tiempoTotalTorneo = 0;
   Math = Math;
 
+  estadoESP32: number = 0;
+  mostrarModalCalibracion = false;
+
   private sensorAnterior1 = 0;
   private sensorAnterior2 = 0;
 
@@ -130,7 +141,7 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private ble: BleEsp32Service,
+    private ble: BleEsp32PistaFisicaService,
     private biketonaParticipantesService: BiketonaParticipantesService,
     private biketonaService: BiketonaService,
     public audioService: BrainBikeAudioService,
@@ -156,7 +167,7 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   private registrarResultadosLlave(llave: Llave1v1): void {
     const idBiketona = this.idBiketona;
     if (!idBiketona) {
-      console.error('⌂ No hay idBiketona');
+      console.error('❌ No hay idBiketona');
       return;
     }
 
@@ -174,10 +185,9 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
       const tiempoIndividualSegundos =
         jugador.mejorTiempo || this.tiempoTranscurrido;
       const minutosIndividual = tiempoIndividualSegundos / 60;
+
       const velocidadPromedioKph =
-        tiempoIndividualSegundos > 0
-          ? (jugador.distanciaReal / tiempoIndividualSegundos) * 3.6
-          : 0;
+        jugador.velocidadMaxima > 0 ? jugador.velocidadMaxima * 0.75 : 0;
 
       return {
         idBiketona,
@@ -206,7 +216,8 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
         .crearParticipante(participante)
         .subscribe({
           next: (p) => this.participantesRegistrados.push(p),
-          error: (err) => console.error('⌂ Error guardando participante:', err),
+          error: (err) =>
+            console.error('❌ Error guardando participante:', err),
         });
     });
   }
@@ -215,7 +226,7 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     return this.participantesRecientes.includes(participante.nombre);
   }
 
-  verificarFinCarrera(): void {
+  async verificarFinCarrera(): Promise<void> {
     const distanciaTotal = this.configuracion.numeroVueltas * 100;
 
     this.jugadores.forEach((jugador) => {
@@ -225,16 +236,47 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
       }
     });
 
+    const jugador1Termino = this.jugadores[0]?.distanciaReal >= distanciaTotal;
+    const jugador2Termino = this.jugadores[1]?.distanciaReal >= distanciaTotal;
+
+    if (jugador1Termino && !jugador2Termino && this.estadoESP32 === 4) {
+      try {
+        await this.ble.enviarComando('bici1', '01AF');
+      } catch (error) {
+        console.error('Error enviando comando 01AF:', error);
+      }
+    }
+
+    if (jugador2Termino && !jugador1Termino && this.estadoESP32 === 4) {
+      try {
+        await this.ble.enviarComando('bici1', '01FA');
+      } catch (error) {
+        console.error('Error enviando comando 01FA:', error);
+      }
+    }
+
+    if (!jugador1Termino && !jugador2Termino) return;
+
+    const todosTerminaron = jugador1Termino && jugador2Termino;
+
+    if (!todosTerminaron) return;
+
+    this.detenerCarrera();
+
     const ganador = this.jugadores.find(
       (j) => j.distanciaReal >= distanciaTotal,
     );
 
     if (!ganador) return;
 
-    this.detenerCarrera();
     this.ganadorActual = ganador;
-
     this.audioService.reproducirSonidoLlegadaMeta();
+
+    try {
+      await this.ble.enviarComando('bici1', '01FF');
+    } catch (error) {
+      console.error('Error enviando comando 01FF:', error);
+    }
 
     this.participantes.forEach((p) => {
       const jugadorEnCarrera = this.jugadores.find((j) => j.id === p.id);
@@ -550,11 +592,8 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     llave.estado = 'en_curso';
     this.ganadorActual = null;
     this.paso = 3;
-    this.abrirModalHeat(
-      `Carrera Llave ${llave.id}`,
-      'Presiona "Iniciar carrera" para comenzar este enfrentamiento.',
-      'inicio',
-    );
+
+    this.iniciarHeat();
   }
 
   abrirModalHeat(
@@ -568,13 +607,14 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     this.mostrarModalHeat = true;
   }
 
-  cerrarModalHeat(): void {
-    this.mostrarModalHeat = false;
-  }
-
-  iniciarHeat(): void {
-    this.cerrarModalHeat();
-    this.iniciarCuentaRegresiva();
+  async iniciarHeat(): Promise<void> {
+    try {
+      await this.ble.enviarComando('bici1', '01AA');
+      this.mostrarModalCalibracion = true;
+    } catch (error) {
+      console.error('Error enviando comando 01AA:', error);
+      alert('Error al iniciar calibración de los autos');
+    }
   }
 
   async buscarBici(key: BikeKey) {
@@ -627,6 +667,7 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
       });
 
       await this.ble.subscribeSensores(key, (sensor1, sensor2, estadoID) => {
+        this.estadoESP32 = estadoID;
         this.procesarSensores(sensor1, sensor2, estadoID);
       });
 
@@ -641,40 +682,38 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     }
   }
 
-  private procesarSensores(
-    sensor1: number,
-    sensor2: number,
-    estadoID: number,
-  ): void {
-    if (!this.carreraIniciada || this.carreraPausada) {
-      this.sensorAnterior1 = sensor1;
-      this.sensorAnterior2 = sensor2;
-      return;
-    }
-
-    const distanciaPorVuelta = 100;
-
-    if (sensor1 === 1 && this.sensorAnterior1 === 0) {
-      if (this.jugadores[0]) {
-        this.jugadores[0].vueltaActual++;
-        this.jugadores[0].distanciaRecorrida += distanciaPorVuelta;
-        this.jugadores[0].distanciaReal += distanciaPorVuelta;
-      }
-    }
-
-    if (sensor2 === 1 && this.sensorAnterior2 === 0) {
-      if (this.jugadores[1]) {
-        this.jugadores[1].vueltaActual++;
-        this.jugadores[1].distanciaRecorrida += distanciaPorVuelta;
-        this.jugadores[1].distanciaReal += distanciaPorVuelta;
-      }
-    }
-
+private procesarSensores(
+  sensor1: number,
+  sensor2: number,
+  estadoID: number,
+): void {
+  if (estadoID === 1 || estadoID === 2) {
+    this.mostrarModalCalibracion = true;
     this.sensorAnterior1 = sensor1;
     this.sensorAnterior2 = sensor2;
-
-    this.actualizarPosiciones();
+    return;
   }
+
+  if (estadoID === 3) {
+    this.mostrarModalCalibracion = false;
+    if (!this.cuentaRegresivaIniciada) {
+      this.cuentaRegresivaIniciada = true;
+      this.iniciarCuentaRegresiva();
+    }
+    return;
+  }
+
+  if (!this.carreraIniciada || this.carreraPausada) {
+    this.sensorAnterior1 = sensor1;
+    this.sensorAnterior2 = sensor2;
+    return;
+  }
+
+  this.sensorAnterior1 = sensor1;
+  this.sensorAnterior2 = sensor2;
+
+  this.actualizarPosiciones();
+}
 
   desconectarBici(key: BikeKey) {
     const biciUI = this.getBiciUI(key);
@@ -710,35 +749,39 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  iniciarSimulacion(): void {
-    this.intervaloCarrera = setInterval(() => {
-      if (this.carreraPausada) return;
+iniciarSimulacion(): void {
+  this.intervaloCarrera = setInterval(() => {
+    if (this.carreraPausada) return;
 
-      this.tiempoTranscurrido++;
+    this.tiempoTranscurrido++;
 
-      this.jugadores.forEach((jugador) => {
-        const velocidadKph = jugador.velocidad || 0;
+    this.jugadores.forEach((jugador) => {
+      const velocidadKph = jugador.velocidad || 0;
 
-        if (velocidadKph > jugador.velocidadMaxima) {
-          jugador.velocidadMaxima = velocidadKph;
-        }
+      if (velocidadKph > jugador.velocidadMaxima) {
+        jugador.velocidadMaxima = velocidadKph;
+      }
 
-        const velocidadMps = velocidadKph / 3.6;
-        const distanciaMetros = velocidadMps;
+      if (velocidadKph > 0) {
+        jugador.velocidadAcumulada = (jugador.velocidadAcumulada || 0) + velocidadKph;
+        jugador.muestrasVelocidad = (jugador.muestrasVelocidad || 0) + 1;
+      }
 
-        jugador.distanciaReal += distanciaMetros;
+      const velocidadMps = velocidadKph / 3.6;
+      const distanciaMetros = velocidadMps;
+      jugador.distanciaReal += distanciaMetros;
 
-        const distanciaPorVuelta = 100;
-        const vueltasCompletadas = Math.floor(
-          jugador.distanciaReal / distanciaPorVuelta,
-        );
-        jugador.vueltaActual = vueltasCompletadas + 1;
-      });
+      const distanciaPorVuelta = 100;
+      const vueltasCompletadas = Math.floor(
+        jugador.distanciaReal / distanciaPorVuelta,
+      );
+      jugador.vueltaActual = vueltasCompletadas + 1;
+    });
 
-      this.actualizarPosiciones();
-      this.verificarFinCarrera();
-    }, 1000);
-  }
+    this.actualizarPosiciones();
+    this.verificarFinCarrera();
+  }, 1000);
+}
 
   calcularCalorias(jugador: Jugador): number {
     const MET = 8;
@@ -794,16 +837,39 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     this.carreraIniciada = false;
   }
 
-  reiniciarCarrera(): void {
-    this.detenerCarrera();
-    this.tiempoTranscurrido = 0;
-    this.jugadores.forEach((j) => {
-      j.velocidad = 0;
-      j.vueltaActual = 1;
-      j.distanciaRecorrida = 0;
-    });
-    this.actualizarPosiciones();
+async reiniciarCarrera(): Promise<void> {
+  if (!confirm('¿Seguro que deseas reiniciar la carrera? Se perderá el progreso actual.')) {
+    return;
   }
+
+  this.detenerCarrera();
+
+  try {
+    await this.ble.enviarComando('bici1', '10AA');
+  } catch (error) {
+    console.error('Error enviando comando 10AA:', error);
+  }
+
+  this.tiempoTranscurrido = 0;
+  this.estadoESP32 = 0;
+  this.cuentaRegresivaIniciada = false;
+  this.mostrarModalCalibracion = false;
+  this.mostrarCuentaRegresiva = false;
+
+  this.jugadores.forEach((j) => {
+    j.velocidad = 0;
+    j.velocidadMaxima = 0;
+    j.velocidadAcumulada = 0;
+    j.muestrasVelocidad = 0;
+    j.vueltaActual = 1;
+    j.distanciaRecorrida = 0;
+    j.distanciaReal = 0;
+  });
+
+  this.actualizarPosiciones();
+
+  this.paso = 2;
+}
 
   formatearTiempo(segundos: number): string {
     const mins = Math.floor(segundos / 60);
@@ -847,12 +913,16 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     const idSesion = localStorage.getItem('sesionId');
     const userId = localStorage.getItem('userId');
 
-    if (!idBiketona || !idSesion || !userId) {
-      console.error('❌ Faltan datos para historial:', {
-        idBiketona,
-        idSesion,
-        userId,
-      });
+    if (!idBiketona) {
+      console.error('❌ No hay idBiketona');
+      this.paso = 4;
+      return;
+    }
+
+    if (!idSesion || !userId) {
+      console.warn(
+        '⚠️ Sin sesión activa, mostrando ranking sin guardar historial',
+      );
       this.paso = 4;
       return;
     }
@@ -874,8 +944,27 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     });
   }
 
+  cerrarModalHeat(): void {
+    this.mostrarModalHeat = false;
+  }
+
   cerrarModalHeatYVolverALlaves(): void {
     this.mostrarModalHeat = false;
+    this.detenerCarrera();
+    this.tiempoTranscurrido = 0;
+    this.jugadores = [];
+    this.llaveActual = null;
+    this.ganadorActual = null;
+
+    if (this.currentLlaveIndex < this.llaves.length - 1) {
+      this.currentLlaveIndex++;
+      this.paso = 2;
+    } else {
+      this.guardarHistorialYMostrarRanking();
+    }
+  }
+
+  cerrarModalYContinuar(): void {
     this.detenerCarrera();
     this.tiempoTranscurrido = 0;
     this.jugadores = [];

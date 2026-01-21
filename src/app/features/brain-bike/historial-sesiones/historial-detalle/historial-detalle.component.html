@@ -37,41 +37,41 @@
             <p class="text-xs text-gray-400 mb-1">Participantes</p>
             <p class="text-2xl text-neon-blue font-bold">{{ participantesAdaptados.length || 0 }}</p>
           </div>
-          <div *ngIf="configuracionJuego?.tienePreguntas" class="bg-dark-800 rounded-lg p-4 border border-neon-green/20 text-center">
-            <p class="text-xs text-gray-400 mb-1">Aciertos</p>
-            <p class="text-2xl text-neon-green font-bold">{{ getPorcentajeAcierto() }}%</p>
-          </div>
-          <div *ngIf="configuracionJuego?.tienePreguntas" class="bg-dark-800 rounded-lg p-4 border border-neon-blue/20 text-center">
-            <p class="text-xs text-gray-400 mb-1">Vel. Video</p>
-            <p class="text-2xl text-white font-bold">{{ historial.parametros_utilizados?.velocidadMinimaVideo }} km/h</p>
-          </div>
-          <div *ngIf="configuracionJuego?.tienePreguntas" class="bg-dark-800 rounded-lg p-4 border border-neon-blue/20 text-center">
-            <p class="text-xs text-gray-400 mb-1">Vel. Trivia</p>
-            <p class="text-2xl text-white font-bold">{{ historial.parametros_utilizados?.velocidadMinimaTrivia }} km/h</p>
-          </div>
-<div *ngIf="historial!.juego_jugado.includes('Biketona')" class="bg-dark-800 rounded-lg p-4 border border-neon-green/20 text-center">
-  <p class="text-xs text-gray-400 mb-1">Tipo Pista</p>
-  <p class="text-lg text-white font-bold uppercase">
-    {{ historial.parametros_utilizados?.tipoPista || 'N/A' }}
-  </p>
-</div>
-<div *ngIf="historial!.juego_jugado.includes('Biketona')" class="bg-dark-800 rounded-lg p-4 border border-neon-orange/20 text-center">
-  <p class="text-xs text-gray-400 mb-1">Tipo Competencia</p>
-  <p class="text-lg text-white font-bold uppercase">{{ historial.parametros_utilizados?.tipoCompetencia || 'N/A' }}</p>
-</div>
-<div *ngIf="historial!.juego_jugado.includes('Biketona')" class="bg-dark-800 rounded-lg p-4 border border-neon-pink/20 text-center">
-  <p class="text-xs text-gray-400 mb-1">Vueltas</p>
-  <p class="text-2xl text-neon-pink font-bold">{{ historial.parametros_utilizados?.numeroVueltas || 0 }}</p>
-</div>
+            <div *ngIf="configuracionJuego?.tienePreguntas && !historial.juego_jugado.includes('Biketona')" class="bg-dark-800 rounded-lg p-4 border border-neon-green/20 text-center">
+              <p class="text-xs text-gray-400 mb-1">Aciertos</p>
+              <p class="text-2xl text-neon-green font-bold">{{ getPorcentajeAcierto() }}%</p>
+            </div>
+            <div *ngIf="configuracionJuego?.tienePreguntas && !historial.juego_jugado.includes('Biketona')" class="bg-dark-800 rounded-lg p-4 border border-neon-blue/20 text-center">
+              <p class="text-xs text-gray-400 mb-1">Vel. Video</p>
+              <p class="text-2xl text-white font-bold">{{ historial.parametros_utilizados?.velocidadMinimaVideo }} km/h</p>
+            </div>
+            <div *ngIf="configuracionJuego?.tienePreguntas && !historial.juego_jugado.includes('Biketona')" class="bg-dark-800 rounded-lg p-4 border border-neon-blue/20 text-center">
+              <p class="text-xs text-gray-400 mb-1">Vel. Trivia</p>
+              <p class="text-2xl text-white font-bold">{{ historial.parametros_utilizados?.velocidadMinimaTrivia }} km/h</p>
+            </div>
+            <div *ngIf="historial!.juego_jugado.includes('Biketona')" class="bg-dark-800 rounded-lg p-4 border border-neon-green/20 text-center">
+              <p class="text-xs text-gray-400 mb-1">Tipo Pista</p>
+              <p class="text-lg text-white font-bold uppercase">
+                {{ historial.parametros_utilizados?.tipoPista || 'N/A' }}
+              </p>
+            </div>
+            <div *ngIf="historial!.juego_jugado.includes('Biketona')" class="bg-dark-800 rounded-lg p-4 border border-neon-orange/20 text-center">
+              <p class="text-xs text-gray-400 mb-1">Tipo Competencia</p>
+              <p class="text-lg text-white font-bold uppercase">{{ historial.parametros_utilizados?.tipoCompetencia || 'N/A' }}</p>
+            </div>
+            <div *ngIf="historial!.juego_jugado.includes('Biketona')" class="bg-dark-800 rounded-lg p-4 border border-neon-pink/20 text-center">
+              <p class="text-xs text-gray-400 mb-1">Vueltas</p>
+              <p class="text-2xl text-neon-pink font-bold">{{ historial.parametros_utilizados?.numeroVueltas || 0 }}</p>
+            </div>
 
-<div *ngIf="historial!.juego_jugado === 'Bicilicuadora'" class="bg-dark-800 rounded-lg p-4 border border-neon-orange/20 text-center">
-  <p class="text-xs text-gray-400 mb-1">Bebidas</p>
-  <p class="text-2xl text-neon-orange font-bold">🥤 {{ historial.estadisticas_generales?.bebidasRealizadas || historial.parametros_utilizados?.totalBebidas || 0 }}</p>
-</div>
-<div *ngIf="historial!.juego_jugado === 'Bicilicuadora'" class="bg-dark-800 rounded-lg p-4 border border-neon-blue/20 text-center">
-  <p class="text-xs text-gray-400 mb-1">Bicicletas</p>
-  <p class="text-2xl text-neon-blue font-bold">{{ historial.parametros_utilizados?.numeroBicicletas || 1 }}</p>
-</div>
+            <div *ngIf="historial!.juego_jugado === 'Bicilicuadora'" class="bg-dark-800 rounded-lg p-4 border border-neon-orange/20 text-center">
+              <p class="text-xs text-gray-400 mb-1">Bebidas</p>
+              <p class="text-2xl text-neon-orange font-bold">🥤 {{ historial.estadisticas_generales?.bebidasRealizadas || historial.parametros_utilizados?.totalBebidas || 0 }}</p>
+            </div>
+            <div *ngIf="historial!.juego_jugado === 'Bicilicuadora'" class="bg-dark-800 rounded-lg p-4 border border-neon-blue/20 text-center">
+              <p class="text-xs text-gray-400 mb-1">Bicicletas</p>
+              <p class="text-2xl text-neon-blue font-bold">{{ historial.parametros_utilizados?.numeroBicicletas || 1 }}</p>
+            </div>
         </div>
       </div>
 
@@ -417,35 +417,35 @@
   </div>
 </div>
 
-    <div *ngIf="configuracionJuego?.tienePreguntas" class="bg-dark-900 border border-dark-700 rounded-card p-6">
+    <div *ngIf="configuracionJuego?.tienePreguntas && historial!.juego_jugado === 'Brain Bike'" class="bg-dark-900 border border-dark-700 rounded-card p-6">
       <h2 class="text-xl font-display font-bold text-neon-yellow mb-6">🏆 Puntos</h2>
 
-      <div class="bg-gradient-to-br from-neon-yellow/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-yellow/50 mb-4">
-        <p class="text-xs text-gray-400 mb-2">Puntos Ganados</p>
-        <p class="text-5xl font-bold text-neon-yellow mb-1">{{ estadisticasResumen.puntosTotal }}</p>
-        <p class="text-xs text-gray-500">Totales</p>
-      </div>
-
-      <div class="bg-gradient-to-r from-dark-800 to-dark-700 rounded-lg p-3 text-center mb-3 border border-neon-blue/30">
-        <p class="text-gray-400 text-sm font-bold mb-1">Preguntas Respondidas</p>
-        <p class="text-3xl font-bold text-neon-blue animate-pulse-slow">{{ estadisticasResumen.respuestasCorrectas + estadisticasResumen.respuestasIncorrectas }}</p>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div class="bg-neon-green/10 border border-neon-green/30 rounded-lg p-3 text-center">
-          <p class="text-neon-green font-bold text-2xl">{{ estadisticasResumen.respuestasCorrectas }}</p>
-          <p class="text-sm text-gray-400 mb-1">Correctas</p>
-          <p class="text-neon-green/70 text-xs">{{ getPorcentajeCorrectas() }}%</p>
+        <div class="bg-gradient-to-br from-neon-yellow/20 to-transparent rounded-lg p-6 text-center border-2 border-neon-yellow/50 mb-4">
+          <p class="text-xs text-gray-400 mb-2">Puntos Ganados</p>
+          <p class="text-5xl font-bold text-neon-yellow mb-1">{{ estadisticasResumen.puntosTotal }}</p>
+          <p class="text-xs text-gray-500">Totales</p>
         </div>
-        <div class="bg-neon-red/10 border border-neon-red/30 rounded-lg p-3 text-center">
-          <p class="text-neon-red font-bold text-2xl">{{ estadisticasResumen.respuestasIncorrectas }}</p>
-          <p class="text-sm text-gray-400 mb-1">Incorrectas</p>
-          <p class="text-neon-red/70 text-xs">{{ getPorcentajeIncorrectas() }}%</p>
+
+        <div class="bg-gradient-to-r from-dark-800 to-dark-700 rounded-lg p-3 text-center mb-3 border border-neon-blue/30">
+          <p class="text-gray-400 text-sm font-bold mb-1">Preguntas Respondidas</p>
+          <p class="text-3xl font-bold text-neon-blue animate-pulse-slow">{{ estadisticasResumen.respuestasCorrectas + estadisticasResumen.respuestasIncorrectas }}</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-neon-green/10 border border-neon-green/30 rounded-lg p-3 text-center">
+            <p class="text-neon-green font-bold text-2xl">{{ estadisticasResumen.respuestasCorrectas }}</p>
+            <p class="text-sm text-gray-400 mb-1">Correctas</p>
+            <p class="text-neon-green/70 text-xs">{{ getPorcentajeCorrectas() }}%</p>
+          </div>
+          <div class="bg-neon-red/10 border border-neon-red/30 rounded-lg p-3 text-center">
+            <p class="text-neon-red font-bold text-2xl">{{ estadisticasResumen.respuestasIncorrectas }}</p>
+            <p class="text-sm text-gray-400 mb-1">Incorrectas</p>
+            <p class="text-neon-red/70 text-xs">{{ getPorcentajeIncorrectas() }}%</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="bg-dark-900 border border-dark-700 rounded-card p-6" [class.lg:col-span-2]="!configuracionJuego?.tienePreguntas">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6" [class.lg:col-span-2]="!configuracionJuego?.tienePreguntas || historial!.juego_jugado.includes('Biketona')">
       <h2 class="text-xl font-display font-bold text-neon-blue mb-6">🚴 Velocidades</h2>
 
       <div class="bg-dark-800 rounded-lg p-4 mb-4">
@@ -472,18 +472,18 @@
         </div>
       </div>
 
-      <div *ngIf="configuracionJuego?.tienePreguntas" class="grid grid-cols-2 gap-3">
-        <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-blue/30">
-          <p class="text-xs text-gray-400 mb-1">Vel. Mín. Video</p>
-          <p class="text-2xl font-bold text-neon-blue">{{ historial.parametros_utilizados?.velocidadMinimaVideo }}</p>
-          <p class="text-xs text-gray-500">km/h</p>
-        </div>
-        <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-yellow/30">
-          <p class="text-xs text-gray-400 mb-1">Vel. Mín. Trivia</p>
-          <p class="text-2xl font-bold text-neon-yellow">{{ historial.parametros_utilizados?.velocidadMinimaTrivia }}</p>
-          <p class="text-xs text-gray-500">km/h</p>
-        </div>
+    <div *ngIf="configuracionJuego?.tienePreguntas && !historial!.juego_jugado.includes('Biketona')" class="bg-dark-900 border border-dark-700 rounded-card p-6">
+      <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-blue/30">
+        <p class="text-xs text-gray-400 mb-1">Vel. Mín. Video</p>
+        <p class="text-2xl font-bold text-neon-blue">{{ historial.parametros_utilizados?.velocidadMinimaVideo }}</p>
+        <p class="text-xs text-gray-500">km/h</p>
       </div>
+      <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-yellow/30">
+        <p class="text-xs text-gray-400 mb-1">Vel. Mín. Trivia</p>
+        <p class="text-2xl font-bold text-neon-yellow">{{ historial.parametros_utilizados?.velocidadMinimaTrivia }}</p>
+        <p class="text-xs text-gray-500">km/h</p>
+      </div>
+    </div>
     </div>
 
     <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
@@ -759,7 +759,7 @@
             </div>
           </div>
 
-          <div *ngIf="configuracionJuego?.tienePreguntas" class="grid grid-cols-2 gap-2">
+          <div *ngIf="configuracionJuego?.tienePreguntas && historial!.juego_jugado === 'Brain Bike'" class="grid grid-cols-2 gap-2">
             <div class="bg-neon-green/10 border border-neon-green/30 rounded p-2 text-center">
               <p class="text-neon-green font-bold text-lg">✅ {{ Number(p.respuestasCorrectas) || 0 }}</p>
               <p class="text-xs text-gray-500">Correctas</p>
