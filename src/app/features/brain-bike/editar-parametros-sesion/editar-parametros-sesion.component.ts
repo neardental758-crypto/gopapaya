@@ -31,8 +31,50 @@ export class EditarParametrosSesionComponent implements OnInit {
   contenidosDisponibles: Contenido[] = [];
   bebidasDisponibles: Bebida[] = [];
   tiposVR = [
-    { id: 'vr-1', nombre: 'VR 1', descripcion: 'Experiencia VR tipo 1' },
-    { id: 'vr-2', nombre: 'VR 2', descripcion: 'Experiencia VR tipo 2' },
+    { id: 'primeros-auxilios-rcp', nombre: 'Primeros auxilios y RCP' },
+    { id: 'meditacion', nombre: 'Meditación' },
+    { id: 'recreativo-synth-riders', nombre: 'Recreativo (Synth Riders)' },
+    {
+      id: 'trabajo-equipo-comunicacion',
+      nombre: 'Trabajo en equipo, comunicación asertiva (Collective canvas)',
+    },
+    { id: 'bienestar-emocional', nombre: 'Bienestar emocional' },
+    {
+      id: 'uso-epp',
+      nombre: 'Uso adecuado de Equipos de Protección Personal (EPP)',
+    },
+    { id: 'riesgo-electrico', nombre: 'Riesgo eléctrico' },
+    { id: 'riesgo-mecanico', nombre: 'Riesgo mecánico' },
+    { id: 'riesgo-biologico', nombre: 'Riesgo Biológico' },
+    {
+      id: 'manejo-sustancias-quimicas',
+      nombre: 'Manejo de sustancias químicas',
+    },
+    { id: 'manipulacion-alimentos', nombre: 'Manipulación de alimentos' },
+    {
+      id: 'identificacion-prevencion-riesgos',
+      nombre: 'Identificación y prevención de riesgos laborales',
+    },
+    { id: 'trabajo-alturas', nombre: 'Trabajo en alturas' },
+    { id: 'espacios-confinados', nombre: 'Espacios confinados' },
+    { id: 'montacargas', nombre: 'Montacargas' },
+    {
+      id: 'conduccion-vehiculo-liviano',
+      nombre: 'Conducción Vehículo liviano',
+    },
+    { id: 'conduccion-vehiculo-pesado', nombre: 'Conducción Vehículo pesado' },
+    { id: 'conduccion-bicicleta', nombre: 'Conducción Bicicleta' },
+    {
+      id: 'izaje-cargas',
+      nombre: 'Izaje de cargas Puente Grúas – Grúas móviles - torres grúa',
+    },
+    { id: 'seguridad-vial', nombre: 'Seguridad vial' },
+    {
+      id: 'manejo-extintores',
+      nombre: 'Manejo de extintores y prevención de incendios',
+    },
+    { id: 'simulador-parqueo', nombre: 'Simulador de parqueo' },
+    { id: 'poligono', nombre: 'Polígono' },
   ];
 
   lugarEjecucion: string = '';

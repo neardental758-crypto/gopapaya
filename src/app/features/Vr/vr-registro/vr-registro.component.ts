@@ -62,14 +62,47 @@ export class VrRegistroComponent implements OnInit {
       params = parametrosJuego;
     }
 
-    if (params && params.tipos_vr && params.tipos_vr.length > 0) {
-      this.tipoVrSeleccionado = params.tipos_vr[0] === 'vr-1' ? 'VR 1' : 'VR 2';
-      this.participanteActual.tipoVr = params.tipos_vr[0];
+    if (params && params.tipo_vr) {
+      this.participanteActual.tipoVr = params.tipo_vr;
+      this.tipoVrSeleccionado = this.obtenerNombreTipoVR(params.tipo_vr);
     }
 
     this.participanteActual.idSesion = this.sesion.id;
 
     this.cargarTotalRegistrados();
+  }
+
+  obtenerNombreTipoVR(tipoId: string): string {
+    const tiposVR: { [key: string]: string } = {
+      'primeros-auxilios-rcp': 'Primeros auxilios y RCP',
+      meditacion: 'Meditación',
+      'recreativo-synth-riders': 'Recreativo (Synth Riders)',
+      'trabajo-equipo-comunicacion':
+        'Trabajo en equipo, comunicación asertiva (Collective canvas)',
+      'bienestar-emocional': 'Bienestar emocional',
+      'uso-epp': 'Uso adecuado de Equipos de Protección Personal (EPP)',
+      'riesgo-electrico': 'Riesgo eléctrico',
+      'riesgo-mecanico': 'Riesgo mecánico',
+      'riesgo-biologico': 'Riesgo Biológico',
+      'manejo-sustancias-quimicas': 'Manejo de sustancias químicas',
+      'manipulacion-alimentos': 'Manipulación de alimentos',
+      'identificacion-prevencion-riesgos':
+        'Identificación y prevención de riesgos laborales',
+      'trabajo-alturas': 'Trabajo en alturas',
+      'espacios-confinados': 'Espacios confinados',
+      montacargas: 'Montacargas',
+      'conduccion-vehiculo-liviano': 'Conducción Vehículo liviano',
+      'conduccion-vehiculo-pesado': 'Conducción Vehículo pesado',
+      'conduccion-bicicleta': 'Conducción Bicicleta',
+      'izaje-cargas':
+        'Izaje de cargas Puente Grúas – Grúas móviles - torres grúa',
+      'seguridad-vial': 'Seguridad vial',
+      'manejo-extintores': 'Manejo de extintores y prevención de incendios',
+      'simulador-parqueo': 'Simulador de parqueo',
+      poligono: 'Polígono',
+    };
+
+    return tiposVR[tipoId] || tipoId;
   }
 
   cargarTotalRegistrados(): void {

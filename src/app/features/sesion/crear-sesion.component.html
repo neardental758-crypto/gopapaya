@@ -399,11 +399,11 @@
         </div>
       </div>
 
-      <div *ngIf="paso === 3 && juegoAsignado === 'vr'" class="space-y-6">
+<div *ngIf="paso === 3 && juegoAsignado === 'vr'" class="space-y-6">
   <div class="p-4 bg-purple-500 bg-opacity-10 border border-purple-500 rounded-lg">
     <p class="text-white font-bold mb-3">🥽 Configuración VR</p>
     <p class="text-gray-300 text-sm mb-4">
-      Selecciona los tipos de experiencias VR disponibles para esta sesión.
+      Selecciona el tipo de experiencia VR para esta sesión.
     </p>
   </div>
 
@@ -415,7 +415,7 @@
     >
       <option value="">Seleccionar tipo de VR...</option>
       <option *ngFor="let tipo of tiposVR" [value]="tipo.id">
-        {{ tipo.nombre }} - {{ tipo.descripcion }}
+        {{ tipo.nombre }}
       </option>
     </select>
   </div>
