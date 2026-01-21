@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -15,11 +15,17 @@ import { environment } from '../../../../environments/environment';
 import { Evidencia, SesionService } from '../../services/sesion.service';
 import { EnviarCorreoModalComponent } from './correos/enviar-correo-modal.component';
 import { HistorialJuegoAdapter } from './adapter/historial-juego.adapter';
+import { EvidenciasModalComponent } from '../../home/evidencias/evidencias-modal.component';
 
 @Component({
   selector: 'app-historial-sesiones',
   standalone: true,
-  imports: [CommonModule, FormsModule, EnviarCorreoModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    EnviarCorreoModalComponent,
+    EvidenciasModalComponent,
+  ],
   templateUrl: './historial-sesiones.component.html',
 })
 export class HistorialSesionesComponent implements OnInit {
@@ -34,6 +40,8 @@ export class HistorialSesionesComponent implements OnInit {
   fechaFin = '';
 
   sesionesExpandidas: Set<number> = new Set();
+
+  @ViewChild('evidenciasModal') evidenciasModal!: EvidenciasModalComponent;
 
   paginacionSesiones: any = null;
   carrerasCache: Map<number, { data: HistorialSesion[]; paginacion: any }> =
@@ -60,7 +68,7 @@ export class HistorialSesionesComponent implements OnInit {
     private router: Router,
     private excelExporthistorialService: ExcelExporthistorialService,
     private sesionService: SesionService,
-    private juegoAdapter: HistorialJuegoAdapter
+    private juegoAdapter: HistorialJuegoAdapter,
   ) {}
 
   ngOnInit(): void {
@@ -95,7 +103,7 @@ export class HistorialSesionesComponent implements OnInit {
         10,
         juego,
         cronograma,
-        secuencia
+        secuencia,
       )
       .subscribe({
         next: (response) => {
@@ -109,6 +117,11 @@ export class HistorialSesionesComponent implements OnInit {
           this.cargando = false;
         },
       });
+  }
+
+  abrirEvidencias(sesion: any, event: Event): void {
+    event.stopPropagation();
+    this.evidenciasModal.open(sesion.id, sesion.nombreCliente);
   }
 
   toggleSesion(sesionId: number): void {
@@ -167,7 +180,7 @@ export class HistorialSesionesComponent implements OnInit {
         next: (response) => {
           this.excelExporthistorialService.exportarHistorialCompleto(
             response.agrupado,
-            response.indicadores
+            response.indicadores,
           );
           this.cargando = false;
         },
@@ -233,13 +246,13 @@ export class HistorialSesionesComponent implements OnInit {
         10,
         juego,
         cronograma,
-        secuencia
+        secuencia,
       )
       .subscribe({
         next: (response) => {
           if (this.filtroJuego === 'Biketona') {
             this.sesionesAgrupadas = response.agrupado.filter((grupo) =>
-              grupo.carreras.some((c) => c.juego_jugado.includes('Biketona'))
+              grupo.carreras.some((c) => c.juego_jugado.includes('Biketona')),
             );
           } else {
             this.sesionesAgrupadas = response.agrupado;
@@ -332,6 +345,8 @@ export class HistorialSesionesComponent implements OnInit {
 
       if (estadisticasGenerales?.duracionTotal) {
         duracionTotalSegundos += Number(estadisticasGenerales.duracionTotal);
+      } else if (estadisticasGenerales?.tiempoTotal) {
+        duracionTotalSegundos += Number(estadisticasGenerales.tiempoTotal);
       } else if (carrera.duracion_minutos) {
         duracionTotalSegundos += carrera.duracion_minutos * 60;
       }
@@ -369,6 +384,14 @@ export class HistorialSesionesComponent implements OnInit {
     const horas = Math.floor(segundos / 3600);
     return horas > 0 ? 'hrs' : 'min';
   }
+
+  getNombreTipoActividad(juego: string): string {
+    if (juego === 'VR' || juego === 'Hit-Fit' || juego === 'Bicilicuadora') {
+      return 'Sesiones';
+    }
+    return 'Carreras';
+  }
+
   getDuracionCarrera(carrera: HistorialSesion): number {
     let estadisticasGenerales = carrera.estadisticas_generales;
 
@@ -376,7 +399,7 @@ export class HistorialSesionesComponent implements OnInit {
       try {
         estadisticasGenerales = JSON.parse(estadisticasGenerales);
       } catch (e) {
-        return carrera.duracion_minutos * 60 || 0;
+        return carrera.duracion_minutos ? carrera.duracion_minutos * 60 : 0;
       }
     }
 
@@ -384,7 +407,11 @@ export class HistorialSesionesComponent implements OnInit {
       return Number(estadisticasGenerales.duracionTotal);
     }
 
-    return carrera.duracion_minutos * 60 || 0;
+    if (estadisticasGenerales?.tiempoTotal) {
+      return Number(estadisticasGenerales.tiempoTotal);
+    }
+
+    return carrera.duracion_minutos ? carrera.duracion_minutos * 60 : 0;
   }
 
   formatearFecha(fecha: string): string {
@@ -535,7 +562,7 @@ export class HistorialSesionesComponent implements OnInit {
         const a = document.createElement('a');
         a.href = url;
         const sesion = this.sesionesAgrupadas.find(
-          (s) => s.sesion_id === sesionId
+          (s) => s.sesion_id === sesionId,
         );
         a.download = `Informe_${
           sesion?.sesion?.nombreCliente || 'Sesion'
@@ -598,7 +625,7 @@ export class HistorialSesionesComponent implements OnInit {
 
     if (!allowedTypes.includes(file.type)) {
       alert(
-        'Solo se permiten archivos Excel, PDF, Word o imágenes (JPG, PNG, WEBP)'
+        'Solo se permiten archivos Excel, PDF, Word o imágenes (JPG, PNG, WEBP)',
       );
       return;
     }
@@ -634,7 +661,7 @@ export class HistorialSesionesComponent implements OnInit {
 
   esVRoHitFit(grupo: SesionAgrupada): boolean {
     return grupo.carreras.some(
-      (c) => c.juego_jugado === 'VR' || c.juego_jugado === 'Hit-Fit'
+      (c) => c.juego_jugado === 'VR' || c.juego_jugado === 'Hit-Fit',
     );
   }
 

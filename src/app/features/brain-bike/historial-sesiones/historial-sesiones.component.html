@@ -165,6 +165,13 @@
             >
               📄 Informe PDF
             </button>
+
+            <button
+              (click)="abrirEvidencias(grupo.sesion, $event)"
+              class="px-4 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold hover:shadow-neon-yellow transition-all text-sm"
+            >
+              📸 Evidencias
+            </button>
             <button
               (click)="abrirModalCorreo(grupo)"
               class="flex items-center gap-2 px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white rounded-lg font-medium transition-all">
@@ -308,7 +315,10 @@
           </div>
 
           <div class="p-4 space-y-3">
-            <p class="text-sm text-gray-400 font-bold mb-2">🏁 Carreras de esta sesión:</p>
+          <p class="text-sm text-gray-400 font-bold mb-2">
+            {{ grupo.carreras[0]?.juego_jugado === 'VR' || grupo.carreras[0]?.juego_jugado === 'Hit-Fit' || grupo.carreras[0]?.juego_jugado === 'Bicilicuadora' ? '🎮' : '🏁' }}
+            {{ getNombreTipoActividad(grupo.carreras[0]?.juego_jugado || '') }} de esta sesión:
+          </p>
 
             <div *ngIf="isCargandoCarreras(grupo.sesion_id)" class="text-center py-8">
               <div class="animate-spin w-8 h-8 border-4 border-neon-yellow border-t-transparent rounded-full mx-auto"></div>
@@ -353,9 +363,7 @@
 
                 <span class="text-sm text-neon-yellow/70">
                   {{ getPaginacionCarreras(grupo.sesion_id).paginaActual }} / {{ getPaginacionCarreras(grupo.sesion_id).totalPaginas }}
-                  <span class="text-gray-500">({{ getPaginacionCarreras(grupo.sesion_id).totalCarreras }} carreras)</span>
-                </span>
-
+                    <span class="text-gray-500">({{ getPaginacionCarreras(grupo.sesion_id).totalCarreras }} {{ getNombreTipoActividad(grupo.carreras[0]?.juego_jugado || '').toLowerCase() }})</span>               </span>
                 <button (click)="cambiarPaginaCarreras(grupo.sesion_id, getPaginacionCarreras(grupo.sesion_id).paginaActual + 1); $event.stopPropagation()"
                         [disabled]="getPaginacionCarreras(grupo.sesion_id).paginaActual === getPaginacionCarreras(grupo.sesion_id).totalPaginas"
                         class="px-3 py-1.5 text-sm bg-dark-800 text-neon-yellow border border-neon-yellow/30 rounded-lg hover:bg-dark-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
@@ -403,5 +411,7 @@
   (closed)="cerrarModalCorreo()"
   (enviado)="onCorreoEnviado()">
 </app-enviar-correo-modal>
+
+<app-evidencias-modal #evidenciasModal></app-evidencias-modal>
 
 </div>
