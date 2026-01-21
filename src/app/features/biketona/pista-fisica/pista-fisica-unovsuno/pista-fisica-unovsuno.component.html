@@ -723,7 +723,7 @@
        [style.color]="jugador.color"
        [style.text-shadow]="'0 0 10px ' + jugador.color"
        [style.box-shadow]="'0 0 15px ' + jugador.color + '70'">
-    V{{ v + 1 }}
+    {{ v + 1 }}
   </div>
 
   <div class="absolute right-3 top-1/2 -translate-y-1/2 z-20">
@@ -794,9 +794,7 @@
         [style.box-shadow]="'0 0 15px ' + jugador.color">
         <span class="text-white text-base drop-shadow-lg">👑</span>
       </div>
-              <div *ngIf="jugador.posicion === 1" class="absolute -top-1 -right-1 w-7 h-7 bg-gradient-to-br from-neon-yellow to-yellow-600 rounded-full flex items-center justify-center shadow-neon-yellow animate-bounce border border-yellow-400">
-                <span class="text-dark-950 text-base">👑</span>
-              </div>
+
             </div>
             <div>
               <h3 class="text-white font-display font-black text-xl uppercase tracking-wide drop-shadow-lg">

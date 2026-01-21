@@ -233,6 +233,10 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
       if (jugador.distanciaReal >= distanciaTotal) {
         jugador.distanciaReal = distanciaTotal;
         jugador.vueltaActual = this.configuracion.numeroVueltas + 1;
+
+        if (!jugador.mejorTiempo) {
+          jugador.mejorTiempo = this.tiempoTranscurrido;
+        }
       }
     });
 
@@ -263,9 +267,9 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
 
     this.detenerCarrera();
 
-    const ganador = this.jugadores.find(
-      (j) => j.distanciaReal >= distanciaTotal,
-    );
+    const ganador = this.jugadores
+      .filter((j) => j.mejorTiempo != null)
+      .sort((a, b) => a.mejorTiempo! - b.mejorTiempo!)[0];
 
     if (!ganador) return;
 
@@ -282,12 +286,11 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
       const jugadorEnCarrera = this.jugadores.find((j) => j.id === p.id);
       if (!jugadorEnCarrera) return;
 
-      if (p.id === ganador.id) {
-        if (!p.mejorTiempo || this.tiempoTranscurrido < p.mejorTiempo) {
-          p.mejorTiempo = this.tiempoTranscurrido;
-        }
-      } else if (!p.mejorTiempo) {
-        p.mejorTiempo = this.tiempoTranscurrido + 5;
+      if (
+        p.mejorTiempo == null ||
+        jugadorEnCarrera.mejorTiempo! < p.mejorTiempo
+      ) {
+        p.mejorTiempo = jugadorEnCarrera.mejorTiempo;
       }
     });
 
@@ -565,10 +568,13 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
       );
       return;
     }
+
     const index = this.llaves.findIndex((l) => l.id === llave.id);
     if (index !== -1) {
       this.currentLlaveIndex = index;
     }
+
+    this.detenerCarrera();
 
     this.jugadores = llave.jugadores;
     this.llaveActual = llave;
@@ -576,10 +582,17 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     this.tiempoTranscurrido = 0;
     this.carreraPausada = false;
     this.carreraIniciada = false;
+    this.cuentaRegresivaIniciada = false;
+    this.mostrarCuentaRegresiva = false;
+    this.mostrarModalCalibracion = false;
+    this.estadoESP32 = 0;
+    this.ganadorActual = null;
 
     this.jugadores.forEach((j, idx) => {
       j.velocidad = 0;
       j.velocidadMaxima = 0;
+      j.velocidadAcumulada = 0;
+      j.muestrasVelocidad = 0;
       j.vueltaActual = 1;
       j.distanciaRecorrida = 0;
       j.distanciaReal = 0;
@@ -590,7 +603,6 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     this.sensorAnterior2 = 0;
 
     llave.estado = 'en_curso';
-    this.ganadorActual = null;
     this.paso = 3;
 
     this.iniciarHeat();
@@ -964,7 +976,13 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   cerrarModalHeatYVolverALlaves(): void {
     this.mostrarModalHeat = false;
     this.detenerCarrera();
+
     this.tiempoTranscurrido = 0;
+    this.carreraIniciada = false;
+    this.cuentaRegresivaIniciada = false;
+    this.mostrarCuentaRegresiva = false;
+    this.mostrarModalCalibracion = false;
+    this.estadoESP32 = 0;
     this.jugadores = [];
     this.llaveActual = null;
     this.ganadorActual = null;
