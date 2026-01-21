@@ -682,38 +682,56 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     }
   }
 
-private procesarSensores(
-  sensor1: number,
-  sensor2: number,
-  estadoID: number,
-): void {
-  if (estadoID === 1 || estadoID === 2) {
-    this.mostrarModalCalibracion = true;
-    this.sensorAnterior1 = sensor1;
-    this.sensorAnterior2 = sensor2;
-    return;
-  }
-
-  if (estadoID === 3) {
-    this.mostrarModalCalibracion = false;
-    if (!this.cuentaRegresivaIniciada) {
-      this.cuentaRegresivaIniciada = true;
-      this.iniciarCuentaRegresiva();
+  private procesarSensores(
+    sensor1: number,
+    sensor2: number,
+    estadoID: number,
+  ): void {
+    if (estadoID === 1 || estadoID === 2) {
+      this.mostrarModalCalibracion = true;
+      this.sensorAnterior1 = sensor1;
+      this.sensorAnterior2 = sensor2;
+      return;
     }
-    return;
-  }
 
-  if (!this.carreraIniciada || this.carreraPausada) {
+    if (estadoID === 3) {
+      this.mostrarModalCalibracion = false;
+      if (!this.cuentaRegresivaIniciada) {
+        this.cuentaRegresivaIniciada = true;
+        this.iniciarCuentaRegresiva();
+      }
+      return;
+    }
+
+    if (!this.carreraIniciada || this.carreraPausada) {
+      this.sensorAnterior1 = sensor1;
+      this.sensorAnterior2 = sensor2;
+      return;
+    }
+
+    const distanciaPorVuelta = 100;
+
+    if (sensor1 === 1 && this.sensorAnterior1 === 0) {
+      if (this.jugadores[0]) {
+        this.jugadores[0].vueltaActual++;
+        this.jugadores[0].distanciaRecorrida += distanciaPorVuelta;
+        this.jugadores[0].distanciaReal += distanciaPorVuelta;
+      }
+    }
+
+    if (sensor2 === 1 && this.sensorAnterior2 === 0) {
+      if (this.jugadores[1]) {
+        this.jugadores[1].vueltaActual++;
+        this.jugadores[1].distanciaRecorrida += distanciaPorVuelta;
+        this.jugadores[1].distanciaReal += distanciaPorVuelta;
+      }
+    }
+
     this.sensorAnterior1 = sensor1;
     this.sensorAnterior2 = sensor2;
-    return;
+
+    this.actualizarPosiciones();
   }
-
-  this.sensorAnterior1 = sensor1;
-  this.sensorAnterior2 = sensor2;
-
-  this.actualizarPosiciones();
-}
 
   desconectarBici(key: BikeKey) {
     const biciUI = this.getBiciUI(key);
@@ -749,39 +767,30 @@ private procesarSensores(
     }, 1000);
   }
 
-iniciarSimulacion(): void {
-  this.intervaloCarrera = setInterval(() => {
-    if (this.carreraPausada) return;
+  iniciarSimulacion(): void {
+    this.intervaloCarrera = setInterval(() => {
+      if (this.carreraPausada) return;
 
-    this.tiempoTranscurrido++;
+      this.tiempoTranscurrido++;
 
-    this.jugadores.forEach((jugador) => {
-      const velocidadKph = jugador.velocidad || 0;
+      this.jugadores.forEach((jugador) => {
+        const velocidadKph = jugador.velocidad || 0;
 
-      if (velocidadKph > jugador.velocidadMaxima) {
-        jugador.velocidadMaxima = velocidadKph;
-      }
+        if (velocidadKph > jugador.velocidadMaxima) {
+          jugador.velocidadMaxima = velocidadKph;
+        }
 
-      if (velocidadKph > 0) {
-        jugador.velocidadAcumulada = (jugador.velocidadAcumulada || 0) + velocidadKph;
-        jugador.muestrasVelocidad = (jugador.muestrasVelocidad || 0) + 1;
-      }
+        if (velocidadKph > 0) {
+          jugador.velocidadAcumulada =
+            (jugador.velocidadAcumulada || 0) + velocidadKph;
+          jugador.muestrasVelocidad = (jugador.muestrasVelocidad || 0) + 1;
+        }
+      });
 
-      const velocidadMps = velocidadKph / 3.6;
-      const distanciaMetros = velocidadMps;
-      jugador.distanciaReal += distanciaMetros;
-
-      const distanciaPorVuelta = 100;
-      const vueltasCompletadas = Math.floor(
-        jugador.distanciaReal / distanciaPorVuelta,
-      );
-      jugador.vueltaActual = vueltasCompletadas + 1;
-    });
-
-    this.actualizarPosiciones();
-    this.verificarFinCarrera();
-  }, 1000);
-}
+      this.actualizarPosiciones();
+      this.verificarFinCarrera();
+    }, 1000);
+  }
 
   calcularCalorias(jugador: Jugador): number {
     const MET = 8;
@@ -837,39 +846,43 @@ iniciarSimulacion(): void {
     this.carreraIniciada = false;
   }
 
-async reiniciarCarrera(): Promise<void> {
-  if (!confirm('¿Seguro que deseas reiniciar la carrera? Se perderá el progreso actual.')) {
-    return;
+  async reiniciarCarrera(): Promise<void> {
+    if (
+      !confirm(
+        '¿Seguro que deseas reiniciar la carrera? Se perderá el progreso actual.',
+      )
+    ) {
+      return;
+    }
+
+    this.detenerCarrera();
+
+    try {
+      await this.ble.enviarComando('bici1', '10AA');
+    } catch (error) {
+      console.error('Error enviando comando 10AA:', error);
+    }
+
+    this.tiempoTranscurrido = 0;
+    this.estadoESP32 = 0;
+    this.cuentaRegresivaIniciada = false;
+    this.mostrarModalCalibracion = false;
+    this.mostrarCuentaRegresiva = false;
+
+    this.jugadores.forEach((j) => {
+      j.velocidad = 0;
+      j.velocidadMaxima = 0;
+      j.velocidadAcumulada = 0;
+      j.muestrasVelocidad = 0;
+      j.vueltaActual = 1;
+      j.distanciaRecorrida = 0;
+      j.distanciaReal = 0;
+    });
+
+    this.actualizarPosiciones();
+
+    this.paso = 2;
   }
-
-  this.detenerCarrera();
-
-  try {
-    await this.ble.enviarComando('bici1', '10AA');
-  } catch (error) {
-    console.error('Error enviando comando 10AA:', error);
-  }
-
-  this.tiempoTranscurrido = 0;
-  this.estadoESP32 = 0;
-  this.cuentaRegresivaIniciada = false;
-  this.mostrarModalCalibracion = false;
-  this.mostrarCuentaRegresiva = false;
-
-  this.jugadores.forEach((j) => {
-    j.velocidad = 0;
-    j.velocidadMaxima = 0;
-    j.velocidadAcumulada = 0;
-    j.muestrasVelocidad = 0;
-    j.vueltaActual = 1;
-    j.distanciaRecorrida = 0;
-    j.distanciaReal = 0;
-  });
-
-  this.actualizarPosiciones();
-
-  this.paso = 2;
-}
 
   formatearTiempo(segundos: number): string {
     const mins = Math.floor(segundos / 60);
