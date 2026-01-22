@@ -7,6 +7,7 @@ import {
   ParticipanteVR,
   ParticipanteVRService,
 } from '../../services/Vr/participante-vr.service';
+import { HistorialService } from '../../services/historial-sesion.service';
 
 @Component({
   selector: 'app-vr-registro',
@@ -33,6 +34,7 @@ export class VrRegistroComponent implements OnInit {
     private participanteVRService: ParticipanteVRService,
     private sesionService: SesionService,
     private router: Router,
+    private historialService: HistorialService,
   ) {}
 
   ngOnInit(): void {
@@ -149,6 +151,87 @@ export class VrRegistroComponent implements OnInit {
         this.errorMessage = 'Error al registrar participante';
       },
     });
+  }
+
+  finalizarSesionDirecto(): void {
+    if (confirm('¿Deseas finalizar la sesión VR completa?')) {
+      const historialId = localStorage.getItem('historial_vr_id');
+      console.log('Historial ID encontrados:', historialId);
+
+      if (!historialId) {
+        console.log('Creando historial antes de finalizar');
+        this.participanteVRService.getBySesion(this.sesion.id).subscribe({
+          next: (participantes) => {
+            const fechaInicio = new Date();
+            fechaInicio.setHours(fechaInicio.getHours() - 2);
+
+            const historial = {
+              sesion_id: this.sesion.id,
+              juego_jugado: 'VR',
+              fecha_inicio: fechaInicio.toISOString(),
+              fecha_fin: new Date().toISOString(),
+              duracion_minutos: 0,
+              participantes_data: participantes,
+              ranking_final: participantes,
+              estadisticas_generales: {
+                totalParticipantes: participantes.length,
+                tiempoTotal: participantes.reduce(
+                  (acc, p) => acc + (p.tiempoParticipacion || 0),
+                  0,
+                ),
+              },
+              parametros_utilizados: this.sesion.parametros_juego,
+            };
+
+            this.historialService.crearHistorial(historial).subscribe({
+              next: () => {
+                this.sesionService.finalizarSesion(this.sesion.id).subscribe({
+                  next: () => {
+                    localStorage.removeItem('participante_vr_actual');
+                    localStorage.removeItem('historial_vr_id');
+                    this.sesionService.clearSesionSeleccionada();
+                    this.router.navigate(['/home']);
+                  },
+                });
+              },
+            });
+          },
+        });
+        return;
+      }
+
+      this.participanteVRService.getBySesion(this.sesion.id).subscribe({
+        next: (participantes) => {
+          const historialFinal = {
+            fecha_fin: new Date().toISOString(),
+            participantes_data: participantes,
+            ranking_final: participantes,
+            estadisticas_generales: {
+              totalParticipantes: participantes.length,
+              tiempoTotal: participantes.reduce(
+                (acc, p) => acc + (p.tiempoParticipacion || 0),
+                0,
+              ),
+            },
+          };
+
+          this.historialService
+            .actualizarHistorial(parseInt(historialId), historialFinal)
+            .subscribe({
+              next: () => {
+                this.sesionService.finalizarSesion(this.sesion.id).subscribe({
+                  next: () => {
+                    localStorage.removeItem('participante_vr_actual');
+                    localStorage.removeItem('historial_vr_id');
+                    this.sesionService.clearSesionSeleccionada();
+                    this.router.navigate(['/home']);
+                  },
+                });
+              },
+            });
+        },
+      });
+    }
   }
 
   volver(): void {

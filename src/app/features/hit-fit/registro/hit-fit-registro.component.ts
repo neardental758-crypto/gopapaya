@@ -7,6 +7,7 @@ import {
   ParticipanteHitFitService,
 } from '../../services/hit-fit/participante-hit-fit.service';
 import { SesionService } from '../../services/sesion.service';
+import { HistorialService } from '../../services/historial-sesion.service';
 
 @Component({
   selector: 'app-hit-fit-registro',
@@ -32,6 +33,7 @@ export class HitFitRegistroComponent implements OnInit {
     private participanteHitFitService: ParticipanteHitFitService,
     private sesionService: SesionService,
     private router: Router,
+    private historialService: HistorialService,
   ) {}
 
   ngOnInit(): void {
@@ -97,6 +99,103 @@ export class HitFitRegistroComponent implements OnInit {
         this.errorMessage = 'Error al registrar participante';
       },
     });
+  }
+
+  finalizarSesionDirecto(): void {
+    if (confirm('¿Deseas finalizar la sesión Hit-Fit completa?')) {
+      const historialId = localStorage.getItem('historial_hit_fit_id');
+      console.log('Historial ID encontrado:', historialId);
+
+      if (!historialId) {
+        console.log('Creando historial antes de finalizar');
+        this.participanteHitFitService.getBySesion(this.sesion.id).subscribe({
+          next: (participantes) => {
+            const participantesOrdenados = [...participantes].sort(
+              (a, b) => (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0),
+            );
+
+            const fechaInicio = new Date();
+            fechaInicio.setHours(fechaInicio.getHours() - 2);
+
+            const historial = {
+              sesion_id: this.sesion.id,
+              juego_jugado: 'Hit-Fit',
+              fecha_inicio: fechaInicio.toISOString(),
+              fecha_fin: new Date().toISOString(),
+              duracion_minutos: 0,
+              participantes_data: participantesOrdenados,
+              ranking_final: participantesOrdenados,
+              estadisticas_generales: {
+                totalParticipantes: participantes.length,
+                puntosTotal: participantes.reduce(
+                  (acc, p) => acc + (p.puntosObtenidos || 0),
+                  0,
+                ),
+                tiempoTotal: participantes.reduce(
+                  (acc, p) => acc + (p.tiempoParticipacion || 0),
+                  0,
+                ),
+              },
+              parametros_utilizados: this.sesion.parametros_juego,
+            };
+
+            this.historialService.crearHistorial(historial).subscribe({
+              next: () => {
+                this.sesionService.finalizarSesion(this.sesion.id).subscribe({
+                  next: () => {
+                    localStorage.removeItem('participante_hit_fit_actual');
+                    localStorage.removeItem('historial_hit_fit_id');
+                    this.sesionService.clearSesionSeleccionada();
+                    this.router.navigate(['/home']);
+                  },
+                });
+              },
+            });
+          },
+        });
+        return;
+      }
+
+      this.participanteHitFitService.getBySesion(this.sesion.id).subscribe({
+        next: (participantes) => {
+          const participantesOrdenados = [...participantes].sort(
+            (a, b) => (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0),
+          );
+
+          const historialFinal = {
+            fecha_fin: new Date().toISOString(),
+            participantes_data: participantesOrdenados,
+            ranking_final: participantesOrdenados,
+            estadisticas_generales: {
+              totalParticipantes: participantes.length,
+              puntosTotal: participantes.reduce(
+                (acc, p) => acc + (p.puntosObtenidos || 0),
+                0,
+              ),
+              tiempoTotal: participantes.reduce(
+                (acc, p) => acc + (p.tiempoParticipacion || 0),
+                0,
+              ),
+            },
+          };
+
+          this.historialService
+            .actualizarHistorial(parseInt(historialId), historialFinal)
+            .subscribe({
+              next: () => {
+                this.sesionService.finalizarSesion(this.sesion.id).subscribe({
+                  next: () => {
+                    localStorage.removeItem('participante_hit_fit_actual');
+                    localStorage.removeItem('historial_hit_fit_id');
+                    this.sesionService.clearSesionSeleccionada();
+                    this.router.navigate(['/home']);
+                  },
+                });
+              },
+            });
+        },
+      });
+    }
   }
 
   volver(): void {

@@ -106,22 +106,31 @@
         <p class="text-neon-red text-sm font-bold">⚠️ {{ errorMessage }}</p>
       </div>
 
-      <div class="mt-8 flex gap-4">
-        <button
-          (click)="volver()"
-          class="flex-1 py-4 px-6 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 transition-all"
-        >
-          ← Atrás
-        </button>
-        <button
-          (click)="registrarParticipante()"
-          [disabled]="loading || !isFormValid()"
-          class="flex-1 py-4 px-6 bg-purple-500 text-white rounded-lg font-bold shadow-lg hover:shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-        >
-          <span *ngIf="!loading">Comenzar Experiencia VR 🥽</span>
-          <span *ngIf="loading">Registrando...</span>
-        </button>
-      </div>
+<div class="mt-8 flex gap-4">
+  <button
+    (click)="volver()"
+    class="flex-1 py-4 px-6 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 transition-all"
+  >
+    ← Atrás
+  </button>
+  <button
+    (click)="registrarParticipante()"
+    [disabled]="loading || !isFormValid()"
+    class="flex-1 py-4 px-6 bg-purple-500 text-white rounded-lg font-bold shadow-lg hover:shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+  >
+    <span *ngIf="!loading">Comenzar Experiencia VR 🥽</span>
+    <span *ngIf="loading">Registrando...</span>
+  </button>
+</div>
+
+<div *ngIf="totalParticipantesRegistrados > 0" class="mt-4">
+  <button
+    (click)="finalizarSesionDirecto()"
+    class="w-full py-4 px-6 bg-neon-red text-white rounded-lg font-bold shadow-neon-red hover:shadow-neon-red-lg transition-all"
+  >
+    🏁 Finalizar Sesión VR
+  </button>
+</div>
     </div>
   </div>
 </div>
