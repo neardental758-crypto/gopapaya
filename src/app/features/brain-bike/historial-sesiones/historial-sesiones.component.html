@@ -98,10 +98,12 @@
     <p class="text-3xl font-bold text-neon-yellow">{{ indicadores.totalSesiones }}</p>
     <p class="text-xs text-gray-400 mt-1">Sesiones</p>
   </div>
-  <div class="bg-dark-900 border border-neon-blue/30 rounded-card p-4 text-center">
+  <!-- <div class="bg-dark-900 border border-neon-blue/30 rounded-card p-4 text-center">
     <p class="text-3xl font-bold text-neon-blue">{{ indicadores.totalCarreras }}</p>
-    <p class="text-xs text-gray-400 mt-1">Carreras</p>
-  </div>
+
+    <p
+    class="text-xs text-gray-400 mt-1">Carreras</p>
+  </div> -->
   <div class="bg-dark-900 border border-neon-green/30 rounded-card p-4 text-center">
     <p class="text-3xl font-bold text-neon-green">{{ indicadores.totalParticipantes }}</p>
     <p class="text-xs text-gray-400 mt-1">Participantes</p>
@@ -145,7 +147,9 @@
             <div class="hidden sm:flex items-center gap-4">
               <div class="text-center">
                 <p class="text-lg font-bold text-neon-yellow">{{ grupo.totales.totalCarreras }}</p>
-                <p class="text-xs text-gray-500">Carreras</p>
+                <p class="text-xs text-gray-500">
+                  {{esVRoHitFit(grupo) ? 'Participaciones' : 'Carreras'}}
+                </p>
               </div>
             <div class="text-center">
               <p class="text-lg font-bold text-neon-green">{{ formatearDuracionTexto(getDuracionTotalGrupo(grupo)) }}</p>

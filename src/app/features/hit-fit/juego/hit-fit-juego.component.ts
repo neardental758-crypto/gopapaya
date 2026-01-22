@@ -32,7 +32,7 @@ export class HitFitJuegoComponent implements OnInit, OnDestroy {
     private participanteHitFitService: ParticipanteHitFitService,
     private sesionService: SesionService,
     private router: Router,
-    private historialService: HistorialService
+    private historialService: HistorialService,
   ) {}
 
   ngOnInit(): void {
@@ -66,12 +66,6 @@ export class HitFitJuegoComponent implements OnInit, OnDestroy {
   }
 
   verificarOCrearHistorial(): void {
-    const historialId = localStorage.getItem('historial_hit_fit_id');
-
-    if (historialId) {
-      return;
-    }
-
     const fechaInicio = new Date();
     const historial = {
       sesion_id: this.sesion.id,
@@ -106,7 +100,7 @@ export class HitFitJuegoComponent implements OnInit, OnDestroy {
     this.participanteHitFitService.getBySesion(this.sesion.id).subscribe({
       next: (participantes) => {
         const participantesOrdenados = [...participantes].sort(
-          (a, b) => (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0)
+          (a, b) => (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0),
         );
 
         const historialActualizado = {
@@ -117,11 +111,11 @@ export class HitFitJuegoComponent implements OnInit, OnDestroy {
             totalParticipantes: participantes.length,
             puntosTotal: participantes.reduce(
               (acc, p) => acc + (p.puntosObtenidos || 0),
-              0
+              0,
             ),
             tiempoTotal: participantes.reduce(
               (acc, p) => acc + (p.tiempoParticipacion || 0),
-              0
+              0,
             ),
           },
         };
@@ -149,7 +143,7 @@ export class HitFitJuegoComponent implements OnInit, OnDestroy {
       if (this.tiempoInicio) {
         const ahora = new Date();
         this.tiempoTranscurrido = Math.floor(
-          (ahora.getTime() - this.tiempoInicio.getTime()) / 1000
+          (ahora.getTime() - this.tiempoInicio.getTime()) / 1000,
         );
       }
     }, 1000);
@@ -228,7 +222,7 @@ export class HitFitJuegoComponent implements OnInit, OnDestroy {
     this.participanteHitFitService.getBySesion(this.sesion.id).subscribe({
       next: (participantes) => {
         this.rankingParticipantes = participantes.sort(
-          (a, b) => (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0)
+          (a, b) => (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0),
         );
         this.mostrarRanking = true;
       },
@@ -255,7 +249,7 @@ export class HitFitJuegoComponent implements OnInit, OnDestroy {
       this.participanteHitFitService.getBySesion(this.sesion.id).subscribe({
         next: (participantes) => {
           const participantesOrdenados = [...participantes].sort(
-            (a, b) => (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0)
+            (a, b) => (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0),
           );
 
           const historialFinal = {
@@ -266,11 +260,11 @@ export class HitFitJuegoComponent implements OnInit, OnDestroy {
               totalParticipantes: participantes.length,
               puntosTotal: participantes.reduce(
                 (acc, p) => acc + (p.puntosObtenidos || 0),
-                0
+                0,
               ),
               tiempoTotal: participantes.reduce(
                 (acc, p) => acc + (p.tiempoParticipacion || 0),
-                0
+                0,
               ),
             },
           };
@@ -306,7 +300,7 @@ export class HitFitJuegoComponent implements OnInit, OnDestroy {
     this.participanteHitFitService.getBySesion(this.sesion.id).subscribe({
       next: (participantes) => {
         const participantesOrdenados = [...participantes].sort(
-          (a, b) => (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0)
+          (a, b) => (b.puntosObtenidos || 0) - (a.puntosObtenidos || 0),
         );
 
         const fechaInicio = new Date();
@@ -324,11 +318,11 @@ export class HitFitJuegoComponent implements OnInit, OnDestroy {
             totalParticipantes: participantes.length,
             puntosTotal: participantes.reduce(
               (acc, p) => acc + (p.puntosObtenidos || 0),
-              0
+              0,
             ),
             tiempoTotal: participantes.reduce(
               (acc, p) => acc + (p.tiempoParticipacion || 0),
-              0
+              0,
             ),
           },
           parametros_utilizados: this.sesion.parametros_juego,

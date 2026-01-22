@@ -28,7 +28,7 @@ export class VrJuegoComponent implements OnInit {
     private participanteVRService: ParticipanteVRService,
     private sesionService: SesionService,
     private router: Router,
-    private historialService: HistorialService
+    private historialService: HistorialService,
   ) {}
 
   ngOnInit(): void {
@@ -80,12 +80,6 @@ export class VrJuegoComponent implements OnInit {
   }
 
   verificarOCrearHistorial(): void {
-    const historialId = localStorage.getItem('historial_vr_id');
-
-    if (historialId) {
-      return;
-    }
-
     const fechaInicio = new Date();
     const historial = {
       sesion_id: this.sesion.id,
@@ -126,7 +120,7 @@ export class VrJuegoComponent implements OnInit {
             totalParticipantes: participantes.length,
             tiempoTotal: participantes.reduce(
               (acc, p) => acc + (p.tiempoParticipacion || 0),
-              0
+              0,
             ),
           },
         };
@@ -204,7 +198,7 @@ export class VrJuegoComponent implements OnInit {
               totalParticipantes: participantes.length,
               tiempoTotal: participantes.reduce(
                 (acc, p) => acc + (p.tiempoParticipacion || 0),
-                0
+                0,
               ),
             },
           };
@@ -241,7 +235,7 @@ export class VrJuegoComponent implements OnInit {
       if (this.tiempoInicio) {
         const ahora = new Date();
         this.tiempoTranscurrido = Math.floor(
-          (ahora.getTime() - this.tiempoInicio.getTime()) / 1000
+          (ahora.getTime() - this.tiempoInicio.getTime()) / 1000,
         );
       }
     }, 1000);

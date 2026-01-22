@@ -37,7 +37,7 @@ export class GestionAdminsComponent implements OnInit {
 
   constructor(
     private usuarioService: UsuarioService,
-    private empresaService: EmpresaService
+    private empresaService: EmpresaService,
   ) {}
 
   ngOnInit(): void {
@@ -80,24 +80,12 @@ export class GestionAdminsComponent implements OnInit {
 
     if (usuario) {
       this.editMode = true;
-      let empresaIds: string[] = [];
-
-      if (typeof usuario.empresa_ids === 'string') {
-        try {
-          empresaIds = JSON.parse(usuario.empresa_ids);
-        } catch {
-          empresaIds = [];
-        }
-      } else if (Array.isArray(usuario.empresa_ids)) {
-        empresaIds = [...usuario.empresa_ids];
-      }
-
       this.usuarioForm = {
         nombre: usuario.nombre,
         email: usuario.email,
         password: '',
         rol: usuario.rol,
-        empresa_ids: empresaIds,
+        empresa_ids: [],
       };
       this.selectedUsuario = usuario;
     } else {
@@ -152,23 +140,8 @@ export class GestionAdminsComponent implements OnInit {
     return this.usuarioForm.empresa_ids.includes(empresaId);
   }
 
-  onRolChange(): void {
-    if (this.usuarioForm.rol === 'super_admin') {
-      this.usuarioForm.empresa_ids = [];
-    }
-  }
-
   onSubmit(): void {
     this.errorMessage = '';
-
-    if (
-      (this.usuarioForm.rol === 'admin' || this.usuarioForm.rol === 'viewer') &&
-      this.usuarioForm.empresa_ids.length === 0
-    ) {
-      this.errorMessage =
-        'Los usuarios Admin y Viewer deben tener al menos una empresa asignada';
-      return;
-    }
 
     if (!this.editMode && !this.isPasswordValid()) {
       this.errorMessage = 'La contraseña no cumple con los requisitos mínimos';
@@ -185,6 +158,8 @@ export class GestionAdminsComponent implements OnInit {
         return;
       }
 
+      delete data.empresa_ids;
+
       this.usuarioService
         .updateUsuario(this.selectedUsuario._id, data)
         .subscribe({
@@ -199,7 +174,10 @@ export class GestionAdminsComponent implements OnInit {
           },
         });
     } else {
-      this.usuarioService.createUsuario(this.usuarioForm).subscribe({
+      const data: any = { ...this.usuarioForm };
+      delete data.empresa_ids;
+
+      this.usuarioService.createUsuario(data).subscribe({
         next: () => {
           this.loadUsuarios();
           this.cancelForm();
