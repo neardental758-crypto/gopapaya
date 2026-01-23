@@ -7,6 +7,7 @@ import { BiketonaParticipantesService } from '../../../services/biketona-partici
 import { BiketonaService } from '../../../services/biketona.service';
 import { BleEsp32Service } from '../../../services/ble-esp32.service';
 import { SesionService } from '../../../services/sesion.service';
+import { BleEsp32PistaFisicaService } from '../../../services/pista-fisica/ble-esp32-pista-fisica.service';
 
 type BikeKey = 'bici1' | 'bici2';
 interface Jugador {
@@ -98,21 +99,21 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
 
   idBiketona: string | null = null;
 
-  coloresVehiculos = ['#ef4444', '#fbbf24'];
+  coloresVehiculos = ['#ffffff', '#3b82f6'];
 
   iconosVehiculos = [
-    'assets/images/carro_rojo.png',
-    'assets/images/carro_amarillo.png',
+    'assets/images/carro_blanco.png',
+    'assets/images/carro_azul.png',
   ];
 
   videosVehiculos = [
-    'assets/images/carro_movimiento_rojo.mp4',
-    'assets/images/carro_movimiento_amarillo.mp4',
+    'assets/images/carro_movimiento_blanco.mp4',
+    'assets/images/carro_movimiento_azul.mp4',
   ];
 
   fondosCarrera = [
-    'assets/images/carro_movimiento_rojo.mp4',
-    'assets/images/carro_movimiento_amarillo.mp4',
+    'assets/images/carro_movimiento_blanco.mp4',
+    'assets/images/carro_movimiento_azul.mp4',
   ];
 
   bicis: BiciUI[] = [
@@ -132,17 +133,24 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     },
   ];
 
+  // Propiedades ESP32
+  cuentaRegresivaIniciada = false;
+  estadoESP32: number = 0;
+  mostrarModalCalibracion = false;
+  sensorAnterior1 = 0;
+  sensorAnterior2 = 0;
+
   participantesRegistrados: any[] = [];
   participantesRecientes: string[] = [];
   tiempoTotalTorneo = 0;
 
   constructor(
     private router: Router,
-    private ble: BleEsp32Service,
+    private ble: BleEsp32PistaFisicaService,
     private biketonaParticipantesService: BiketonaParticipantesService,
     private biketonaService: BiketonaService,
     public audioService: BrainBikeAudioService,
-    private sesionService: SesionService
+    private sesionService: SesionService,
   ) {}
 
   ngOnInit(): void {
@@ -381,6 +389,11 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
         if (this.jugadores[1]) this.jugadores[1].velocidad = vel2;
       });
 
+      await this.ble.subscribeSensores(key, (sensor1, sensor2, estadoID) => {
+        this.estadoESP32 = estadoID;
+        this.procesarSensores(sensor1, sensor2, estadoID);
+      });
+
       const bici2UI = this.getBiciUI('bici2');
       bici2UI.status = 'Conectado (usa datos de Bici 1)';
       bici2UI.conectado = true;
@@ -390,6 +403,57 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
       biciUI.status = 'Error al conectar';
       biciUI.conectado = false;
     }
+  }
+
+  private procesarSensores(
+    sensor1: number,
+    sensor2: number,
+    estadoID: number,
+  ): void {
+    if (estadoID === 1 || estadoID === 2) {
+      this.mostrarModalCalibracion = true;
+      this.sensorAnterior1 = sensor1;
+      this.sensorAnterior2 = sensor2;
+      return;
+    }
+
+    if (estadoID === 3) {
+      this.mostrarModalCalibracion = false;
+      if (!this.cuentaRegresivaIniciada) {
+        this.cuentaRegresivaIniciada = true;
+        this.iniciarCuentaRegresiva();
+      }
+      return;
+    }
+
+    if (!this.carreraIniciada || this.carreraPausada) {
+      this.sensorAnterior1 = sensor1;
+      this.sensorAnterior2 = sensor2;
+      return;
+    }
+
+    const distanciaPorVuelta = 100;
+
+    if (sensor1 === 1 && this.sensorAnterior1 === 0) {
+      if (this.jugadores[0]) {
+        this.jugadores[0].vueltaActual++;
+        this.jugadores[0].distanciaRecorrida += distanciaPorVuelta;
+        this.jugadores[0].distanciaReal += distanciaPorVuelta;
+      }
+    }
+
+    if (sensor2 === 1 && this.sensorAnterior2 === 0) {
+      if (this.jugadores[1]) {
+        this.jugadores[1].vueltaActual++;
+        this.jugadores[1].distanciaRecorrida += distanciaPorVuelta;
+        this.jugadores[1].distanciaReal += distanciaPorVuelta;
+      }
+    }
+
+    this.sensorAnterior1 = sensor1;
+    this.sensorAnterior2 = sensor2;
+
+    this.actualizarPosiciones();
   }
 
   desconectarBici(key: BikeKey) {
@@ -416,7 +480,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     } else if (this.paso === 3) {
       if (
         confirm(
-          '¿Estás seguro de volver? Se perderá el progreso de la carrera actual'
+          '¿Estás seguro de volver? Se perderá el progreso de la carrera actual',
         )
       ) {
         this.paso = 2;
@@ -439,7 +503,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     if (!this.puedeIniciarLlave(llave)) {
       this.audioService.reproducirSonidoError();
       alert(
-        'Debes tener las bicis conectadas y los nombres de los dos participantes para iniciar.'
+        'Debes tener las bicis conectadas y los nombres de los dos participantes para iniciar.',
       );
       return;
     }
@@ -448,7 +512,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     if (!ronda) return;
 
     const idxLlave = ronda.llaves.findIndex(
-      (l) => l.idGlobal === llave.idGlobal
+      (l) => l.idGlobal === llave.idGlobal,
     );
     if (idxLlave !== -1) {
       this.currentLlaveIndex = idxLlave;
@@ -459,6 +523,10 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     this.tiempoTranscurrido = 0;
     this.carreraPausada = false;
     this.carreraIniciada = false;
+    this.cuentaRegresivaIniciada = false;
+    this.estadoESP32 = 0;
+    this.sensorAnterior1 = 0;
+    this.sensorAnterior2 = 0;
 
     this.jugadores.forEach((j, idx) => {
       j.velocidad = 0;
@@ -474,26 +542,20 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     this.paso = 3;
     this.audioService.reproducirSonidoBanderaCarrera();
 
-    const esUltimaRonda = llave.ronda === this.rondas.length;
-    const tituloRonda = esUltimaRonda ? 'Final' : `Ronda ${llave.ronda}`;
-
-    this.abrirModalHeat(
-      `${tituloRonda} - Llave ${llave.indexEnRonda + 1}`,
-      'Presiona "Iniciar carrera" para comenzar este enfrentamiento.',
-      'inicio'
-    );
+    // Iniciar directamente la calibración
+    this.iniciarHeat();
   }
 
   jugadorYaCorrio(jugador: Jugador): boolean {
     return this.participantesRegistrados.some(
-      (p: any) => p.nombre === jugador.nombre && jugador.nombre.trim() !== ''
+      (p: any) => p.nombre === jugador.nombre && jugador.nombre.trim() !== '',
     );
   }
 
   abrirModalHeat(
     titulo: string,
     texto: string,
-    modo: 'inicio' | 'fin' = 'inicio'
+    modo: 'inicio' | 'fin' = 'inicio',
   ): void {
     this.tituloModalHeat = titulo;
     this.textoModalHeat = texto;
@@ -519,15 +581,23 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  iniciarHeat(): void {
-    this.cerrarModalHeat();
+  async iniciarHeat(): Promise<void> {
     this.audioService.reproducirSonidoSirenaLargada();
-    this.iniciarCuentaRegresiva();
+
+    try {
+      await this.ble.enviarComando('bici1', '01AA');
+      this.mostrarModalCalibracion = true;
+    } catch (error) {
+      console.error('Error al iniciar calibración:', error);
+      alert('Error al conectar con ESP32. Iniciando cuenta regresiva manual.');
+      this.iniciarCuentaRegresiva();
+    }
   }
 
   iniciarCuentaRegresiva(): void {
     this.mostrarCuentaRegresiva = true;
     this.numeroCuentaRegresiva = 3;
+    this.audioService.reproducirMusicaCarrera();
 
     const intervaloCuenta = setInterval(() => {
       this.numeroCuentaRegresiva--;
@@ -540,7 +610,8 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
         clearInterval(intervaloCuenta);
         this.mostrarCuentaRegresiva = false;
         this.carreraIniciada = true;
-        this.audioService.reproducirSonidoMotor();
+        this.audioService.reproducirSonidoMotorAcelerando();
+        this.audioService.reproducirSonidoBocinaCarrera();
         this.iniciarSimulacion();
       }
     }, 1000);
@@ -557,20 +628,6 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
 
         if (velocidadKph > jugador.velocidadMaxima) {
           jugador.velocidadMaxima = velocidadKph;
-        }
-
-        const velocidadMps = velocidadKph / 3.6;
-        const distanciaMetros = velocidadMps * 1;
-
-        jugador.distanciaReal += distanciaMetros;
-
-        const porcentajeVuelta =
-          (distanciaMetros / this.longitudPistaMetros) * 100;
-        jugador.distanciaRecorrida += porcentajeVuelta;
-
-        if (jugador.distanciaRecorrida >= 100) {
-          jugador.distanciaRecorrida -= 100;
-          jugador.vueltaActual++;
         }
       });
 
@@ -591,9 +648,29 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     this.carreraIniciada = false;
   }
 
-  reiniciarCarrera(): void {
+  async reiniciarCarrera(): Promise<void> {
+    if (
+      !confirm(
+        '¿Seguro que deseas reiniciar la carrera? Se perderá el progreso actual.',
+      )
+    ) {
+      return;
+    }
+
     this.detenerCarrera();
+
+    try {
+      await this.ble.enviarComando('bici1', '10AA');
+    } catch (error) {
+      console.error('Error enviando comando 10AA:', error);
+    }
+
     this.tiempoTranscurrido = 0;
+    this.estadoESP32 = 0;
+    this.cuentaRegresivaIniciada = false;
+    this.mostrarModalCalibracion = false;
+    this.mostrarCuentaRegresiva = false;
+
     this.jugadores.forEach((j) => {
       j.velocidad = 0;
       j.velocidadMaxima = 0;
@@ -601,7 +678,20 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
       j.distanciaRecorrida = 0;
       j.distanciaReal = 0;
     });
+
+    // Resetear estado de la llave
+    if (this.llaveActual) {
+      this.llaveActual.estado = 'pendiente';
+
+      const llaveId = this.llaveActual.idGlobal;
+      this.participantesRegistrados = this.participantesRegistrados.filter(
+        (p: any) => p.llave !== llaveId,
+      );
+    }
+
     this.actualizarPosiciones();
+
+    this.paso = 2;
   }
 
   actualizarPosiciones(): void {
@@ -620,15 +710,53 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     });
   }
 
-  verificarFinCarrera(): void {
+  async verificarFinCarrera(): Promise<void> {
+    const distanciaTotal = this.configuracion.numeroVueltas * 100;
+
+    this.jugadores.forEach((jugador) => {
+      if (jugador.distanciaReal >= distanciaTotal) {
+        jugador.distanciaReal = distanciaTotal;
+        jugador.vueltaActual = this.configuracion.numeroVueltas + 1;
+      }
+    });
+
+    const jugador1Termino = this.jugadores[0]?.distanciaReal >= distanciaTotal;
+    const jugador2Termino = this.jugadores[1]?.distanciaReal >= distanciaTotal;
+
+    if (jugador1Termino && !jugador2Termino && this.estadoESP32 === 4) {
+      try {
+        await this.ble.enviarComando('bici1', '01AF');
+      } catch (error) {
+        console.error('Error enviando comando 01AF:', error);
+      }
+    }
+
+    if (jugador2Termino && !jugador1Termino && this.estadoESP32 === 4) {
+      try {
+        await this.ble.enviarComando('bici1', '01FA');
+      } catch (error) {
+        console.error('Error enviando comando 01FA:', error);
+      }
+    }
+
     const ganador = this.jugadores.find(
-      (j) => j.vueltaActual > this.configuracion.numeroVueltas
+      (j) => j.vueltaActual > this.configuracion.numeroVueltas,
     );
     if (!ganador) return;
 
+    if (!jugador1Termino && !jugador2Termino) return;
+    const todosTerminaron = jugador1Termino && jugador2Termino;
+    if (!todosTerminaron) return;
+
     this.detenerCarrera();
     this.ganadorActual = ganador;
-    this.audioService.reproducirSonidoVictoria();
+    this.audioService.reproducirSonidoLlegadaMeta();
+
+    try {
+      await this.ble.enviarComando('bici1', '01FF');
+    } catch (error) {
+      console.error('Error enviando comando 01FF:', error);
+    }
 
     this.jugadores.forEach((jugador) => {
       const participante = this.participantes.find((p) => p.id === jugador.id);
@@ -643,14 +771,6 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
         ) {
           participante.mejorTiempo = tiempoEstaCarrera;
         }
-        console.log(
-          '✅',
-          jugador.nombre,
-          '- Tiempo carrera:',
-          tiempoEstaCarrera,
-          '| Mejor tiempo global:',
-          participante.mejorTiempo
-        );
       } else {
         const tiempoPerdedor = tiempoEstaCarrera + 10;
         if (
@@ -659,14 +779,6 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
         ) {
           participante.mejorTiempo = tiempoPerdedor;
         }
-        console.log(
-          '❌',
-          jugador.nombre,
-          '- Tiempo carrera (perdedor):',
-          tiempoPerdedor,
-          '| Mejor tiempo global:',
-          participante.mejorTiempo
-        );
       }
     });
 
@@ -688,13 +800,13 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
       torneoTerminado
         ? `Ganador del campeonato: ${ganador.nombre}. Verás el ranking final.`
         : `Ganador de la llave: ${ganador.nombre}. Al cerrar este cuadro seguiremos con las siguientes llaves.`,
-      'fin'
+      'fin',
     );
   }
 
   private registrarResultadosLlave(
     llave: LlaveCampeonato,
-    ganador: Jugador
+    ganador: Jugador,
   ): void {
     const idBiketona = this.idBiketona;
     if (!idBiketona) {
@@ -705,7 +817,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     this.participantesRecientes = llave.jugadores.map((j) => j.nombre);
     localStorage.setItem(
       'participantesRecientes',
-      JSON.stringify(this.participantesRecientes)
+      JSON.stringify(this.participantesRecientes),
     );
 
     const MET = 8;
@@ -731,8 +843,8 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
           jugador.genero === 'masculino'
             ? 'M'
             : jugador.genero === 'femenino'
-            ? 'F'
-            : 'O',
+              ? 'F'
+              : 'O',
         equipo: '',
         puntos: 0,
         tiempo: this.formatearTiempo(tiempoEstaCarrera),
@@ -747,32 +859,12 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     });
 
     participantesAGuardar.forEach((participante) => {
-      const yaExiste = this.participantesRegistrados.find(
-        (p: any) =>
-          p.nombre === participante.nombre && p.llave === participante.llave
-      );
-
-      if (yaExiste) {
-        this.biketonaParticipantesService
-          .actualizarParticipante(yaExiste.id, participante)
-          .subscribe({
-            next: (p) => {
-              const index = this.participantesRegistrados.findIndex(
-                (pr: any) => pr.id === yaExiste.id
-              );
-              if (index !== -1) this.participantesRegistrados[index] = p;
-            },
-            error: (err) =>
-              console.error('Error actualizando participante:', err),
-          });
-      } else {
-        this.biketonaParticipantesService
-          .crearParticipante(participante)
-          .subscribe({
-            next: (p) => this.participantesRegistrados.push(p),
-            error: (err) => console.error('Error guardando participante:', err),
-          });
-      }
+      this.biketonaParticipantesService
+        .crearParticipante(participante)
+        .subscribe({
+          next: (p) => this.participantesRegistrados.push(p),
+          error: (err) => console.error('Error guardando participante:', err),
+        });
     });
   }
 
@@ -806,12 +898,12 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
           : 0;
 
       const velocidadMaxima = Math.max(
-        ...datosParticipante.map((p: any) => parseFloat(p.velocidadMax || '0'))
+        ...datosParticipante.map((p: any) => parseFloat(p.velocidadMax || '0')),
       );
 
       const caloriasTotal = datosParticipante.reduce(
         (sum: number, p: any) => sum + parseFloat(p.calorias || '0'),
-        0
+        0,
       );
 
       const vatiosPromedio = datosParticipante
@@ -903,7 +995,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     const historial = this.construirHistorialSesion(
       idSesion,
       idBiketona,
-      userId
+      userId,
     );
 
     this.biketonaService.guardarHistorialSesion(historial).subscribe({
@@ -920,7 +1012,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
   private construirHistorialSesion(
     idSesion: string,
     idBiketona: string,
-    userId: string
+    userId: string,
   ): any {
     const ranking = this.obtenerRanking();
     const duracionMinutos = Math.floor(this.tiempoTotalTorneo / 60);
@@ -929,14 +1021,14 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
       .filter((p) => p.nombre?.trim())
       .map((p) => {
         const registrosParticipante = this.participantesRegistrados.filter(
-          (pDB: any) => pDB.nombre === p.nombre
+          (pDB: any) => pDB.nombre === p.nombre,
         );
 
         let rondaMaximaAlcanzada = 0;
         for (let r = this.rondas.length - 1; r >= 0; r--) {
           const ronda = this.rondas[r];
           const estaEnRonda = ronda.llaves.some((llave) =>
-            llave.jugadores.some((j) => j.id === p.id)
+            llave.jugadores.some((j) => j.id === p.id),
           );
           if (estaEnRonda) {
             rondaMaximaAlcanzada = r + 1;
@@ -970,13 +1062,13 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
 
         const velocidadMaxima = Math.max(
           ...registrosParticipante.map((r: any) =>
-            parseFloat(r.velocidadMax || '0')
-          )
+            parseFloat(r.velocidadMax || '0'),
+          ),
         );
 
         const caloriasTotal = registrosParticipante.reduce(
           (sum: number, r: any) => sum + parseFloat(r.calorias || '0'),
-          0
+          0,
         );
 
         const vatiosPromedio = registrosParticipante
@@ -1014,7 +1106,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
       sesion_id: parseInt(idSesion),
       juego_id: idBiketona,
       fecha_inicio: new Date(
-        Date.now() - this.tiempoTotalTorneo * 1000
+        Date.now() - this.tiempoTotalTorneo * 1000,
       ).toISOString(),
       fecha_fin: new Date().toISOString(),
       duracion_minutos: duracionMinutos,
@@ -1035,35 +1127,35 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
 
   private calcularVelocidadPromedioGeneral(): number {
     const participantesConDatos = this.participantesRegistrados.filter(
-      (p: any) => p.velocidadPromedio && parseFloat(p.velocidadPromedio) > 0
+      (p: any) => p.velocidadPromedio && parseFloat(p.velocidadPromedio) > 0,
     );
 
     if (participantesConDatos.length === 0) return 0;
 
     const sumaVelocidades = participantesConDatos.reduce(
       (sum: number, p: any) => sum + parseFloat(p.velocidadPromedio || '0'),
-      0
+      0,
     );
 
     return parseFloat(
-      (sumaVelocidades / participantesConDatos.length).toFixed(1)
+      (sumaVelocidades / participantesConDatos.length).toFixed(1),
     );
   }
 
   private calcularDistanciaPromedioGeneral(): number {
     const participantesConDatos = this.participantesRegistrados.filter(
-      (p: any) => p.distanciaReal && parseFloat(p.distanciaReal) > 0
+      (p: any) => p.distanciaReal && parseFloat(p.distanciaReal) > 0,
     );
 
     if (participantesConDatos.length === 0) return 0;
 
     const sumaDistancias = participantesConDatos.reduce(
       (sum: number, p: any) => sum + parseFloat(p.distanciaReal || '0'),
-      0
+      0,
     );
 
     return parseFloat(
-      (sumaDistancias / participantesConDatos.length).toFixed(2)
+      (sumaDistancias / participantesConDatos.length).toFixed(2),
     );
   }
 
@@ -1074,14 +1166,14 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
 
     if (!idBiketona) {
       alert(
-        'No se encontró el ID de la biketona. No se puede finalizar el torneo.'
+        'No se encontró el ID de la biketona. No se puede finalizar el torneo.',
       );
       return;
     }
 
     if (
       !confirm(
-        '¿Deseas finalizar el campeonato? No podrás seguir jugando más llaves.'
+        '¿Deseas finalizar el campeonato? No podrás seguir jugando más llaves.',
       )
     ) {
       return;
@@ -1093,7 +1185,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
       const historial = this.construirHistorialSesion(
         idSesion,
         idBiketona,
-        userId
+        userId,
       );
 
       this.biketonaService.guardarHistorialSesion(historial).subscribe({
@@ -1111,7 +1203,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
                     },
                     error: () => {
                       alert(
-                        'Campeonato finalizado pero hubo error al cerrar la sesión.'
+                        'Campeonato finalizado pero hubo error al cerrar la sesión.',
                       );
                       this.router.navigate(['/home']);
                     },
@@ -1166,7 +1258,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
 
   avanzarGanadorASiguienteRonda(
     llave: LlaveCampeonato,
-    ganador: Jugador
+    ganador: Jugador,
   ): void {
     const rondaIndex = this.rondas.findIndex((r) => r.numero === llave.ronda);
     if (rondaIndex === -1) return;
@@ -1200,7 +1292,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
       for (let r = this.rondas.length - 1; r >= 0; r--) {
         const ronda = this.rondas[r];
         const estaEnRonda = ronda.llaves.some((llave) =>
-          llave.jugadores.some((j) => j.id === p.id)
+          llave.jugadores.some((j) => j.id === p.id),
         );
 
         if (estaEnRonda) {
@@ -1244,7 +1336,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
   seleccionarGeneroModal(genero: 'masculino' | 'femenino'): void {
     if (this.llaveEnPantalla && this.modalSexoJugadorId !== null) {
       const jugador = this.llaveEnPantalla.jugadores.find(
-        (j) => j.id === this.modalSexoJugadorId
+        (j) => j.id === this.modalSexoJugadorId,
       );
       if (jugador) {
         this.seleccionarGenero(jugador, genero);
@@ -1254,7 +1346,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
 
   obtenerParticipanteConMejorTiempo(): Jugador | null {
     const participantesConTiempo = this.participantes.filter(
-      (p) => p.mejorTiempo && p.mejorTiempo > 0
+      (p) => p.mejorTiempo && p.mejorTiempo > 0,
     );
 
     if (participantesConTiempo.length === 0) return null;
@@ -1265,7 +1357,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
   }
   calcularProgresoBarra(jugador: Jugador): number {
     const distanciaTotal = this.configuracion.numeroVueltas * 100;
-    const progreso = (jugador.distanciaReal / distanciaTotal) * 100;
+    const progreso = (jugador.distanciaRecorrida / distanciaTotal) * 100;
     return Math.min(Math.max(progreso, 0), 100);
   }
   calcularVatios(jugador: Jugador): number {
@@ -1277,7 +1369,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     const pesoKg = 70;
     const minutosTranscurridos = this.tiempoTranscurrido / 60;
     return parseFloat(
-      (0.0175 * MET * pesoKg * minutosTranscurridos).toFixed(0)
+      (0.0175 * MET * pesoKg * minutosTranscurridos).toFixed(0),
     );
   }
 }

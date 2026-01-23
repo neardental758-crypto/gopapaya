@@ -148,6 +148,26 @@ export class EditarParametrosSesionComponent implements OnInit {
     });
   }
 
+  cargarContenidosDeTematica(tematicaId: string): void {
+    const tematicaSeleccionada = this.tematicas.find(
+      (t) => t._id === tematicaId,
+    );
+    if (tematicaSeleccionada?.contenidos) {
+      this.contenidosDisponibles = tematicaSeleccionada.contenidos;
+    }
+  }
+
+  puedeEditar(sesion: Sesion): boolean {
+    if (!sesion.fecha_sesion) return true;
+
+    const fechaSesion = new Date(sesion.fecha_sesion);
+    const ahora = new Date();
+    const diferenciaHoras =
+      (fechaSesion.getTime() - ahora.getTime()) / (1000 * 60 * 60);
+
+    return diferenciaHoras >= 1;
+  }
+
   cargarSesion(sesion: Sesion): void {
     if (sesion.estadoSesion === 'finalizada') {
       alert('No se puede editar una sesión que ya finalizó.');
@@ -157,7 +177,7 @@ export class EditarParametrosSesionComponent implements OnInit {
 
     if (!this.puedeEditar(sesion)) {
       alert(
-        'No se puede editar la sesión. Faltan menos de 3 horas para su inicio.',
+        'No se puede editar la sesión. Falta menos de 1 hora para su inicio.',
       );
       this.router.navigate(['/calendario']);
       return;
@@ -209,26 +229,6 @@ export class EditarParametrosSesionComponent implements OnInit {
     }
 
     this.cargando = false;
-  }
-
-  cargarContenidosDeTematica(tematicaId: string): void {
-    const tematicaSeleccionada = this.tematicas.find(
-      (t) => t._id === tematicaId,
-    );
-    if (tematicaSeleccionada?.contenidos) {
-      this.contenidosDisponibles = tematicaSeleccionada.contenidos;
-    }
-  }
-
-  puedeEditar(sesion: Sesion): boolean {
-    if (!sesion.fecha_sesion) return true;
-
-    const fechaSesion = new Date(sesion.fecha_sesion);
-    const ahora = new Date();
-    const diferenciaHoras =
-      (fechaSesion.getTime() - ahora.getTime()) / (1000 * 60 * 60);
-
-    return diferenciaHoras >= 3;
   }
 
   onTematicaChange(): void {

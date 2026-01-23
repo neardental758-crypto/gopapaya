@@ -84,15 +84,6 @@
 
             <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
               <button
-                (click)="cerrarModalHeat()"
-                class="w-full sm:flex-1 py-3 sm:py-3.5 px-4 sm:px-6 bg-dark-800/70 text-gray-200 rounded-xl font-display font-semibold
-                      border border-dark-600 hover:border-neon-blue hover:text-neon-blue hover:shadow-[0_0_18px_rgba(56,189,248,0.8)]
-                      transition-all text-sm sm:text-base"
-              >
-                ✨ Cerrar
-              </button>
-
-              <button
                 (click)="cerrarModalHeatYVolverALlaves()"
                 class="w-full sm:flex-1 py-3 sm:py-3.5 px-4 sm:px-6 bg-yellow-400 text-dark-950 rounded-xl font-display font-bold
                       shadow-[0_0_25px_rgba(250,204,21,0.9)] hover:shadow-[0_0_35px_rgba(250,204,21,1)] hover:scale-[1.02] active:scale-95
@@ -788,13 +779,6 @@
         [style.box-shadow]="'0 8px 30px ' + jugador.color + '60, 0 0 0 3px ' + jugador.color + '30'">
         {{ jugador.posicion }}
       </div>
-      <div *ngIf="jugador.posicion === 1" class="absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center animate-bounce border-2"
-        [style.background]="'linear-gradient(135deg, ' + jugador.color + ', ' + jugador.color + 'D0)'"
-        [style.border-color]="jugador.color"
-        [style.box-shadow]="'0 0 15px ' + jugador.color">
-        <span class="text-white text-base drop-shadow-lg">👑</span>
-      </div>
-
             </div>
             <div>
               <h3 class="text-white font-display font-black text-xl uppercase tracking-wide drop-shadow-lg">
@@ -959,11 +943,13 @@
             </div>
           </div>
           <div class="bg-dark-900/90 backdrop-blur-sm rounded-b-2xl p-2.5 border-2 border-gray-400/60">
-            <div class="w-10 h-10 rounded-full mx-auto mb-1 flex items-center justify-center font-bold text-white text-sm border-2 border-gray-400"
-              [style.background-color]="obtenerRanking()[1].color || '#facc15'"
-              [style.box-shadow]="'0 0 15px ' + (obtenerRanking()[1].color || '#facc15') + '80'">
+          <div class="w-10 h-10 rounded-full mx-auto mb-1 flex items-center justify-center font-bold text-sm border-2 border-gray-400"
+            [style.background-color]="obtenerRanking()[1].color || '#facc15'"
+            [style.box-shadow]="'0 0 15px ' + (obtenerRanking()[1].color || '#facc15') + '80'">
+            <span [style.color]="obtenerRanking()[1].color === '#ffffff' ? '#0a0a0a' : '#ffffff'">
               {{ obtenerRanking()[1].id }}
-            </div>
+            </span>
+          </div>
             <p class="text-white font-bold text-xs truncate w-20">{{ obtenerRanking()[1].nombre || ('Jugador ' + obtenerRanking()[1].id) }}</p>
           </div>
         </div>
@@ -977,10 +963,12 @@
             </div>
           </div>
           <div class="bg-dark-900/90 backdrop-blur-sm rounded-b-2xl p-3 border-4 border-neon-yellow/80 shadow-neon-yellow">
-            <div class="w-14 h-14 rounded-full mx-auto mb-1.5 flex items-center justify-center font-bold text-white text-xl border-4 border-neon-yellow"
+            <div class="w-14 h-14 rounded-full mx-auto mb-1.5 flex items-center justify-center font-bold text-xl border-4 border-neon-yellow"
               [style.background-color]="obtenerRanking()[0].color || '#facc15'"
               [style.box-shadow]="'0 0 25px ' + (obtenerRanking()[0].color || '#facc15')">
-              {{ obtenerRanking()[0].id }}
+              <span [style.color]="obtenerRanking()[0].color === '#ffffff' ? '#0a0a0a' : '#ffffff'">
+                {{ obtenerRanking()[0].id }}
+              </span>
             </div>
             <p class="text-neon-yellow font-bold text-sm truncate w-24">{{ obtenerRanking()[0].nombre || ('Jugador ' + obtenerRanking()[0].id) }}</p>
           </div>
@@ -995,10 +983,12 @@
             </div>
           </div>
           <div class="bg-dark-900/90 backdrop-blur-sm rounded-b-2xl p-2.5 border-2 border-orange-500/60">
-            <div class="w-10 h-10 rounded-full mx-auto mb-1 flex items-center justify-center font-bold text-white text-sm border-2 border-orange-500"
+            <div class="w-10 h-10 rounded-full mx-auto mb-1 flex items-center justify-center font-bold text-sm border-2 border-orange-500"
               [style.background-color]="obtenerRanking()[2].color || '#facc15'"
               [style.box-shadow]="'0 0 15px ' + (obtenerRanking()[2].color || '#facc15') + '80'">
-              {{ obtenerRanking()[2].id }}
+              <span [style.color]="obtenerRanking()[2].color === '#ffffff' ? '#0a0a0a' : '#ffffff'">
+                {{ obtenerRanking()[2].id }}
+              </span>
             </div>
             <p class="text-white font-bold text-xs truncate w-20">{{ obtenerRanking()[2].nombre || ('Jugador ' + obtenerRanking()[2].id) }}</p>
             <p class="text-orange-300 text-base font-bold" *ngIf="obtenerRanking()[2].mejorTiempo != null">{{ obtenerRanking()[2].mejorTiempo }}</p>

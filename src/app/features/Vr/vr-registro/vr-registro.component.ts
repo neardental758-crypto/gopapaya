@@ -156,10 +156,8 @@ export class VrRegistroComponent implements OnInit {
   finalizarSesionDirecto(): void {
     if (confirm('¿Deseas finalizar la sesión VR completa?')) {
       const historialId = localStorage.getItem('historial_vr_id');
-      console.log('Historial ID encontrados:', historialId);
 
       if (!historialId) {
-        console.log('Creando historial antes de finalizar');
         this.participanteVRService.getBySesion(this.sesion.id).subscribe({
           next: (participantes) => {
             const fechaInicio = new Date();

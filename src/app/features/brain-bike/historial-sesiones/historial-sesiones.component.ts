@@ -149,7 +149,8 @@ export class HistorialSesionesComponent implements OnInit {
   }
 
   getCarrerasSesion(sesionId: number): HistorialSesion[] {
-    return this.carrerasCache.get(sesionId)?.data || [];
+    const carreras = this.carrerasCache.get(sesionId)?.data || [];
+    return carreras;
   }
 
   getPaginacionCarreras(sesionId: number): any {
@@ -217,25 +218,14 @@ export class HistorialSesionesComponent implements OnInit {
     this.cargarHistorial();
   }
 
-  onJuegoChange(): void {
-    if (this.filtroJuego === 'Biketona') {
-      this.filtroJuego = '';
-    }
-    this.cargarHistorial();
-  }
-
   cargarHistorial(): void {
     this.cargando = true;
     const empresaId = this.empresaSeleccionada || undefined;
     const fechaIni = this.fechaInicio || undefined;
     const fechaFn = this.fechaFin || undefined;
-    let juego = this.filtroJuego || undefined;
+    const juego = this.filtroJuego || undefined;
     const cronograma = this.filtroCronograma || undefined;
     const secuencia = this.filtroSecuencia || undefined;
-
-    if (juego === 'Biketona') {
-      juego = undefined;
-    }
 
     this.historialService
       .getHistorial(
@@ -250,23 +240,21 @@ export class HistorialSesionesComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
-          if (this.filtroJuego === 'Biketona') {
-            this.sesionesAgrupadas = response.agrupado.filter((grupo) =>
-              grupo.carreras.some((c) => c.juego_jugado.includes('Biketona')),
-            );
-          } else {
-            this.sesionesAgrupadas = response.agrupado;
-          }
+          this.sesionesAgrupadas = response.agrupado;
           this.indicadores = response.indicadores;
           this.paginacionSesiones = response.paginacion;
           this.extraerValoresUnicos();
           this.cargando = false;
         },
         error: (error) => {
-          console.error('❌ Error al cargar historial:', error);
+          console.error('Error al cargar historial:', error);
           this.cargando = false;
         },
       });
+  }
+
+  onJuegoChange(): void {
+    this.cargarHistorial();
   }
 
   extraerValoresUnicos(): void {
@@ -684,6 +672,11 @@ export class HistorialSesionesComponent implements OnInit {
     this.empresaIdParaCorreo = grupo.sesion?.empresa_id || '';
     this.grupoParaCorreo = grupo;
     this.mostrarModalCorreo = true;
+  }
+
+  getJuegoGrupo(grupo: SesionAgrupada): string {
+    if (!grupo.carreras || grupo.carreras.length === 0) return 'N/A';
+    return grupo.carreras[0].juego_jugado;
   }
 
   cerrarModalCorreo(): void {

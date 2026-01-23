@@ -16,11 +16,16 @@ export class LoginComponent implements OnInit {
     password: '',
   };
 
+  goPapayaIcon = 'assets/images/gopapaya.png';
+
   errorMessage = '';
   loading = false;
   showPassword = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     const token = localStorage.getItem('token');

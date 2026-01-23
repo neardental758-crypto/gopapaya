@@ -81,7 +81,7 @@ export class BrainBikeGameService {
         lecturaVelocidades: [],
         botonesActivos: true,
         alertaVelocidad: false,
-      })
+      }),
     );
     this.participantes$.next(participantes);
   }
@@ -144,7 +144,7 @@ export class BrainBikeGameService {
 
   simularRespuestaAleatoria(
     pregunta: any,
-    tiempoMaximo: number
+    tiempoMaximo: number,
   ): RespuestaParticipante | null {
     const participantes = this.participantes$.value;
     if (participantes.length === 0) return null;
@@ -155,10 +155,10 @@ export class BrainBikeGameService {
     const tiempoRespuesta = Math.floor(Math.random() * (tiempoMaximo - 3)) + 2;
 
     const participantesOrdenados = [...participantesActivos].sort(
-      (a, b) => b.velocidadActual - a.velocidadActual
+      (a, b) => b.velocidadActual - a.velocidadActual,
     );
     const indexPonderado = Math.floor(
-      Math.random() * Math.random() * participantesOrdenados.length
+      Math.random() * Math.random() * participantesOrdenados.length,
     );
     const participanteAleatorio = participantesOrdenados[indexPonderado];
 
@@ -169,11 +169,11 @@ export class BrainBikeGameService {
     let respuestaSeleccionada;
     if (esCorrecta) {
       respuestaSeleccionada = pregunta.respuestas.find(
-        (r: any) => r.es_correcta
+        (r: any) => r.es_correcta,
       );
     } else {
       const respuestasIncorrectas = pregunta.respuestas.filter(
-        (r: any) => !r.es_correcta
+        (r: any) => !r.es_correcta,
       );
       respuestaSeleccionada =
         respuestasIncorrectas[
@@ -192,7 +192,7 @@ export class BrainBikeGameService {
   procesarRespuesta(
     participanteId: number,
     esCorrecta: boolean,
-    tiempoUsado: number
+    tiempoUsado: number,
   ): void {
     const participantes = this.participantes$.value.map((p) => {
       if (p.id === participanteId) {
@@ -216,7 +216,6 @@ export class BrainBikeGameService {
     }
   }
 
-  // En brain-bike-game.service.ts
   otorgarBonoVelocidadSeccion(seccion: 'video' | 'trivia'): {
     bonosPromedio: ParticipanteJuego[];
     masRapido: ParticipanteJuego | null;
@@ -238,7 +237,7 @@ export class BrainBikeGameService {
         this.registrarEvento(
           'bono_velocidad_promedio',
           `${p.nombreParticipante} ganó 1 punto por mantener velocidad promedio`,
-          { participante: p.nombreParticipante }
+          { participante: p.nombreParticipante },
         );
       }
 
@@ -246,7 +245,7 @@ export class BrainBikeGameService {
     });
 
     const masRapido = [...actualizados].sort(
-      (a, b) => b.velocidadPromedio - a.velocidadPromedio
+      (a, b) => b.velocidadPromedio - a.velocidadPromedio,
     )[0];
     if (masRapido) {
       const index = actualizados.findIndex((p) => p.id === masRapido.id);
@@ -259,7 +258,7 @@ export class BrainBikeGameService {
         {
           participante: masRapido.nombreParticipante,
           velocidad: masRapido.velocidadPromedio,
-        }
+        },
       );
     }
 
@@ -276,7 +275,7 @@ export class BrainBikeGameService {
 
   simularGanadorBonoColor(colorCorrecto: string): ParticipanteJuego | null {
     const participantes = this.participantes$.value.filter(
-      (p) => p.botonesActivos
+      (p) => p.botonesActivos,
     );
     if (participantes.length === 0) return null;
 
@@ -294,7 +293,7 @@ export class BrainBikeGameService {
     this.registrarEvento(
       'bono_color',
       `${ganador.nombreParticipante} ganó 1 punto por presionar el color correcto`,
-      { participante: ganador.nombreParticipante, color: colorCorrecto }
+      { participante: ganador.nombreParticipante, color: colorCorrecto },
     );
 
     return ganador;
@@ -304,7 +303,7 @@ export class BrainBikeGameService {
     const participantes = this.participantes$.value;
 
     const participantesOrdenados = [...participantes].sort(
-      (a, b) => b.velocidadActual - a.velocidadActual
+      (a, b) => b.velocidadActual - a.velocidadActual,
     );
     const ganador =
       participantesOrdenados.find((p) => p.velocidadActual >= 28) ||
@@ -325,7 +324,7 @@ export class BrainBikeGameService {
         {
           participante: ganador.nombreParticipante,
           velocidad: ganador.velocidadActual,
-        }
+        },
       );
     }
 
@@ -336,7 +335,7 @@ export class BrainBikeGameService {
     const participantes = this.participantes$.value;
 
     const participantesOrdenados = [...participantes].sort(
-      (a, b) => b.velocidadActual - a.velocidadActual
+      (a, b) => b.velocidadActual - a.velocidadActual,
     );
     const ganador = participantesOrdenados[0];
 
@@ -355,7 +354,7 @@ export class BrainBikeGameService {
         {
           participante: ganador.nombreParticipante,
           velocidad: ganador.velocidadActual,
-        }
+        },
       );
     }
 
@@ -372,13 +371,13 @@ export class BrainBikeGameService {
 
   getRankingCarrera(): ParticipanteJuego[] {
     return [...this.participantes$.value].sort(
-      (a, b) => b.puntosCarrera - a.puntosCarrera
+      (a, b) => b.puntosCarrera - a.puntosCarrera,
     );
   }
 
   getRankingGeneral(): ParticipanteJuego[] {
     return [...this.participantes$.value].sort(
-      (a, b) => b.puntosAcumulados - a.puntosAcumulados
+      (a, b) => b.puntosAcumulados - a.puntosAcumulados,
     );
   }
 
@@ -404,7 +403,7 @@ export class BrainBikeGameService {
   }
 
   actualizarParticipantesEnMemoria(
-    participantesActualizados: ParticipanteJuego[]
+    participantesActualizados: ParticipanteJuego[],
   ): void {
     this.participantes$.next(participantesActualizados);
   }
@@ -412,7 +411,7 @@ export class BrainBikeGameService {
   construirHistorial(sesionId: number, brainBikeId: number, config: any): any {
     const fechaFin = new Date();
     const duracionMinutos = Math.floor(
-      (fechaFin.getTime() - this.fechaInicio.getTime()) / 60000
+      (fechaFin.getTime() - this.fechaInicio.getTime()) / 60000,
     );
     const participantes = this.participantes$.value;
 
@@ -460,11 +459,11 @@ export class BrainBikeGameService {
 
     const preguntasCorrectas = participantes.reduce(
       (acc, p) => acc + p.respuestasCorrectas,
-      0
+      0,
     );
     const preguntasIncorrectas = participantes.reduce(
       (acc, p) => acc + p.respuestasIncorrectas,
-      0
+      0,
     );
     const preguntasTotales = preguntasCorrectas + preguntasIncorrectas;
 
@@ -549,7 +548,7 @@ export class BrainBikeGameService {
           {
             participante: p.nombreParticipante,
             velocidadPromedio: p.velocidadPromedio,
-          }
+          },
         );
       }
 
@@ -557,7 +556,7 @@ export class BrainBikeGameService {
     });
 
     const masRapido = [...actualizados].sort(
-      (a, b) => b.velocidadPromedio - a.velocidadPromedio
+      (a, b) => b.velocidadPromedio - a.velocidadPromedio,
     )[0];
     if (masRapido) {
       const index = actualizados.findIndex((p) => p.id === masRapido.id);
@@ -570,7 +569,7 @@ export class BrainBikeGameService {
         {
           participante: masRapido.nombreParticipante,
           velocidad: masRapido.velocidadPromedio,
-        }
+        },
       );
     }
 

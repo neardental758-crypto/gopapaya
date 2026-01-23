@@ -131,117 +131,138 @@
     <div *ngIf="!cargando && sesionesAgrupadas.length > 0" class="space-y-4 mb-8">
       <div *ngFor="let grupo of sesionesAgrupadas" class="bg-dark-900 border border-dark-700 rounded-card overflow-hidden">
 
-        <div (click)="onToggleSesion(grupo.sesion_id)"
-          class="p-4 cursor-pointer hover:bg-dark-850 transition-all flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <img *ngIf="grupo.sesion?.empresa?.logo" [src]="grupo.sesion.empresa.logo"
-              class="w-12 h-12 rounded-lg object-cover" [alt]="grupo.sesion.empresa.nombre"/>
-            <div class="w-12 h-12 rounded-lg bg-dark-700 flex items-center justify-center text-2xl" *ngIf="!grupo.sesion?.empresa?.logo">🏢</div>
-            <div>
-              <h3 class="text-lg font-bold text-white">{{ grupo.sesion?.nombreCliente }}</h3>
-              <p class="text-sm text-gray-400">{{ grupo.sesion?.empresa?.nombre }}</p>
-            </div>
-          </div>
+    <div (click)="onToggleSesion(grupo.sesion_id)"
+      class="p-3 sm:p-4 cursor-pointer hover:bg-dark-850 transition-all">
 
-          <div class="flex items-center gap-6">
-            <div class="hidden sm:flex items-center gap-4">
-              <div class="text-center">
-                <p class="text-lg font-bold text-neon-yellow">{{ grupo.totales.totalCarreras }}</p>
-                <p class="text-xs text-gray-500">
-                  {{esVRoHitFit(grupo) ? 'Participaciones' : 'Carreras'}}
-                </p>
-              </div>
-            <div class="text-center">
-              <p class="text-lg font-bold text-neon-green">{{ formatearDuracionTexto(getDuracionTotalGrupo(grupo)) }}</p>
-              <p class="text-xs text-gray-500">{{ getUnidadDuracion(getDuracionTotalGrupo(grupo)) }}</p>
-            </div>
-            </div>
-             <button
-              (click)="exportarExcel(grupo); $event.stopPropagation()"
-              class="px-4 py-2 bg-neon-green text-dark-950 rounded-lg font-bold text-sm hover:scale-105 transition-all flex items-center gap-2"
-              style="box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);">
-              📥 Descargar Estadísticas
-            </button>
-
-            <button
-              (click)="descargarInforme(grupo.sesion_id); $event.stopPropagation()"
-              class="px-4 py-2 bg-neon-green text-white rounded-lg font-bold hover:shadow-neon-green transition-all text-sm"
-            >
-              📄 Informe PDF
-            </button>
-
-            <button
-              (click)="abrirEvidencias(grupo.sesion, $event)"
-              class="px-4 py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold hover:shadow-neon-yellow transition-all text-sm"
-            >
-              📸 Evidencias
-            </button>
-            <button
-              (click)="abrirModalCorreo(grupo)"
-              class="flex items-center gap-2 px-4 py-2 bg-dark-800 hover:bg-dark-700 border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white rounded-lg font-medium transition-all">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-              </svg>
-              <span>Enviar Correo</span>
-            </button>
-            <div class="text-2xl text-neon-blue transition-transform" [class.rotate-180]="isSesionExpandida(grupo.sesion_id)">▼</div>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <img *ngIf="grupo.sesion?.empresa?.logo" [src]="grupo.sesion.empresa.logo"
+            class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover flex-shrink-0" [alt]="grupo.sesion.empresa.nombre"/>
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-dark-700 flex items-center justify-center text-xl sm:text-2xl flex-shrink-0" *ngIf="!grupo.sesion?.empresa?.logo">🏢</div>
+          <div class="min-w-0 flex-1">
+            <h3 class="text-base sm:text-lg font-bold text-white truncate">{{ grupo.sesion?.nombreCliente }}</h3>
+            <p class="text-xs sm:text-sm text-gray-400 truncate">{{ grupo.sesion?.empresa?.nombre }}</p>
           </div>
         </div>
 
-<div *ngIf="isSesionExpandida(grupo.sesion_id)" class="border-t border-dark-700">
-  <div class="p-4 bg-dark-850 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-    <div class="bg-dark-800 rounded-lg p-3 text-center">
-      <p class="text-xs text-gray-400">Participantes Totales</p>
-      <p class="text-xl font-bold text-neon-yellow">{{ grupo.totales.totalParticipantes }}</p>
-    </div>
-  <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-3 text-center">
-    <p class="text-xs text-gray-400">Vel. Promedio</p>
-    <p class="text-xl font-bold text-neon-green">{{ getVelocidadPromedioGrupo(grupo) }} km/h</p>
-  </div>
-<div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-3 text-center">
-  <p class="text-xs text-gray-400">Vel. Máxima</p>
-  <p class="text-xl font-bold text-neon-blue">{{ getVelocidadMaximaGrupo(grupo) }} km/h</p>
-</div>
-<div *ngIf="!deberiaOcultarDistancia(grupo) && !esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-3 text-center">
-  <p class="text-xs text-gray-400">Distancia Total</p>
-  <p class="text-xl font-bold text-neon-green">{{ getDistanciaTotalGrupo(grupo) }} km</p>
-</div>
-<div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-3 text-center">
-  <p class="text-xs text-gray-400">Calorías Quemadas</p>
-  <p class="text-xl font-bold text-neon-orange">{{ getCaloriasTotalesGrupo(grupo) }} kcal</p>
-</div>
-<div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-3 text-center">
-  <p class="text-xs text-gray-400">Vatios Generados</p>
-  <p class="text-xl font-bold text-neon-pink">{{ getVatiosTotalesGrupo(grupo) }} W</p>
-</div>
-<div *ngIf="juegoFiltradoTienePreguntas() && indicadores!.totalPreguntasRespondidas > 0" class="bg-dark-900 border border-white/30 rounded-card p-4 text-center">
-  <p class="text-3xl font-bold text-white">{{ indicadores!.totalPreguntasRespondidas }}</p>
-  <p class="text-xs text-gray-400 mt-1">Preguntas</p>
-</div>
-    <div class="bg-dark-800 rounded-lg p-3 text-center" [class.col-span-2]="!grupoTienePreguntas(grupo)" [class.sm:col-span-3]="!grupoTienePreguntas(grupo)" [class.lg:col-span-1]="!grupoTienePreguntas(grupo)">
-      <p class="text-xs text-gray-400 mb-2">Distribución Género</p>
-      <div class="flex items-center justify-center gap-3">
-        <div class="flex items-center gap-2 bg-neon-blue/10 border border-neon-blue/30 rounded-lg px-3 py-2">
-          <div class="w-8 h-8 rounded-full bg-neon-blue/20 flex items-center justify-center border border-neon-blue">
-            <span class="text-xl text-neon-blue">♂</span>
+        <div class="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 flex-wrap">
+          <div class="flex items-center gap-2 px-3 py-1.5 bg-dark-800 rounded-lg flex-shrink-0">
+            <span class="text-xs sm:text-sm font-bold text-neon-blue">{{ getJuegoGrupo(grupo) }}</span>
           </div>
-          <span class="text-xl font-bold text-neon-blue">{{ getDistribucionSexoGrupo(grupo).hombres }}</span>
-        </div>
 
-        <div class="flex items-center gap-2 bg-neon-pink/10 border border-neon-pink/30 rounded-lg px-3 py-2">
-          <div class="w-8 h-8 rounded-full bg-neon-pink/20 flex items-center justify-center border border-neon-pink">
-            <span class="text-xl text-neon-pink">♀</span>
-          </div>
-          <span class="text-xl font-bold text-neon-pink">{{ getDistribucionSexoGrupo(grupo).mujeres }}</span>
-        </div>
+          <button
+            (click)="exportarExcel(grupo); $event.stopPropagation()"
+            class="px-3 sm:px-4 py-1.5 sm:py-2 bg-neon-green text-dark-950 rounded-lg font-bold text-xs sm:text-sm hover:scale-105 transition-all flex items-center gap-1 sm:gap-2 flex-shrink-0"
+            style="box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);">
+            <span class="hidden sm:inline">📥</span>
+            <span class="sm:hidden">📊</span>
+            <span class="hidden lg:inline">Descargar Estadísticas</span>
+            <span class="lg:hidden">Excel</span>
+          </button>
 
-        <div *ngIf="getDistribucionSexoGrupo(grupo).sinEspecificar > 0" class="flex items-center gap-2 bg-gray-600/10 border border-gray-500/30 rounded-lg px-3 py-2">
-          <span class="text-gray-400 font-bold">{{ getDistribucionSexoGrupo(grupo).sinEspecificar }}</span>
-          <span class="text-xs text-gray-500">N/E</span>
+          <button
+            (click)="descargarInforme(grupo.sesion_id); $event.stopPropagation()"
+            class="px-3 sm:px-4 py-1.5 sm:py-2 bg-neon-green text-white rounded-lg font-bold hover:shadow-neon-green transition-all text-xs sm:text-sm flex-shrink-0">
+            <span class="hidden sm:inline">📄 Informe PDF</span>
+            <span class="sm:hidden">📄 PDF</span>
+          </button>
+
+          <button
+            (click)="abrirEvidencias(grupo.sesion, $event)"
+            class="px-3 sm:px-4 py-1.5 sm:py-2 bg-neon-yellow text-dark-950 rounded-lg font-bold hover:shadow-neon-yellow transition-all text-xs sm:text-sm flex-shrink-0">
+            <span class="hidden sm:inline">📸 Evidencias</span>
+            <span class="sm:hidden">📸</span>
+          </button>
+
+          <button
+            (click)="abrirModalCorreo(grupo); $event.stopPropagation()"
+            class="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-dark-800 hover:bg-dark-700 border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white rounded-lg font-medium transition-all text-xs sm:text-sm flex-shrink-0">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <span class="hidden lg:inline">Enviar Correo</span>
+          </button>
+
+          <button
+            (click)="abrirModalCorreo(grupo); $event.stopPropagation()"
+            class="sm:hidden p-2 bg-dark-800 hover:bg-dark-700 border border-gray-600 text-gray-300 rounded-lg transition-all flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </button>
+
+          <div class="text-xl sm:text-2xl text-neon-blue transition-transform flex-shrink-0" [class.rotate-180]="isSesionExpandida(grupo.sesion_id)">▼</div>
         </div>
       </div>
     </div>
-  </div>
+
+<div *ngIf="isSesionExpandida(grupo.sesion_id)" class="border-t border-dark-700">
+        <div class="p-3 sm:p-4 bg-dark-850 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+          <div class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+            <p class="text-xs text-gray-400">Participantes Totales</p>
+            <p class="text-lg sm:text-xl font-bold text-neon-yellow">{{ grupo.totales.totalParticipantes }}</p>
+          </div>
+
+          <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+            <p class="text-xs text-gray-400">Vel. Promedio</p>
+            <p class="text-lg sm:text-xl font-bold text-neon-green">{{ getVelocidadPromedioGrupo(grupo) }} km/h</p>
+          </div>
+
+          <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+            <p class="text-xs text-gray-400">Vel. Máxima</p>
+            <p class="text-lg sm:text-xl font-bold text-neon-blue">{{ getVelocidadMaximaGrupo(grupo) }} km/h</p>
+          </div>
+
+          <div *ngIf="!deberiaOcultarDistancia(grupo) && !esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+            <p class="text-xs text-gray-400">Distancia Total</p>
+            <p class="text-lg sm:text-xl font-bold text-neon-green">{{ getDistanciaTotalGrupo(grupo) }} km</p>
+          </div>
+
+          <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+            <p class="text-xs text-gray-400">Calorías Quemadas</p>
+            <p class="text-lg sm:text-xl font-bold text-neon-orange">{{ getCaloriasTotalesGrupo(grupo) }} kcal</p>
+          </div>
+
+          <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+            <p class="text-xs text-gray-400">Vatios Generados</p>
+            <p class="text-lg sm:text-xl font-bold text-neon-pink">{{ getVatiosTotalesGrupo(grupo) }} W</p>
+          </div>
+
+          <div *ngIf="juegoFiltradoTienePreguntas() && indicadores!.totalPreguntasRespondidas > 0" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+            <p class="text-xs text-gray-400">Preguntas</p>
+            <p class="text-lg sm:text-xl font-bold text-white">{{ indicadores!.totalPreguntasRespondidas }}</p>
+          </div>
+
+          <div class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+            <p class="text-xs text-gray-400">Duración Total</p>
+            <p class="text-lg sm:text-xl font-bold text-neon-green">{{ formatearDuracionTexto(getDuracionTotalGrupo(grupo)) }}</p>
+            <p class="text-xs text-gray-500">{{ getUnidadDuracion(getDuracionTotalGrupo(grupo)) }}</p>
+          </div>
+
+          <div class="bg-dark-800 rounded-lg p-2 sm:p-3 col-span-2 lg:col-span-1">
+            <p class="text-xs text-gray-400 mb-2 text-center">Distribución Género</p>
+            <div class="flex items-center justify-center gap-2 flex-wrap">
+              <div class="flex items-center gap-1 sm:gap-2 bg-neon-blue/10 border border-neon-blue/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neon-blue/20 flex items-center justify-center border border-neon-blue">
+                  <span class="text-base sm:text-xl text-neon-blue">♂</span>
+                </div>
+                <span class="text-base sm:text-xl font-bold text-neon-blue">{{ getDistribucionSexoGrupo(grupo).hombres }}</span>
+              </div>
+
+              <div class="flex items-center gap-1 sm:gap-2 bg-neon-pink/10 border border-neon-pink/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neon-pink/20 flex items-center justify-center border border-neon-pink">
+                  <span class="text-base sm:text-xl text-neon-pink">♀</span>
+                </div>
+                <span class="text-base sm:text-xl font-bold text-neon-pink">{{ getDistribucionSexoGrupo(grupo).mujeres }}</span>
+              </div>
+
+              <div *ngIf="getDistribucionSexoGrupo(grupo).sinEspecificar > 0" class="flex items-center gap-1 sm:gap-2 bg-gray-600/10 border border-gray-500/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+                <span class="text-gray-400 font-bold text-sm sm:text-base">{{ getDistribucionSexoGrupo(grupo).sinEspecificar }}</span>
+                <span class="text-xs text-gray-500">N/E</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
           <div class="p-4 bg-dark-850 border-b border-dark-700">
             <p class="text-sm text-gray-400 font-bold mb-3">📋 Planilla</p>

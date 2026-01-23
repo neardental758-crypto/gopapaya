@@ -104,10 +104,8 @@ export class HitFitRegistroComponent implements OnInit {
   finalizarSesionDirecto(): void {
     if (confirm('¿Deseas finalizar la sesión Hit-Fit completa?')) {
       const historialId = localStorage.getItem('historial_hit_fit_id');
-      console.log('Historial ID encontrado:', historialId);
 
       if (!historialId) {
-        console.log('Creando historial antes de finalizar');
         this.participanteHitFitService.getBySesion(this.sesion.id).subscribe({
           next: (participantes) => {
             const participantesOrdenados = [...participantes].sort(

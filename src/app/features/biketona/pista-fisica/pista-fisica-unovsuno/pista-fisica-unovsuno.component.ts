@@ -76,16 +76,16 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   };
   currentLlaveIndex = 0;
 
-  coloresVehiculos = ['#ef4444', '#fbbf24'];
+  coloresVehiculos = ['#ffffff', '#3b82f6'];
 
   iconosVehiculos = [
-    'assets/images/carro_rojo.png',
-    'assets/images/carro_amarillo.png',
+    'assets/images/carro_blanco.png',
+    'assets/images/carro_azul.png',
   ];
 
   videosVehiculos = [
-    'assets/videos/carro_movimiento_rojo.mp4',
-    'assets/videos/carro_movimiento_amarillo.mp4',
+    'assets/images/carro_movimiento_blanco.mp4',
+    'assets/images/carro_movimiento_azul.mp4',
   ];
 
   carreraIniciada = false;
@@ -135,8 +135,8 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   private sensorAnterior2 = 0;
 
   fondosCarrera = [
-    'assets/images/carro_movimiento_rojo.mp4',
-    'assets/images/carro_movimiento_amarillo.mp4',
+    'assets/images/carro_movimiento_blanco.mp4',
+    'assets/images/carro_movimiento_azul.mp4',
   ];
 
   constructor(

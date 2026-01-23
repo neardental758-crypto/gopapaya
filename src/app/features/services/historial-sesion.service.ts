@@ -107,7 +107,7 @@ export class HistorialService {
     limite: number = 10,
     juegoFiltro?: string,
     cronograma?: string,
-    secuencia?: string
+    secuencia?: string,
   ): Observable<HistorialResponse & { paginacion: any }> {
     const params: any = {
       pagina: pagina.toString(),
@@ -126,12 +126,12 @@ export class HistorialService {
   getCarrerasSesion(
     sesionId: number,
     pagina: number = 1,
-    limite: number = 5
+    limite: number = 5,
   ): Observable<{ data: HistorialSesion[]; paginacion: any }> {
     const params = { pagina: pagina.toString(), limite: limite.toString() };
     return this.http.get<{ data: HistorialSesion[]; paginacion: any }>(
       `${this.apiUrl}/sesion/${sesionId}/carreras`,
-      { params }
+      { params },
     );
   }
 
@@ -139,7 +139,7 @@ export class HistorialService {
     empresaId?: string,
     fechaInicio?: string,
     fechaFin?: string,
-    juegoFiltro?: string
+    juegoFiltro?: string,
   ): Observable<HistorialResponse> {
     const params: any = { pagina: '1', limite: '999999' };
     if (empresaId && empresaId.trim() !== '') params['empresa_id'] = empresaId;

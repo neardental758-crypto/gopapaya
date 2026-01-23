@@ -86,15 +86,6 @@
 
             <div class="flex flex-col sm:flex-row gap-3 justify-center mt-4">
               <button
-                (click)="cerrarModalHeat()"
-                class="w-full sm:flex-1 py-3 sm:py-3.5 px-4 sm:px-6 bg-dark-800/70 text-gray-200 rounded-xl font-display font-semibold
-                      border border-dark-600 hover:border-neon-blue hover:text-neon-blue hover:shadow-[0_0_18px_rgba(56,189,248,0.8)]
-                      transition-all text-sm sm:text-base"
-              >
-                ✨ Cerrar
-              </button>
-
-              <button
                 (click)="cerrarModalHeatYVolverALlaves()"
                 class="w-full sm:flex-1 py-3 sm:py-3.5 px-4 sm:px-6 bg-yellow-400 text-dark-950 rounded-xl font-display font-bold
                       shadow-[0_0_25px_rgba(250,204,21,0.9)] hover:shadow-[0_0_35px_rgba(250,204,21,1)] hover:scale-[1.02] active:scale-95
@@ -141,6 +132,44 @@
         </div>
       </div>
     </div>
+
+    <div *ngIf="mostrarModalCalibracion" class="fixed inset-0 bg-dark-950/95 backdrop-blur-sm z-50 flex items-center justify-center animate-fadeIn">
+  <div class="max-w-md w-full mx-4">
+    <div class="bg-gradient-to-br from-dark-900 via-dark-950 to-dark-900 border-2 border-neon-blue/40 rounded-2xl p-8 shadow-[0_0_50px_rgba(0,240,255,0.3)] relative overflow-hidden">
+      <div class="absolute inset-0 bg-[linear-gradient(0deg,transparent_24%,rgba(0,240,255,0.03)_25%,rgba(0,240,255,0.03)_26%,transparent_27%,transparent_74%,rgba(0,240,255,0.03)_75%,rgba(0,240,255,0.03)_76%,transparent_77%,transparent)] bg-[length:100%_3px] pointer-events-none"></div>
+
+      <div class="relative z-10 text-center space-y-6">
+        <div class="relative inline-block">
+          <div class="absolute inset-0 blur-2xl bg-neon-blue/30 animate-pulse"></div>
+          <div class="relative text-6xl animate-bounce">🏁</div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-display font-bold text-neon-blue mb-2 uppercase tracking-wider" style="text-shadow: 0 0 15px rgba(0,240,255,0.6)">
+            Preparando Pista
+          </h3>
+          <p class="text-gray-400 text-sm font-mono">
+            Los vehículos se están posicionando en la línea de salida
+          </p>
+        </div>
+
+        <div class="flex justify-center items-center gap-2 py-4">
+          <div class="w-3 h-3 rounded-full bg-neon-blue animate-bounce" style="animation-delay: 0s;"></div>
+          <div class="w-3 h-3 rounded-full bg-neon-blue animate-bounce" style="animation-delay: 0.15s;"></div>
+          <div class="w-3 h-3 rounded-full bg-neon-blue animate-bounce" style="animation-delay: 0.3s;"></div>
+        </div>
+
+        <div class="bg-dark-800/60 border border-neon-blue/30 rounded-lg p-4">
+          <p class="text-xs text-gray-400 uppercase tracking-widest mb-2">Estado del Sistema</p>
+          <div class="flex items-center justify-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-neon-green animate-pulse"></div>
+            <span class="text-neon-green text-sm font-bold font-mono">CALIBRANDO...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- PASO 1: SOLO CONEXIÓN BLE -->
 <div *ngIf="paso === 1" class="space-y-6">
@@ -346,30 +375,28 @@
                 <input type="text"
                   [(ngModel)]="jugador.nombre"
                   (input)="onInputChange()"
-                  [disabled]="!puedeCambiarNombre(llave) || jugadorYaCorrio(jugador)"
+                  [disabled]="!puedeCambiarNombre(llave)"
                   [placeholder]="'Jugador ' + jugador.id"
                   class="flex-1 bg-dark-900/70 text-white rounded-lg px-3 py-2 text-sm font-semibold border-2 focus:outline-none transition-all"
                   [class.border-neon-blue30]="llave.estado === 'pendiente' && !jugadorYaCorrio(jugador)"
                   [class.focus:border-neon-blue]="llave.estado === 'pendiente' && !jugadorYaCorrio(jugador)"
                   [class.focus:shadow-[0_0_15px_rgba(0,240,255,0.3)]]="llave.estado === 'pendiente' && !jugadorYaCorrio(jugador)"
-                  [class.border-neon-green30]="jugadorYaCorrio(jugador)"
                   [class.border-gray-60030]="!puedeCambiarNombre(llave) && !jugadorYaCorrio(jugador)"
-                  [class.cursor-not-allowed]="!puedeCambiarNombre(llave) || jugadorYaCorrio(jugador)"
-                  [class.opacity-60]="!puedeCambiarNombre(llave) || jugadorYaCorrio(jugador)">
+                  [class.cursor-not-allowed]="!puedeCambiarNombre(llave)"
+                  [class.opacity-60]="!puedeCambiarNombre(llave)">
                 <button (click)="abrirSelectSexo(jugador.id)"
-                  [disabled]="!puedeCambiarNombre(llave) || jugadorYaCorrio(jugador)"
+                  [disabled]="!puedeCambiarNombre(llave)"
                   class="p-2 rounded-lg transition-all duration-300 border-2"
                   [class.bg-neon-blue20]="llave.estado === 'pendiente' && !jugadorYaCorrio(jugador)"
                   [class.border-neon-blue30]="llave.estado === 'pendiente' && !jugadorYaCorrio(jugador)"
                   [class.text-neon-blue]="llave.estado === 'pendiente' && !jugadorYaCorrio(jugador)"
                   [class.hover:bg-neon-blue30]="llave.estado === 'pendiente' && !jugadorYaCorrio(jugador)"
                   [class.bg-neon-green20]="jugadorYaCorrio(jugador)"
-                  [class.border-neon-green30]="jugadorYaCorrio(jugador)"
                   [class.text-neon-green]="jugadorYaCorrio(jugador)"
                   [class.bg-gray-600]="!puedeCambiarNombre(llave) && !jugadorYaCorrio(jugador)"
                   [class.border-gray-600]="!puedeCambiarNombre(llave) && !jugadorYaCorrio(jugador)"
                   [class.text-gray-600]="!puedeCambiarNombre(llave) && !jugadorYaCorrio(jugador)"
-                  [class.cursor-not-allowed]="!puedeCambiarNombre(llave) || jugadorYaCorrio(jugador)">
+                  [class.cursor-not-allowed]="!puedeCambiarNombre(llave)">
                   <span class="text-xl">{{ jugador.genero === 'masculino' ? '♂' : jugador.genero === 'femenino' ? '♀' : '♂' }}</span>
                 </button>
               </div>
@@ -581,38 +608,23 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-4">
-          <div class="text-center px-4 py-1.5 bg-dark-800/80 backdrop-blur-sm rounded-lg border border-neon-yellow/40 shadow-neon-yellow relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-r from-neon-yellow/0 via-neon-yellow/10 to-neon-yellow/0 animate-pulse"></div>
-            <div class="relative">
-              <div class="text-gray-400 text-xs uppercase tracking-widest mb-0.5 flex items-center justify-center gap-1">
-                <span>⏱️</span> TIEMPO
-              </div>
-              <div class="text-neon-yellow font-bold text-4xl font-display tabular-nums drop-shadow-[0_0_20px_rgba(255,247,0,0.8)] tracking-wider">
-                {{ formatearTiempo(tiempoTranscurrido) }}
-              </div>
+      <div class="flex items-center gap-4">
+        <div class="text-center px-4 py-1.5 bg-dark-800/80 backdrop-blur-sm rounded-lg border border-neon-yellow/40 shadow-neon-yellow relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-r from-neon-yellow/0 via-neon-yellow/10 to-neon-yellow/0 animate-pulse"></div>
+          <div class="relative">
+            <div class="text-gray-400 text-xs uppercase tracking-widest mb-0.5 flex items-center justify-center gap-1">
+              <span>⏱️</span> TIEMPO
+            </div>
+            <div class="text-neon-yellow font-bold text-4xl font-display tabular-nums drop-shadow-[0_0_20px_rgba(255,247,0,0.8)] tracking-wider">
+              {{ formatearTiempo(tiempoTranscurrido) }}
             </div>
           </div>
-
-          <div class="flex gap-2">
-            <button (click)="pausarReanudarCarrera()" class="px-4 py-2 rounded-lg font-display font-bold text-sm transition-all transform hover:scale-105 border"
-              [class.bg-gradient-to-br]="true"
-              [class.from-neon-green]="carreraPausada"
-              [class.to-green-600]="carreraPausada"
-              [class.from-neon-yellow]="!carreraPausada"
-              [class.to-yellow-600]="!carreraPausada"
-              [class.text-dark-950]="true"
-              [class.border-neon-green]="carreraPausada"
-              [class.border-neon-yellow]="!carreraPausada"
-              [class.shadow-neon-green]="carreraPausada"
-              [class.shadow-neon-yellow]="!carreraPausada">
-              {{ carreraPausada ? '▶️ REANUDAR' : '⏸️ PAUSAR' }}
-            </button>
-            <button (click)="reiniciarCarrera()" class="px-4 py-2 bg-gradient-to-br from-dark-700 to-dark-800 text-gray-300 rounded-lg font-display font-bold text-sm border border-dark-600 hover:border-neon-red hover:text-neon-red hover:shadow-neon-red transition-all transform hover:scale-105">
-              🔄 REINICIAR
-            </button>
-          </div>
         </div>
+
+        <button (click)="reiniciarCarrera()" class="px-4 py-2 bg-gradient-to-br from-dark-700 to-dark-800 text-gray-300 rounded-lg font-display font-bold text-sm border border-dark-600 hover:border-neon-red hover:text-neon-red hover:shadow-neon-red transition-all transform hover:scale-105">
+          🔄 REINICIAR
+        </button>
+      </div>
       </div>
     </div>
 
@@ -625,50 +637,40 @@
         <span class="text-2xl drop-shadow-[0_0_10px_rgba(255,247,0,0.6)]">🏁</span>
         <span class="drop-shadow-[0_0_8px_rgba(255,247,0,0.5)]">PROGRESO DE LA CARRERA</span>
       </h3>
-      <div class="flex items-center gap-2">
-        <div *ngFor="let jugador of jugadores" class="flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all duration-300 hover:scale-105"
-            [style.border-color]="jugador.color"
-            [style.background]="'linear-gradient(135deg, ' + jugador.color + '30, ' + jugador.color + '15)'">
-          <div class="w-2.5 h-2.5 rounded-full animate-pulse"
-               [style.background]="jugador.color"
-               [style.box-shadow]="'0 0 10px ' + jugador.color"></div>
-          <span class="font-display font-bold text-sm tracking-wide" [style.color]="jugador.color">{{ jugador.nombre }}</span>
-        </div>
-      </div>
     </div>
 
     <div class="space-y-3">
       <div *ngFor="let jugador of jugadores; let i = index" class="relative">
         <div class="flex items-center gap-2 mb-2">
           <div class="w-9 h-9 rounded-lg flex items-center justify-center font-display font-black text-lg border-2 flex-shrink-0"
-               [style.background]="'linear-gradient(135deg, ' + jugador.color + '50, ' + jugador.color + '30)'"
-               [style.border-color]="jugador.color"
+               [style.background]="'linear-gradient(135deg, ' + coloresVehiculos[i] + '50, ' + coloresVehiculos[i] + '30)'"
+               [style.border-color]="coloresVehiculos[i]"
                [style.color]="'#fff'"
-               [style.box-shadow]="'0 0 15px ' + jugador.color + '70'">
+               [style.box-shadow]="'0 0 15px ' + coloresVehiculos[i] + '70'">
             {{ jugador.posicion }}
           </div>
           <img
-            [src]="jugador.icono"
+            [src]="iconosVehiculos[i]"
             [alt]="'Carro ' + jugador.nombre"
             class="w-8 h-8 object-contain"
-            [style.filter]="'drop-shadow(0 2px 6px ' + jugador.color + ')'">
+            [style.filter]="'drop-shadow(0 2px 6px ' + coloresVehiculos[i] + ')'">
           <div class="flex-1 flex items-center justify-between">
-            <span class="font-display font-bold text-white text-lg" [style.text-shadow]="'0 0 8px ' + jugador.color">
+            <span class="font-display font-bold text-white text-lg" [style.text-shadow]="'0 0 8px ' + coloresVehiculos[i]">
               {{ jugador.nombre || 'PILOTO ' + jugador.id }}
             </span>
             <div class="flex items-center gap-2">
               <span class="text-xs font-mono font-bold px-2 py-1 rounded border-2"
-                    [style.background]="jugador.color + '25'"
-                    [style.border-color]="jugador.color"
+                    [style.background]="coloresVehiculos[i] + '25'"
+                    [style.border-color]="coloresVehiculos[i]"
                     [style.color]="'#fff'"
-                    [style.text-shadow]="'0 0 6px ' + jugador.color">
+                    [style.text-shadow]="'0 0 6px ' + coloresVehiculos[i]">
                 V{{ jugador.vueltaActual }}/{{ configuracion.numeroVueltas }}
               </span>
               <span class="text-xs font-mono font-bold px-2 py-1 rounded border-2"
-                    [style.background]="jugador.color + '25'"
-                    [style.border-color]="jugador.color"
+                    [style.background]="coloresVehiculos[i] + '25'"
+                    [style.border-color]="coloresVehiculos[i]"
                     [style.color]="'#fff'"
-                    [style.text-shadow]="'0 0 6px ' + jugador.color">
+                    [style.text-shadow]="'0 0 6px ' + coloresVehiculos[i]">
                 {{ jugador.distanciaReal.toFixed(0) }}m
               </span>
             </div>
@@ -676,17 +678,35 @@
         </div>
 
         <div class="relative h-10 rounded-lg overflow-hidden bg-dark-900/90 border-2"
-             [style.border-color]="jugador.color + '40'"
+             [style.border-color]="coloresVehiculos[i] + '40'"
              style="box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);">
 
           <div class="absolute inset-0 bg-gradient-to-r from-dark-850/60 via-dark-800/60 to-dark-850/60"></div>
 
-          <div class="absolute left-0 top-0 h-full transition-all duration-500 ease-out overflow-hidden"
-               [style.width.%]="calcularProgresoBarra(jugador)">
-            <div class="absolute inset-0"
-                 [style.background]="'linear-gradient(to right, ' + jugador.color + 'F0, ' + jugador.color + 'D0, ' + jugador.color + 'A0)'"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent animate-pulse"></div>
+          <div *ngFor="let vuelta of [].constructor(configuracion.numeroVueltas); let v = index"
+            class="absolute top-0 h-full border-r-2"
+            [style.left.%]="((v + 1) / configuracion.numeroVueltas) * 100"
+            [style.border-color]="coloresVehiculos[i] + '40'"
+            [style.box-shadow]="'0 0 10px ' + coloresVehiculos[i] + '30'">
+          </div>
+
+      <div class="absolute left-0 top-0 h-full transition-all duration-500 ease-out overflow-hidden"
+          [style.width.%]="calcularProgresoBarra(jugador)">
+        <div class="absolute inset-0"
+            [style.background]="'linear-gradient(to right, ' + coloresVehiculos[i] + 'F0, ' + coloresVehiculos[i] + 'D0, ' + coloresVehiculos[i] + 'A0)'"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent animate-pulse"></div>
+      </div>
+
+          <div *ngFor="let vuelta of [].constructor(configuracion.numeroVueltas); let v = index"
+            class="absolute top-1/2 -translate-y-1/2 text-xs font-mono font-black px-2 py-1 rounded border-2 z-10 bg-dark-950"
+            [style.left.%]="((v + 0.5) / configuracion.numeroVueltas) * 100"
+            [style.transform]="'translate(-50%, -50%)'"
+            [style.border-color]="coloresVehiculos[i]"
+            [style.color]="coloresVehiculos[i]"
+            [style.text-shadow]="'0 0 10px ' + coloresVehiculos[i]"
+            [style.box-shadow]="'0 0 15px ' + coloresVehiculos[i] + '70'">
+            {{ v + 1 }}
           </div>
 
           <div class="absolute right-3 top-1/2 -translate-y-1/2 z-20">
@@ -709,14 +729,14 @@
   </div>
 </div>
 
-    <div class="flex-1 grid grid-cols-2 gap-2 min-h-0">
+<div class="flex-1 grid grid-cols-2 gap-2 min-h-0">
       <div *ngFor="let jugador of jugadores; let i = index"
         class="relative rounded-xl p-4 shadow-2xl flex flex-col overflow-hidden border-2"
-        [style.border-color]="jugador.color"
-        [style.box-shadow]="'0 0 30px ' + jugador.color + '40, inset 0 0 40px ' + jugador.color + '10'">
+        [style.border-color]="coloresVehiculos[i]"
+        [style.box-shadow]="'0 0 30px ' + coloresVehiculos[i] + '40, inset 0 0 40px ' + coloresVehiculos[i] + '10'">
 
       <video
-        [src]="fondosCarrera[i % 2]"
+        [src]="fondosCarrera[i]"
         autoplay
         loop
         muted
@@ -731,7 +751,7 @@
           <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern [attr.id]="'grid' + i" width="30" height="30" patternUnits="userSpaceOnUse">
-                <path d="M 30 0 L 0 0 0 30" fill="none" [attr.stroke]="jugador.color" stroke-width="0.5"/>
+                <path d="M 30 0 L 0 0 0 30" fill="none" [attr.stroke]="coloresVehiculos[i]" stroke-width="0.5"/>
               </pattern>
             </defs>
             <rect width="100%" height="100%" [attr.fill]="'url(#grid' + i + ')'"/>
@@ -745,21 +765,21 @@
                 [style.background]="jugador.posicion === 1 ? '#facc15' : '#64748b'"
                 [style.opacity]="jugador.posicion === 1 ? '0.8' : '0.4'">
               </div>
-            <div class="relative w-16 h-16 rounded-xl flex items-center justify-center text-3xl font-display font-black border-2 transform -rotate-3 transition-all"
-              [style.background]="'linear-gradient(135deg, ' + jugador.color + 'E0, ' + jugador.color + 'B0, ' + jugador.color + '90)'"
-              [style.color]="'#ffffff'"
-              [style.border-color]="jugador.color"
-              [style.box-shadow]="'0 8px 30px ' + jugador.color + '60, 0 0 0 3px ' + jugador.color + '30'">
-              {{ jugador.posicion }}
-            </div>
-            <div *ngIf="jugador.posicion === 1" class="absolute -top-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center animate-bounce border-2"
-              [style.background]="'linear-gradient(135deg, ' + jugador.color + ', ' + jugador.color + 'D0)'"
-              [style.border-color]="jugador.color"
-              [style.box-shadow]="'0 0 15px ' + jugador.color">
-              <span class="text-white text-base drop-shadow-lg">👑</span>
-            </div>
-              <div *ngIf="jugador.posicion === 1" class="absolute -top-1 -right-1 w-7 h-7 bg-gradient-to-br from-neon-yellow to-yellow-600 rounded-full flex items-center justify-center shadow-neon-yellow animate-bounce border border-yellow-400">
-                <span class="text-dark-950 text-base">👑</span>
+              <div class="relative w-14 h-14 rounded-full flex items-center justify-center text-xl transform hover:scale-110 transition-all duration-300"
+                [style.background]="'radial-gradient(circle at 35% 35%, ' + coloresVehiculos[i] + ', ' + coloresVehiculos[i] + 'E0 50%, ' + coloresVehiculos[i] + '95 100%)'"
+                [style.box-shadow]="'0 0 20px ' + coloresVehiculos[i] + 'B0, 0 0 40px ' + coloresVehiculos[i] + '60, inset 0 2px 6px rgba(255,255,255,0.25)'">
+                <img
+                  [src]="iconosVehiculos[i]"
+                  [alt]="'Carro ' + jugador.nombre"
+                  class="w-9 h-9 object-contain"
+                  [style.filter]="'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'">
+                <div class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-dark-950 border-2 flex items-center justify-center text-[10px] font-display font-black"
+                  [style.border-color]="coloresVehiculos[i]"
+                  [style.color]="coloresVehiculos[i]"
+                  [style.box-shadow]="'0 0 12px ' + coloresVehiculos[i] + ', inset 0 1px 2px rgba(255,255,255,0.2)'"
+                  [style.text-shadow]="'0 0 8px ' + coloresVehiculos[i]">
+                  {{ jugador.posicion }}
+                </div>
               </div>
             </div>
             <div>
@@ -767,20 +787,20 @@
                 {{ jugador.nombre || ('PILOTO ' + jugador.id) }}
               </h3>
               <div class="px-2 py-1 rounded text-xs font-display font-bold uppercase tracking-wider border-2 mt-1"
-                [style.background-color]="jugador.color + '22'"
-                [style.color]="jugador.color"
-                [style.border-color]="jugador.color + '66'"
-                [style.box-shadow]="'0 0 15px ' + jugador.color + '40'">
+                [style.background-color]="coloresVehiculos[i] + '22'"
+                [style.color]="coloresVehiculos[i]"
+                [style.border-color]="coloresVehiculos[i] + '66'"
+                [style.box-shadow]="'0 0 15px ' + coloresVehiculos[i] + '40'">
                 BICI {{ jugador.id }}
               </div>
             </div>
           </div>
           <div class="relative w-16 h-16">
             <img
-              [src]="jugador.icono"
+              [src]="iconosVehiculos[i]"
               [alt]="'Carro ' + jugador.nombre"
               class="w-full h-full object-contain animate-bounce-slow"
-              [style.filter]="'drop-shadow(0 4px 12px ' + jugador.color + ')'">
+              [style.filter]="'drop-shadow(0 4px 12px ' + coloresVehiculos[i] + ')'">
           </div>
         </div>
 
@@ -789,9 +809,9 @@
             <svg viewBox="0 0 200 130" class="w-full">
               <defs>
                 <linearGradient [attr.id]="'gaugeGradient' + i" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" [attr.stop-color]="jugador.color" stop-opacity="1"/>
-                  <stop offset="50%" [attr.stop-color]="jugador.color" stop-opacity="0.8"/>
-                  <stop offset="100%" [attr.stop-color]="jugador.color" stop-opacity="0.5"/>
+                  <stop offset="0%" [attr.stop-color]="coloresVehiculos[i]" stop-opacity="1"/>
+                  <stop offset="50%" [attr.stop-color]="coloresVehiculos[i]" stop-opacity="0.8"/>
+                  <stop offset="100%" [attr.stop-color]="coloresVehiculos[i]" stop-opacity="0.5"/>
                 </linearGradient>
                 <filter [attr.id]="'glow' + i">
                   <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -824,10 +844,10 @@
               <line [attr.x1]="100" [attr.y1]="105"
                 [attr.x2]="100 + 52 * Math.cos((Math.min(jugador.velocidad, 50) / 50 * 180 - 180) * Math.PI / 180)"
                 [attr.y2]="105 + 52 * Math.sin((Math.min(jugador.velocidad, 50) / 50 * 180 - 180) * Math.PI / 180)"
-                [attr.stroke]="jugador.color" stroke-width="3" stroke-linecap="round"
+                [attr.stroke]="coloresVehiculos[i]" stroke-width="3" stroke-linecap="round"
                 [attr.filter]="'url(#glow' + i + ')'" class="transition-all duration-500"/>
 
-              <circle cx="100" cy="105" r="7" [attr.fill]="jugador.color" [attr.filter]="'url(#glow' + i + ')'"/>
+              <circle cx="100" cy="105" r="7" [attr.fill]="coloresVehiculos[i]" [attr.filter]="'url(#glow' + i + ')'"/>
               <circle cx="100" cy="105" r="3" fill="#0a0a0a"/>
 
               <text x="100" y="70" text-anchor="middle" class="fill-white font-display font-black text-[40px] drop-shadow-lg">
@@ -887,7 +907,7 @@
           </div>
           <div class="bg-dark-800/60 backdrop-blur-sm rounded p-2 border border-dark-700 text-center">
             <div class="text-gray-400 text-xs mb-1 uppercase tracking-wider">🏁 Vueltas</div>
-            <div class="font-bold text-xl font-display tabular-nums" [style.color]="jugador.color">
+            <div class="font-bold text-xl font-display tabular-nums" [style.color]="coloresVehiculos[i]">
               {{ Math.min(jugador.vueltaActual - 1, configuracion.numeroVueltas) }}/{{ configuracion.numeroVueltas }}
             </div>
           </div>
@@ -949,11 +969,13 @@
             </div>
           </div>
           <div class="bg-dark-900/95 backdrop-blur-sm rounded-b-2xl p-4 border-4 border-neon-yellow shadow-[0_0_30px_rgba(255,247,0,0.5)]">
-            <div class="w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-white text-xl border-4 border-neon-yellow"
-              [style.background-color]="obtenerRanking()[0].color || '#facc15'"
-              [style.box-shadow]="'0 0 30px ' + (obtenerRanking()[0].color || '#facc15')">
+          <div class="w-16 h-16 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-xl border-4 border-neon-yellow"
+            [style.background-color]="obtenerRanking()[0].color || '#facc15'"
+            [style.box-shadow]="'0 0 30px ' + (obtenerRanking()[0].color || '#facc15')">
+            <span class="text-dark-950 font-display font-black" style="text-shadow: 0 1px 2px rgba(255,255,255,0.3)">
               {{ obtenerRanking()[0].id }}
-            </div>
+            </span>
+          </div>
             <p class="text-neon-yellow font-bold text-base truncate max-w-[6rem]" style="text-shadow: 0 0 10px #FFF700">{{ obtenerRanking()[0].nombre || ('Jugador ' + obtenerRanking()[0].id) }}</p>
             <p class="text-white font-bold text-2xl font-mono mt-1" *ngIf="obtenerRanking()[0].mejorTiempo != null">{{ formatearTiempo(obtenerRanking()[0].mejorTiempo!) }}</p>
             <p class="text-neon-yellow text-sm font-mono">tiempo</p>

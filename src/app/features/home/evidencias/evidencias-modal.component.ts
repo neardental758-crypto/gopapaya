@@ -40,7 +40,7 @@ export class EvidenciasModalComponent implements OnInit {
     },
     {
       valor: 'informe',
-      label: 'Informe Experiencia',
+      label: 'Síntesis de la Experiencia',
       maxFotos: 2,
       minFotos: 2,
       permiteFotos: true,
