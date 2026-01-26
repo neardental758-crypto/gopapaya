@@ -318,6 +318,14 @@ export class HistorialSesionesComponent implements OnInit {
   }
 
   getDuracionTotalGrupo(grupo: SesionAgrupada): number {
+    const esVRoHitFit = grupo.carreras.some(
+      (c) => c.juego_jugado === 'VR' || c.juego_jugado === 'Hit-Fit',
+    );
+
+    if (esVRoHitFit) {
+      return grupo.carreras[0]?.estadisticas_generales?.tiempoTotal || 0;
+    }
+
     let duracionTotalSegundos = 0;
 
     grupo.carreras.forEach((carrera) => {
@@ -693,7 +701,5 @@ export class HistorialSesionesComponent implements OnInit {
   deberiaOcultarDistancia(grupo: SesionAgrupada): boolean {
     return grupo.carreras.every((c) => c.juego_jugado.includes('Biketona'));
   }
-  onCorreoEnviado(): void {
-    this.cerrarModalCorreo();
-  }
+  onCorreoEnviado(): void {}
 }

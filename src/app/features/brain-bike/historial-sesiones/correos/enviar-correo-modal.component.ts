@@ -31,11 +31,11 @@ interface TipoEnvio {
       (click)="cerrar()"
     >
       <div
-        class="bg-dark-850 border-2 border-neon-blue/30 rounded-card max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-neon-blue-lg"
+        class="bg-dark-850 border-2 border-neon-blue/30 rounded-card max-w-2xl w-full max-h-[90vh] flex flex-col shadow-neon-blue-lg"
         (click)="$event.stopPropagation()"
       >
         <div
-          class="sticky top-0 bg-dark-850 border-b border-neon-blue/20 p-6 flex items-center justify-between"
+          class="sticky top-0 bg-dark-850 border-b border-neon-blue/20 p-6 flex items-center justify-between z-10"
         >
           <h2 class="text-2xl font-display text-neon-yellow">
             Enviar por Correo
@@ -60,7 +60,47 @@ interface TipoEnvio {
           </button>
         </div>
 
-        <div class="p-6 space-y-6">
+        <div
+          *ngIf="exito"
+          class="mx-6 mt-6 p-4 bg-neon-green/10 border-2 border-neon-green/50 rounded-lg text-neon-green font-bold text-base flex items-center gap-3 animate-pulse"
+        >
+          <svg
+            class="w-6 h-6 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <span>{{ exito }}</span>
+        </div>
+
+        <div
+          *ngIf="error"
+          class="mx-6 mt-6 p-4 bg-neon-red/10 border-2 border-neon-red/50 rounded-lg text-neon-red font-bold text-sm flex items-center gap-3"
+        >
+          <svg
+            class="w-6 h-6 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span>{{ error }}</span>
+        </div>
+
+        <div class="overflow-y-auto flex-1 p-6 space-y-6">
           <div>
             <label class="block text-sm font-medium text-neon-blue mb-3">
               Contenido a Enviar (selecciona uno o varios)
@@ -107,7 +147,7 @@ interface TipoEnvio {
             <label class="block text-sm font-medium text-neon-blue mb-3">
               Destinatarios (selecciona uno o varios)
             </label>
-            <div class="space-y-2">
+            <div class="space-y-2 max-h-64 overflow-y-auto">
               <div
                 *ngFor="let dest of destinatarios"
                 (click)="toggleDestinatario(dest)"
@@ -186,37 +226,10 @@ interface TipoEnvio {
               class="w-full px-4 py-3 bg-dark-900 border-2 border-dark-600 rounded-lg text-white placeholder-gray-500 focus:border-neon-blue focus:outline-none transition-colors resize-none"
             ></textarea>
           </div>
-
-          <div
-            *ngIf="error"
-            class="p-4 bg-neon-red/10 border-2 border-neon-red/50 rounded-lg text-neon-red text-sm"
-          >
-            {{ error }}
-          </div>
-
-          <div
-            *ngIf="exito"
-            class="p-4 bg-neon-green/10 border-2 border-neon-green/50 rounded-lg text-neon-green text-sm flex items-center gap-2"
-          >
-            <svg
-              class="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            {{ exito }}
-          </div>
         </div>
 
         <div
-          class="sticky bottom-0 bg-dark-850 border-t border-neon-blue/20 p-6 flex gap-3"
+          class="sticky bottom-0 bg-dark-850 border-t border-neon-blue/20 p-6 flex gap-3 z-10"
         >
           <button
             (click)="cerrar()"
@@ -276,7 +289,7 @@ export class EnviarCorreoModalComponent implements OnInit {
   constructor(
     private sesionService: SesionService,
     private historialService: HistorialService,
-    private excelExporthistorialService: ExcelExporthistorialService
+    private excelExporthistorialService: ExcelExporthistorialService,
   ) {}
 
   ngOnInit(): void {
@@ -370,7 +383,7 @@ export class EnviarCorreoModalComponent implements OnInit {
 
       if (tiposSeleccionados.includes('informe')) {
         const pdfBlob = await firstValueFrom(
-          this.sesionService.descargarInformePDF(this.sesionId)
+          this.sesionService.descargarInformePDF(this.sesionId),
         );
         if (pdfBlob) {
           archivos.push({
@@ -390,19 +403,27 @@ export class EnviarCorreoModalComponent implements OnInit {
           tiposSeleccionados,
           archivos,
           this.asunto,
-          this.mensaje
+          this.mensaje,
         )
         .subscribe({
           next: (response) => {
-            this.exito = response.message || 'Correos enviados exitosamente';
+            this.exito = response.message || '✅ Correos enviados exitosamente';
             this.enviando = false;
+
+            this.tiposEnvio.forEach((t) => (t.seleccionado = false));
+            this.destinatarios.forEach((d) => (d.seleccionado = false));
+            this.asunto = '';
+            this.mensaje = '';
+
             setTimeout(() => {
               this.enviado.emit();
               this.cerrar();
-            }, 2500);
+            }, 3000);
           },
           error: (err) => {
-            this.error = err.error?.message || 'Error al enviar el correo';
+            this.error =
+              err.error?.message ||
+              '❌ Error al enviar el correo. Intenta nuevamente.';
             this.enviando = false;
           },
         });
@@ -471,7 +492,7 @@ export class EnviarCorreoModalComponent implements OnInit {
       if (carrera.participantes_data) {
         carrera.participantes_data.forEach((p: any) => {
           const existente = todosParticipantes.find(
-            (tp) => tp.nombreParticipante === p.nombreParticipante
+            (tp) => tp.nombreParticipante === p.nombreParticipante,
           );
           if (existente) {
             existente.puntosAcumulados += Number(p.puntosCarrera) || 0;
@@ -485,8 +506,8 @@ export class EnviarCorreoModalComponent implements OnInit {
                 p.sexo === 'M'
                   ? 'Masculino'
                   : p.sexo === 'F'
-                  ? 'Femenino'
-                  : 'N/E',
+                    ? 'Femenino'
+                    : 'N/E',
             });
           }
         });
@@ -529,7 +550,7 @@ export class EnviarCorreoModalComponent implements OnInit {
       if (carrera.participantes_data) {
         carrera.participantes_data.forEach((p: any) => {
           const existente = todosParticipantes.find(
-            (tp) => tp.nombreParticipante === p.nombreParticipante
+            (tp) => tp.nombreParticipante === p.nombreParticipante,
           );
           if (existente) {
             existente.puntosAcumulados += Number(p.puntosCarrera) || 0;
@@ -545,8 +566,8 @@ export class EnviarCorreoModalComponent implements OnInit {
                 p.sexo === 'M'
                   ? 'Masculino'
                   : p.sexo === 'F'
-                  ? 'Femenino'
-                  : 'N/E',
+                    ? 'Femenino'
+                    : 'N/E',
               puntosAcumulados: Number(p.puntosCarrera) || 0,
               velocidadPromedio: Number(p.velocidadPromedio) || 0,
               velocidadMaxima: Number(p.velocidadMaxima) || 0,
@@ -650,7 +671,7 @@ export class EnviarCorreoModalComponent implements OnInit {
     grupo.carreras.forEach((carrera: any, carreraIndex: number) => {
       data.push([
         `CARRERA ${carreraIndex + 1} - ${new Date(
-          carrera.fecha_fin
+          carrera.fecha_fin,
         ).toLocaleDateString('es-ES')}`,
       ]);
       data.push([
@@ -709,7 +730,7 @@ export class EnviarCorreoModalComponent implements OnInit {
 
   private agregarHojaEstadisticasGenerales(
     wb: XLSX.WorkBook,
-    grupo: any
+    grupo: any,
   ): void {
     const distribucionSexo = this.calcularDistribucionSexo(grupo);
 
