@@ -20,7 +20,10 @@ import { AdminFloatingMenuComponent } from '../../features/admin/admin-floating-
 export class MainLayoutComponent implements OnInit {
   usuario: Usuario | null = null;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.authService.usuario$.subscribe((usuario) => {
@@ -42,7 +45,14 @@ export class MainLayoutComponent implements OnInit {
 
   isInGame(): boolean {
     const url = this.router.url;
-    const gameRoutes = ['/brain-bike', '/biketona', '/bicilicuadora'];
+    const gameRoutes = [
+      '/brain-bike',
+      '/biketona',
+      '/bicilicuadora',
+      '/vr',
+      '/hit-fit',
+      '/bici-paseo',
+    ];
     return gameRoutes.some((route) => url.includes(route));
   }
 

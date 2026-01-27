@@ -34,7 +34,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private sesionService: SesionService,
-    private router: Router
+    private router: Router,
   ) {}
   ngOnInit(): void {
     this.usuario = this.authService.getUsuario();
@@ -94,13 +94,13 @@ export class HomeComponent implements OnInit {
 
     if (this.filtroEmpresa) {
       filtradas = filtradas.filter(
-        (s) => s.nombreCliente === this.filtroEmpresa
+        (s) => s.nombreCliente === this.filtroEmpresa,
       );
     }
 
     if (this.filtroLugar) {
       filtradas = filtradas.filter(
-        (s) => s.lugarEjecucion === this.filtroLugar
+        (s) => s.lugarEjecucion === this.filtroLugar,
       );
     }
 
@@ -239,6 +239,8 @@ export class HomeComponent implements OnInit {
       this.router.navigate(['/vr/registro']);
     } else if (sesion.juego_asignado === 'hit-fit') {
       this.router.navigate(['/hit-fit/registro']);
+    } else if (sesion.juego_asignado === 'bici-paseo') {
+      this.router.navigate(['/bici-paseo/registro']);
     } else {
       this.router.navigate(['/sesion/seleccionar-juego', sesion.id]);
     }
@@ -295,7 +297,7 @@ export class HomeComponent implements OnInit {
 
     if (!this.puedeEditarSesion(sesion)) {
       alert(
-        'No se puede editar la sesión. Falta menos de 1 hora para su inicio.'
+        'No se puede editar la sesión. Falta menos de 1 hora para su inicio.',
       );
       return;
     }
@@ -306,7 +308,7 @@ export class HomeComponent implements OnInit {
   getTotalSesiones(grupoEmpresa: any): number {
     return grupoEmpresa.admins.reduce(
       (total: number, admin: any) => total + admin.sesiones.length,
-      0
+      0,
     );
   }
   logout(): void {

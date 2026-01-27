@@ -370,11 +370,28 @@ export class HistorialDetalleComponent implements OnInit {
     this.mostrarInfoParticipantes = !this.mostrarInfoParticipantes;
   }
 
-  esVRoHitFit(): boolean {
+  esjuegosinEstadisticas(): boolean {
     return (
       this.historial?.juego_jugado === 'VR' ||
-      this.historial?.juego_jugado === 'Hit-Fit'
+      this.historial?.juego_jugado === 'Hit-Fit' ||
+      this.historial?.juego_jugado === 'BiciPaseo'
     );
+  }
+
+  esBiciPaseo(): boolean {
+    return this.historial?.juego_jugado === 'BiciPaseo';
+  }
+
+  formatearTipoVehiculo(tipo: string): string {
+    const tipos: any = {
+      patineta: '🛹 Patineta',
+      'patineta-electrica': '🛹 Patineta',
+      bicicletaMecanica: '🚲 Bici Mecánica',
+      'bicicleta-mecanica': '🚲 Bici Mecánica',
+      bicicletaElectrica: '🚴 Bici Eléctrica',
+      'bicicleta-electrica': '🚴 Bici Eléctrica',
+    };
+    return tipos[tipo] || '🚲 ' + tipo;
   }
 
   getParticipantesPorEquipo(equipoId: number): any[] {

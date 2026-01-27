@@ -3,6 +3,7 @@ import {
   HistorialSesion,
   SesionAgrupada,
 } from '../../../services/historial-sesion.service';
+import { HistorialBiciPaseoAdapter } from './historial-bici-paseo.adapter';
 
 interface EstadisticasJuego {
   tabs: Array<
@@ -105,6 +106,17 @@ export class HistorialJuegoAdapter {
           'puntosObtenidos',
         ],
       },
+      BiciPaseo: {
+        tabs: ['resumen', 'participantes'],
+        tienePreguntas: false,
+        camposParticipante: [
+          'nombreParticipante',
+          'apellidoParticipante',
+          'sexo',
+          'tipoVehiculo',
+          'documento',
+        ],
+      },
     };
     return configs[juegoJugado] || configs['Brain Bike'];
   }
@@ -126,6 +138,10 @@ export class HistorialJuegoAdapter {
           this.calcularTiempoPromedioHitFit(historial),
         tiempoTotalParticipacion: this.calcularTiempoTotalHitFit(historial),
       };
+    }
+
+    if (historial.juego_jugado === 'BiciPaseo') {
+      return HistorialBiciPaseoAdapter.getEstadisticas(historial);
     }
 
     if (historial.juego_jugado === 'Bicilicuadora') {
@@ -190,7 +206,7 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     const total = historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.tiempoParticipacion) || 0),
-      0
+      0,
     );
     return Math.round(total / historial.participantes_data.length);
   }
@@ -199,7 +215,7 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     return historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.tiempoParticipacion) || 0),
-      0
+      0,
     );
   }
 
@@ -207,7 +223,7 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     return historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.puntosObtenidos) || 0),
-      0
+      0,
     );
   }
 
@@ -215,7 +231,7 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     const total = historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.tiempoParticipacion) || 0),
-      0
+      0,
     );
     return Math.round(total / historial.participantes_data.length);
   }
@@ -224,7 +240,7 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     return historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.tiempoParticipacion) || 0),
-      0
+      0,
     );
   }
 
@@ -232,51 +248,53 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     return historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.puntosTotales) || 0),
-      0
+      0,
     );
   }
 
   private calcularVelocidadPromedioBicilicuadora(
-    historial: HistorialSesion
+    historial: HistorialSesion,
   ): number {
     if (!historial.participantes_data?.length) return 0;
     const total = historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.velocidadPromedio) || 0),
-      0
+      0,
     );
     return Math.round((total / historial.participantes_data.length) * 10) / 10;
   }
 
   private calcularVelocidadMaximaBicilicuadora(
-    historial: HistorialSesion
+    historial: HistorialSesion,
   ): number {
     if (!historial.participantes_data?.length) return 0;
     return Math.max(
-      ...historial.participantes_data.map((p) => Number(p.velocidadMaxima) || 0)
+      ...historial.participantes_data.map(
+        (p) => Number(p.velocidadMaxima) || 0,
+      ),
     );
   }
 
   private calcularCaloriasTotalesBicilicuadora(
-    historial: HistorialSesion
+    historial: HistorialSesion,
   ): number {
     if (!historial.participantes_data?.length) return 0;
     return Math.round(
       historial.participantes_data.reduce(
         (acc, p) => acc + (Number(p.caloriasQuemadas) || 0),
-        0
-      )
+        0,
+      ),
     );
   }
 
   private calcularVatiosTotalesBicilicuadora(
-    historial: HistorialSesion
+    historial: HistorialSesion,
   ): number {
     if (!historial.participantes_data?.length) return 0;
     return Math.round(
       historial.participantes_data.reduce(
         (acc, p) => acc + (Number(p.vatiosGenerados) || 0),
-        0
-      )
+        0,
+      ),
     );
   }
 
@@ -284,18 +302,18 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     return historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.cantidadBebidasSeleccionadas) || 0),
-      0
+      0,
     );
   }
 
   private calcularDistanciaTotalBicilicuadora(
-    historial: HistorialSesion
+    historial: HistorialSesion,
   ): number {
     if (!historial.participantes_data?.length) return 0;
     return parseFloat(
       historial.participantes_data
         .reduce((acc, p) => acc + (Number(p.distanciaRecorrida) || 0), 0)
-        .toFixed(2)
+        .toFixed(2),
     );
   }
 
@@ -318,6 +336,10 @@ export class HistorialJuegoAdapter {
           posicionGeneral: index + 1,
           totalParticipantesGeneral: historial.participantes_data.length,
         }));
+    }
+
+    if (historial.juego_jugado === 'BiciPaseo') {
+      return HistorialBiciPaseoAdapter.adaptarParticipantes(historial);
     }
 
     if (historial.juego_jugado === 'Bicilicuadora') {
@@ -428,12 +450,12 @@ export class HistorialJuegoAdapter {
   }
 
   private calcularVelocidadPromedioBiketona(
-    historial: HistorialSesion
+    historial: HistorialSesion,
   ): number {
     if (!historial.participantes_data?.length) return 0;
     const total = historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.velocidadPromedio) || 0),
-      0
+      0,
     );
     return Math.round((total / historial.participantes_data.length) * 10) / 10;
   }
@@ -441,7 +463,9 @@ export class HistorialJuegoAdapter {
   private calcularVelocidadMaximaBiketona(historial: HistorialSesion): number {
     if (!historial.participantes_data?.length) return 0;
     return Math.max(
-      ...historial.participantes_data.map((p) => Number(p.velocidadMaxima) || 0)
+      ...historial.participantes_data.map(
+        (p) => Number(p.velocidadMaxima) || 0,
+      ),
     );
   }
 
@@ -450,8 +474,8 @@ export class HistorialJuegoAdapter {
     return Math.round(
       historial.participantes_data.reduce(
         (acc, p) => acc + (Number(p.calorias) || 0),
-        0
-      )
+        0,
+      ),
     );
   }
 
@@ -460,8 +484,8 @@ export class HistorialJuegoAdapter {
     return Math.round(
       historial.participantes_data.reduce(
         (acc, p) => acc + (Number(p.vatios) || 0),
-        0
-      )
+        0,
+      ),
     );
   }
 
@@ -469,7 +493,7 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     return historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.puntosCarrera) || 0),
-      0
+      0,
     );
   }
 
@@ -477,7 +501,7 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     return historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.puntosAcumulados) || 0),
-      0
+      0,
     );
   }
 
@@ -485,7 +509,7 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     const total = historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.velocidadPromedio) || 0),
-      0
+      0,
     );
     return Math.round((total / historial.participantes_data.length) * 10) / 10;
   }
@@ -493,7 +517,9 @@ export class HistorialJuegoAdapter {
   private calcularVelocidadMaxima(historial: HistorialSesion): number {
     if (!historial.participantes_data?.length) return 0;
     return Math.max(
-      ...historial.participantes_data.map((p) => Number(p.velocidadMaxima) || 0)
+      ...historial.participantes_data.map(
+        (p) => Number(p.velocidadMaxima) || 0,
+      ),
     );
   }
 
@@ -502,8 +528,8 @@ export class HistorialJuegoAdapter {
     return Math.round(
       historial.participantes_data.reduce(
         (acc, p) => acc + (Number(p.caloriasQuemadas) || 0),
-        0
-      )
+        0,
+      ),
     );
   }
 
@@ -512,8 +538,8 @@ export class HistorialJuegoAdapter {
     return Math.round(
       historial.participantes_data.reduce(
         (acc, p) => acc + (Number(p.vatiosGenerados) || 0),
-        0
-      )
+        0,
+      ),
     );
   }
 
@@ -521,7 +547,7 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     return historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.respuestasCorrectas) || 0),
-      0
+      0,
     );
   }
 
@@ -529,7 +555,7 @@ export class HistorialJuegoAdapter {
     if (!historial.participantes_data?.length) return 0;
     return historial.participantes_data.reduce(
       (acc, p) => acc + (Number(p.respuestasIncorrectas) || 0),
-      0
+      0,
     );
   }
 }

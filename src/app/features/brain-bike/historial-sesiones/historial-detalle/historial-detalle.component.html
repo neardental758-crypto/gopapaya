@@ -25,14 +25,14 @@
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-       <div class="bg-dark-800 rounded-lg p-4 border border-neon-yellow/20 text-center">
-          <p class="text-xs text-gray-400 mb-1">Duración</p>
-          <p class="text-2xl text-neon-yellow font-bold">
-            {{ historial.duracion_minutos > 0
-              ? formatearDuracion(historial.duracion_minutos)
-              : formatearTiempo(historial.estadisticas_generales?.duracionTotal || historial.estadisticas_generales?.tiempoTotal || 0) }}
-          </p>
-        </div>
+         <div *ngIf="!esBiciPaseo()" class="bg-dark-800 rounded-lg p-4 border border-neon-yellow/20 text-center">
+            <p class="text-xs text-gray-400 mb-1">Duración</p>
+            <p class="text-2xl text-neon-yellow font-bold">
+              {{ historial.duracion_minutos > 0
+                ? formatearDuracion(historial.duracion_minutos)
+                : formatearTiempo(historial.estadisticas_generales?.duracionTotal || historial.estadisticas_generales?.tiempoTotal || 0) }}
+            </p>
+          </div>
           <div class="bg-dark-800 rounded-lg p-4 border border-neon-blue/20 text-center">
             <p class="text-xs text-gray-400 mb-1">Participantes</p>
             <p class="text-2xl text-neon-blue font-bold">{{ participantesAdaptados.length || 0 }}</p>
@@ -83,7 +83,7 @@
         </button>
 
         <button (click)="cambiarTab('estadisticas')"
-        *ngIf="!esVRoHitFit()"
+        *ngIf="!esjuegosinEstadisticas()"
           class="px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all"
           [class]="tabActiva === 'estadisticas' ? 'bg-neon-orange text-dark-950' : 'bg-dark-800 text-gray-400 hover:text-white'">
           📊 Estadísticas
@@ -95,7 +95,7 @@
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-    <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
+    <div *ngIf="!esBiciPaseo()" class="bg-dark-900 border border-dark-700 rounded-card p-6">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-xl font-display font-bold text-neon-yellow">🏆 Podio</h2>
 
@@ -171,6 +171,34 @@
       </div>
     </div>
 
+<div *ngIf="esBiciPaseo()" class="bg-dark-900 border border-dark-700 rounded-card p-6">
+  <h2 class="text-xl font-display font-bold text-neon-yellow mb-4">👥 Participantes</h2>
+
+  <div class="space-y-2 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neon-yellow/30 scrollbar-track-dark-800">
+    <div *ngFor="let participante of participantesAdaptados; let i = index"
+      class="bg-dark-800 rounded-lg p-3 flex items-center gap-3 border border-dark-700 hover:border-neon-blue/30 transition-all">
+      <div class="w-10 h-10 rounded-full bg-neon-blue/20 flex items-center justify-center font-bold text-neon-blue">
+        {{ i + 1 }}
+      </div>
+      <div class="flex-1">
+        <p class="text-white font-bold">{{ participante.nombre || participante.nombreParticipante || 'Sin nombre' }}</p>
+        <p class="text-xs text-gray-400">{{ participante.documento || 'Sin documento' }}</p>
+      </div>
+      <div class="text-right">
+        <div class="px-2 py-1 rounded-lg text-xs font-bold"
+          [class.bg-neon-blue20]="participante.tipoVehiculo === 'patineta' || participante.tipoVehiculo === 'patineta-electrica'"
+          [class.text-neon-blue]="participante.tipoVehiculo === 'patineta' || participante.tipoVehiculo === 'patineta-electrica'"
+          [class.bg-neon-yellow20]="participante.tipoVehiculo === 'bicicletaMecanica' || participante.tipoVehiculo === 'bicicleta-mecanica'"
+          [class.text-neon-yellow]="participante.tipoVehiculo === 'bicicletaMecanica' || participante.tipoVehiculo === 'bicicleta-mecanica'"
+          [class.bg-neon-pink20]="participante.tipoVehiculo === 'bicicletaElectrica' || participante.tipoVehiculo === 'bicicleta-electrica'"
+          [class.text-neon-pink]="participante.tipoVehiculo === 'bicicletaElectrica' || participante.tipoVehiculo === 'bicicleta-electrica'">
+          {{ formatearTipoVehiculo(participante.tipoVehiculo) }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
     <div class="bg-dark-900 border border-dark-700 rounded-card p-6">
       <h2 class="text-xl font-display font-bold text-white mb-4">ℹ️ Información de la Sesión</h2>
       <div class="space-y-4">
@@ -191,18 +219,18 @@
         </div>
 
         <div class="grid grid-cols-2 gap-4">
-          <div *ngIf="configuracionJuego?.tienePreguntas" class="bg-dark-800 rounded-lg p-4 text-center border border-neon-green/30">
-            <p class="text-3xl font-bold text-neon-green">{{ historial.parametros_utilizados?.numeroPreguntas }}</p>
-            <p class="text-xs text-gray-400 mt-1">Preguntas</p>
-          </div>
-          <div *ngIf="!configuracionJuego?.tienePreguntas" class="bg-dark-800 rounded-lg p-4 text-center border border-neon-green/30">
-            <p class="text-3xl font-bold text-neon-green">{{ historial.parametros_utilizados?.numeroVueltas }}</p>
-            <p class="text-xs text-gray-400 mt-1">Vueltas</p>
-          </div>
-          <div class="bg-dark-800 rounded-lg p-4 text-center border border-neon-pink/30">
-            <p class="text-3xl font-bold text-neon-pink">{{ participantesAdaptados.length || 0 }}</p>
-            <p class="text-xs text-gray-400 mt-1">Participantes</p>
-          </div>
+        <div *ngIf="historial.juego_jugado === 'Brain Bike'" class="bg-dark-800 rounded-lg p-4 text-center border border-neon-green/30">
+          <p class="text-3xl font-bold text-neon-green">{{ historial.parametros_utilizados?.numeroPreguntas }}</p>
+          <p class="text-xs text-gray-400 mt-1">Preguntas</p>
+        </div>
+        <div *ngIf="historial.juego_jugado?.includes('Biketona')" class="bg-dark-800 rounded-lg p-4 text-center border border-neon-green/30">
+          <p class="text-3xl font-bold text-neon-green">{{ historial.parametros_utilizados?.numeroVueltas }}</p>
+          <p class="text-xs text-gray-400 mt-1">Vueltas</p>
+        </div>
+        <div class="bg-dark-800 rounded-lg p-4 text-center border border-neon-pink/30">
+          <p class="text-3xl font-bold text-neon-pink">{{ participantesAdaptados.length || 0 }}</p>
+          <p class="text-xs text-gray-400 mt-1">Participantes</p>
+        </div>
         </div>
 
         <div *ngIf="historial.sesion?.nota" class="bg-dark-800 rounded-lg p-4 border-l-4 border-neon-blue">
@@ -814,6 +842,7 @@
     </div>
   </div>
 </div>
+
 
       <div *ngIf="historial.notas_finales" class="bg-dark-900 border border-dark-700 rounded-card p-6 mt-6">
         <h2 class="text-xl font-display font-bold text-white mb-3">📝 Notas</h2>

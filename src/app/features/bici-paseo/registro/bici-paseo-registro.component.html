@@ -1,0 +1,260 @@
+<div class="min-h-screen bg-dark-950 p-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button (click)="volver()" class="w-12 h-12 flex items-center justify-center bg-dark-700 hover:bg-dark-600 rounded-lg transition-all">
+            <span class="text-2xl">←</span>
+          </button>
+          <div class="text-5xl">🚲</div>
+          <img
+            *ngIf="logoEmpresa"
+            [src]="logoEmpresa"
+            class="h-16 w-16 rounded-lg object-cover border-2 border-neon-blue shadow-lg"
+            [alt]="sesion?.nombreCliente || 'Logo'"
+          />
+          <div>
+            <h1 class="text-3xl font-display font-bold text-white mb-1">
+              Registro <span class="text-neon-blue">BiciPaseo</span>
+            </h1>
+            <p class="text-gray-400">{{ sesion?.nombreCliente || 'Recorrido Grupal' }}</p>
+          </div>
+        </div>
+
+        <div class="text-right">
+          <span class="text-2xl font-bold text-neon-green">{{ participantes.length }}</span>
+          <p class="text-xs text-gray-500">En lista</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2">
+        <div class="bg-dark-900 border-2 border-neon-blue rounded-card p-8">
+          <h2 class="text-2xl font-display font-bold text-white mb-6 flex items-center gap-2">
+            <span>👤</span> Agregar Participante
+          </h2>
+
+          <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-bold text-gray-300 mb-2">Nombre</label>
+                <input
+                  type="text"
+                  [(ngModel)]="nuevoParticipante.nombreParticipante"
+                  placeholder="Ingresa el nombre"
+                  class="w-full px-4 py-3 bg-dark-700 border-2 border-dark-600 rounded-lg focus:outline-none focus:border-neon-blue transition-all text-white text-lg placeholder-gray-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-300 mb-2">Apellido</label>
+                <input
+                  type="text"
+                  [(ngModel)]="nuevoParticipante.apellidoParticipante"
+                  placeholder="Ingresa el apellido"
+                  class="w-full px-4 py-3 bg-dark-700 border-2 border-dark-600 rounded-lg focus:outline-none focus:border-neon-blue transition-all text-white text-lg placeholder-gray-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-bold text-gray-300 mb-2">Documento (Opcional)</label>
+                <input
+                  type="text"
+                  [(ngModel)]="nuevoParticipante.documento"
+                  placeholder="Ingresa el documento"
+                  class="w-full px-4 py-3 bg-dark-700 border-2 border-dark-600 rounded-lg focus:outline-none focus:border-neon-blue transition-all text-white text-lg placeholder-gray-500"
+                />
+              </div>
+
+<div>
+  <label class="block text-sm font-bold text-gray-300 mb-2">Tipo de Vehículo</label>
+  <select
+    [(ngModel)]="nuevoParticipante.tipoVehiculo"
+    class="w-full px-4 py-3 bg-dark-700 border-2 border-dark-600 rounded-lg focus:outline-none focus:border-neon-blue transition-all text-white text-lg"
+  >
+    <option value="">Seleccionar vehículo...</option>
+  <option
+    *ngFor="let vehiculo of vehiculosDisponibles"
+    [value]="vehiculo.tipo"
+    [disabled]="vehiculo.disponibles <= 0"
+  >
+    {{ getIconoVehiculoTexto(vehiculo.tipo) }} {{ vehiculo.nombre }} ({{ vehiculo.disponibles }} disponibles)
+  </option>
+  </select>
+  <p
+    *ngIf="vehiculoSeleccionadoSinCupos()"
+    class="text-neon-red text-xs mt-2 font-bold"
+  >
+    ⚠️ Este vehículo ya no tiene cupos disponibles
+  </p>
+</div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-gray-300 mb-3">Sexo</label>
+              <div class="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  (click)="nuevoParticipante.sexo = 'M'"
+                  class="p-6 rounded-lg transition-all border-2"
+                  [class.bg-neon-blue]="nuevoParticipante.sexo === 'M'"
+                  [class.border-neon-blue]="nuevoParticipante.sexo === 'M'"
+                  [class.shadow-neon-blue]="nuevoParticipante.sexo === 'M'"
+                  [class.bg-dark-700]="nuevoParticipante.sexo !== 'M'"
+                  [class.border-dark-600]="nuevoParticipante.sexo !== 'M'"
+                >
+                  <div class="text-6xl mb-2" [class.text-dark-950]="nuevoParticipante.sexo === 'M'" [class.text-white]="nuevoParticipante.sexo !== 'M'">♂</div>
+                  <p class="font-bold text-lg" [class.text-dark-950]="nuevoParticipante.sexo === 'M'" [class.text-gray-400]="nuevoParticipante.sexo !== 'M'">Hombre</p>
+                </button>
+                <button
+                  type="button"
+                  (click)="nuevoParticipante.sexo = 'F'"
+                  class="p-6 rounded-lg transition-all border-2"
+                  [class.bg-neon-pink]="nuevoParticipante.sexo === 'F'"
+                  [class.border-neon-pink]="nuevoParticipante.sexo === 'F'"
+                  [class.shadow-neon-pink]="nuevoParticipante.sexo === 'F'"
+                  [class.bg-dark-700]="nuevoParticipante.sexo !== 'F'"
+                  [class.border-dark-600]="nuevoParticipante.sexo !== 'F'"
+                >
+                  <div class="text-6xl mb-2" [class.text-dark-950]="nuevoParticipante.sexo === 'F'" [class.text-white]="nuevoParticipante.sexo !== 'F'">♀</div>
+                  <p class="font-bold text-lg" [class.text-dark-950]="nuevoParticipante.sexo === 'F'" [class.text-gray-400]="nuevoParticipante.sexo !== 'F'">Mujer</p>
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="errorMessage" class="bg-neon-red/10 border border-neon-red rounded-lg p-4">
+              <p class="text-neon-red text-sm font-bold">⚠️ {{ errorMessage }}</p>
+            </div>
+
+            <button
+              (click)="agregarParticipante()"
+              [disabled]="!isFormValid()"
+              class="w-full py-4 px-6 bg-neon-blue text-dark-950 rounded-lg font-bold shadow-neon-blue hover:shadow-neon-blue-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              ➕ Agregar a la Lista
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-6 bg-neon-blue/10 border border-neon-blue rounded-lg p-6">
+          <h3 class="text-white font-bold mb-3 flex items-center gap-2">
+            <span>🗺️</span> Información del Recorrido
+          </h3>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="text-gray-400">Ruta</p>
+              <p class="text-white font-bold">{{ ruta || 'No especificada' }}</p>
+            </div>
+            <div>
+              <p class="text-gray-400">Distancia</p>
+              <p class="text-neon-blue font-bold text-lg">{{ distancia || 'No especificada' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<div class="lg:col-span-1">
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sticky top-6 max-h-[calc(100vh-8rem)] flex flex-col">
+    <h3 class="text-xl font-display font-bold text-white mb-4 flex items-center justify-between flex-shrink-0">
+      <span>📋 Lista de Participantes</span>
+      <span class="text-neon-green">{{ participantes.length }}</span>
+    </h3>
+
+    <div *ngIf="participantes.length === 0" class="text-center py-8 flex-shrink-0">
+      <div class="text-6xl mb-3 opacity-30">👥</div>
+      <p class="text-gray-500 text-sm">No hay participantes agregados</p>
+    </div>
+
+    <div *ngIf="participantes.length > 0" class="space-y-3 overflow-y-auto pr-2 flex-1 mb-4">
+      <div
+        *ngFor="let participante of participantes; let i = index"
+        class="bg-dark-800 border border-dark-600 rounded-lg p-4 hover:border-neon-blue transition-all group"
+      >
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-2">
+              <img [src]="getIconoVehiculo(participante.tipoVehiculo)" alt="Vehículo" class="w-6 h-6 object-contain">
+              <p class="text-white font-bold truncate">
+                {{ participante.nombreParticipante }} {{ participante.apellidoParticipante }}
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2 mt-1 flex-wrap">
+              <span class="text-xs px-2 py-1 rounded-full" [class]="participante.sexo === 'M' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50' : 'bg-pink-500/20 text-pink-400 border border-pink-500/50'">
+                {{ participante.sexo === 'M' ? '♂ Hombre' : '♀ Mujer' }}
+              </span>
+              <span class="text-xs px-2 py-1 rounded-full bg-neon-blue/20 text-neon-blue border border-neon-blue/50">
+                {{ getNombreTipoVehiculo(participante.tipoVehiculo) }}
+              </span>
+            </div>
+
+            <p class="text-xs text-gray-500 mt-2" *ngIf="participante.documento">
+              📄 {{ participante.documento }}
+            </p>
+          </div>
+
+          <div class="flex flex-col gap-2 flex-shrink-0">
+            <button
+              (click)="editarParticipante(i)"
+              class="w-8 h-8 flex items-center justify-center bg-neon-blue/20 hover:bg-neon-blue/30 border border-neon-blue rounded-lg transition-all"
+              title="Editar participante"
+            >
+              <span class="text-neon-blue text-sm">✏️</span>
+            </button>
+            <button
+              (click)="confirmarEliminar(i, participante)"
+              class="w-8 h-8 flex items-center justify-center bg-red-500/20 hover:bg-red-500/30 border border-red-500 rounded-lg transition-all"
+              title="Eliminar participante"
+            >
+              <span class="text-red-500 text-lg">×</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="vehiculosDisponibles.length > 0" class="pt-4 border-t border-dark-700 flex-shrink-0">
+      <p class="text-sm font-bold text-gray-400 mb-3">Estado de Vehículos:</p>
+      <div class="space-y-2">
+        <div
+          *ngFor="let vehiculo of vehiculosDisponibles"
+          class="flex items-center justify-between p-3 rounded-lg transition-all"
+          [class]="vehiculoCompleto(vehiculo) ? 'bg-red-500/10 border border-red-500/30' : 'bg-dark-800 border border-dark-600'"
+        >
+          <div class="flex items-center gap-2">
+            <img [src]="getIconoVehiculo(vehiculo.tipo)" alt="Vehículo" class="w-20 h-20 object-contain">
+            <span class="text-gray-300 text-sm">{{ vehiculo.nombre }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              class="font-bold text-sm"
+              [class]="vehiculo.disponibles > 0 ? 'text-neon-green' : 'text-neon-red'"
+            >
+              {{ vehiculo.disponibles }}/{{ vehiculo.cantidad }}
+            </span>
+            <span
+              *ngIf="vehiculoCompleto(vehiculo)"
+              class="text-xs px-2 py-1 bg-red-500/20 text-red-500 rounded-full font-bold border border-red-500/50"
+            >
+              Completo
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button
+      *ngIf="participantes.length > 0"
+      (click)="registrarTodosParticipantes()"
+      [disabled]="loading"
+      class="w-full mt-4 py-4 px-6 bg-neon-green text-dark-950 rounded-lg font-bold shadow-neon-green hover:shadow-neon-green-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex-shrink-0"
+    >
+      <span *ngIf="!loading">🚀 Iniciar BiciPaseo ({{ participantes.length }})</span>
+      <span *ngIf="loading">Registrando...</span>
+    </button>
+  </div>
+</div>
+    </div>
+  </div>
+</div>

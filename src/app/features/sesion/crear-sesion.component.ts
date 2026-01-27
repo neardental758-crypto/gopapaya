@@ -68,6 +68,18 @@ export class CrearSesionComponent implements OnInit {
     tipos_vr: [] as string[],
   };
 
+  parametrosBiciPaseo = {
+    vehiculos: [] as { tipo: string; cantidad: number }[],
+    ruta: '',
+    distancia: '',
+  };
+
+  tiposVehiculo = [
+    { id: 'patineta-electrica', nombre: 'Patineta Eléctrica' },
+    { id: 'bicicleta-mecanica', nombre: 'Bicicleta Mecánica' },
+    { id: 'bicicleta-electrica', nombre: 'Bicicleta Eléctrica' },
+  ];
+
   tiposVR = [
     { id: 'primeros-auxilios-rcp', nombre: 'Primeros auxilios y RCP' },
     { id: 'meditacion', nombre: 'Meditación' },
@@ -230,6 +242,14 @@ export class CrearSesionComponent implements OnInit {
       };
       this.tipoVRSeleccionado = '';
     }
+
+    if (juego !== 'bici-paseo') {
+      this.parametrosBiciPaseo = {
+        vehiculos: [],
+        ruta: '',
+        distancia: '',
+      };
+    }
   }
 
   validarPaso(): boolean {
@@ -319,6 +339,21 @@ export class CrearSesionComponent implements OnInit {
       }
     }
 
+    if (this.paso === 3 && this.juegoAsignado === 'bici-paseo') {
+      if (this.parametrosBiciPaseo.vehiculos.length === 0) {
+        this.errorMensaje = 'Debe agregar al menos un tipo de vehículo';
+        return false;
+      }
+      if (!this.parametrosBiciPaseo.ruta.trim()) {
+        this.errorMensaje = 'Debe especificar la ruta';
+        return false;
+      }
+      if (!this.parametrosBiciPaseo.distancia.trim()) {
+        this.errorMensaje = 'Debe especificar la distancia';
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -358,6 +393,12 @@ export class CrearSesionComponent implements OnInit {
       parametrosJuego = {
         tipo_vr: this.tipoVRSeleccionado,
       };
+    } else if (this.juegoAsignado === 'bici-paseo') {
+      parametrosJuego = {
+        vehiculos: this.parametrosBiciPaseo.vehiculos,
+        ruta: this.parametrosBiciPaseo.ruta,
+        distancia: this.parametrosBiciPaseo.distancia,
+      };
     }
 
     const nuevaSesion: any = {
@@ -382,6 +423,52 @@ export class CrearSesionComponent implements OnInit {
         this.errorMensaje = error.error?.message || 'Error al crear la sesión';
       },
     });
+  }
+
+  agregarVehiculo(tipoVehiculoId: string): void {
+    const yaExiste = this.parametrosBiciPaseo.vehiculos.find(
+      (v) => v.tipo === tipoVehiculoId,
+    );
+    if (yaExiste) {
+      yaExiste.cantidad++;
+    } else {
+      this.parametrosBiciPaseo.vehiculos.push({
+        tipo: tipoVehiculoId,
+        cantidad: 1,
+      });
+    }
+  }
+
+  eliminarVehiculo(tipoVehiculoId: string): void {
+    const index = this.parametrosBiciPaseo.vehiculos.findIndex(
+      (v) => v.tipo === tipoVehiculoId,
+    );
+    if (index > -1) {
+      this.parametrosBiciPaseo.vehiculos.splice(index, 1);
+    }
+  }
+
+  actualizarCantidadVehiculo(tipoVehiculoId: string, cantidad: number): void {
+    const vehiculo = this.parametrosBiciPaseo.vehiculos.find(
+      (v) => v.tipo === tipoVehiculoId,
+    );
+    if (vehiculo && cantidad > 0) {
+      vehiculo.cantidad = cantidad;
+    } else if (vehiculo && cantidad <= 0) {
+      this.eliminarVehiculo(tipoVehiculoId);
+    }
+  }
+
+  getVehiculoCantidad(tipoVehiculoId: string): number {
+    const vehiculo = this.parametrosBiciPaseo.vehiculos.find(
+      (v) => v.tipo === tipoVehiculoId,
+    );
+    return vehiculo ? vehiculo.cantidad : 0;
+  }
+
+  getNombreTipoVehiculo(tipoId: string): string {
+    const tipo = this.tiposVehiculo.find((t) => t.id === tipoId);
+    return tipo ? tipo.nombre : tipoId;
   }
 
   toggleBebida(bebidaId: string): void {

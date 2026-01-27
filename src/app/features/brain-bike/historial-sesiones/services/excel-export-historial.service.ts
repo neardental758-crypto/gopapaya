@@ -4,6 +4,7 @@ import {
   SesionAgrupada,
 } from '../../../services/historial-sesion.service';
 import { Injectable } from '@angular/core';
+import { HistorialBiciPaseoAdapter } from '../adapter/historial-bici-paseo.adapter';
 
 @Injectable({ providedIn: 'root' })
 export class ExcelExporthistorialService {
@@ -11,7 +12,9 @@ export class ExcelExporthistorialService {
     const wb = XLSX.utils.book_new();
     const juego = grupo.carreras[0]?.juego_jugado;
 
-    if (juego === 'VR' || juego === 'Hit-Fit') {
+    if (juego === 'BiciPaseo') {
+      this.exportarBiciPaseo(wb, grupo);
+    } else if (juego === 'VR' || juego === 'Hit-Fit') {
       this.exportarVRoHitFit(wb, grupo, juego);
     } else if (juego === 'Bicilicuadora') {
       this.exportarBicilicuadora(wb, grupo);
@@ -23,9 +26,7 @@ export class ExcelExporthistorialService {
       this.exportarOtrosJuegos(wb, grupo);
     }
 
-    const nombreArchivo = `Historial_${grupo.sesion.nombreCliente}_${
-      new Date().toISOString().split('T')[0]
-    }.xlsx`;
+    const nombreArchivo = `Historial_${grupo.sesion.nombreCliente}_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, nombreArchivo);
   }
 
@@ -1570,5 +1571,99 @@ export class ExcelExporthistorialService {
     const ws = XLSX.utils.aoa_to_sheet(data);
     ws['!cols'] = [{ wch: 20 }, { wch: 15 }, { wch: 15 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Distribución Sexo');
+  }
+
+  private exportarBiciPaseo(wb: XLSX.WorkBook, grupo: SesionAgrupada): void {
+    this.agregarHojaResumenBiciPaseo(wb, grupo);
+    this.agregarHojaParticipantesBiciPaseo(wb, grupo);
+  }
+
+  private agregarHojaResumenBiciPaseo(
+    wb: XLSX.WorkBook,
+    grupo: SesionAgrupada,
+  ): void {
+    const historial = grupo.carreras[0];
+    const estadisticas = HistorialBiciPaseoAdapter.getEstadisticas(historial);
+
+    const data = [
+      ['RESUMEN DE SESIÓN BICIPASEO'],
+      [],
+      ['Cliente', grupo.sesion.nombreCliente],
+      ['Empresa', grupo.sesion.empresa?.nombre || grupo.sesion.nombreCliente],
+      ['Lugar', grupo.sesion.lugarEjecucion || 'N/A'],
+      ['Fecha Sesión', grupo.sesion.fecha_sesion],
+      [],
+      ['INFORMACIÓN DEL RECORRIDO'],
+      ['Ruta', estadisticas.ruta],
+      ['Distancia', estadisticas.distancia],
+      [],
+      ['TOTALES'],
+      ['Total Participantes', estadisticas.totalParticipantes],
+      ['Hombres', estadisticas.hombres],
+      ['Mujeres', estadisticas.mujeres],
+      [],
+      ['DISTRIBUCIÓN DE VEHÍCULOS'],
+      ['Patinetas Eléctricas', estadisticas.distribucionVehiculos.patineta],
+      [
+        'Bicicletas Mecánicas',
+        estadisticas.distribucionVehiculos.bicicletaMecanica,
+      ],
+      [
+        'Bicicletas Eléctricas',
+        estadisticas.distribucionVehiculos.bicicletaElectrica,
+      ],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = [{ wch: 30 }, { wch: 30 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Resumen');
+  }
+
+  private agregarHojaParticipantesBiciPaseo(
+    wb: XLSX.WorkBook,
+    grupo: SesionAgrupada,
+  ): void {
+    const historial = grupo.carreras[0];
+    const participantes =
+      HistorialBiciPaseoAdapter.adaptarParticipantes(historial);
+
+    const headers = [
+      'Nombre',
+      'Apellido',
+      'Sexo',
+      'Tipo de Vehículo',
+      'Documento',
+      'Fecha Registro',
+    ];
+    const data = [['DETALLE DE PARTICIPANTES'], [], headers];
+
+    participantes.forEach((p) => {
+      const nombreVehiculo = HistorialBiciPaseoAdapter.getNombreVehiculo(
+        p.tipoVehiculo,
+      );
+
+      const row = [
+        p.nombre,
+        p.apellido,
+        p.sexo === 'M' ? 'Masculino' : p.sexo === 'F' ? 'Femenino' : 'N/E',
+        nombreVehiculo,
+        p.documento || 'N/A',
+        p.fechaRegistro
+          ? new Date(p.fechaRegistro).toLocaleString('es-ES')
+          : 'N/A',
+      ];
+      data.push(row);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = [
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 12 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 20 },
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, 'Participantes');
   }
 }

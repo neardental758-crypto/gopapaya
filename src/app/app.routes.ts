@@ -41,6 +41,8 @@ import { VrRegistroComponent } from './features/Vr/vr-registro/vr-registro.compo
 import { VrJuegoComponent } from './features/Vr/juego/vr-juego.component';
 import { HitFitRegistroComponent } from './features/hit-fit/registro/hit-fit-registro.component';
 import { HitFitJuegoComponent } from './features/hit-fit/juego/hit-fit-juego.component';
+import { BiciPaseoRegistroComponent } from './features/bici-paseo/registro/bici-paseo-registro.component';
+import { BiciPaseoJuegoComponent } from './features/bici-paseo/juego/bici-paseo-juego.component';
 
 export const routes: Routes = [
   {
@@ -241,6 +243,18 @@ export const routes: Routes = [
       {
         path: 'hit-fit/juego',
         component: HitFitJuegoComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'bici-paseo/registro',
+        component: BiciPaseoRegistroComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'bici-paseo/juego',
+        component: BiciPaseoJuegoComponent,
         canActivate: [sesionActivaGuard, rolGuard],
         data: { roles: ['super_admin', 'admin'] },
       },

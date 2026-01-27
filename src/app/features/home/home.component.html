@@ -130,11 +130,19 @@
                     </div>
                   </div>
 
-                  <div *ngIf="sesion.juego_asignado" class="mb-2 px-2 py-1 bg-dark-900 rounded">
-                    <p class="text-neon-blue text-xs font-bold uppercase">
-                      🎮 {{ sesion.juego_asignado === 'brain-bike' ? 'Brain Bike' : sesion.juego_asignado }}
-                    </p>
-                  </div>
+              <div *ngIf="sesion.juego_asignado" class="mb-2 px-2 py-1 bg-dark-900 rounded">
+                <p class="text-neon-blue text-xs font-bold uppercase">
+                  🎮 {{
+                    sesion.juego_asignado === 'brain-bike' ? 'Brain Bike' :
+                    sesion.juego_asignado === 'bicilicuadora' ? 'Bicilicuadora' :
+                    sesion.juego_asignado === 'vr' ? 'VR' :
+                    sesion.juego_asignado === 'hit-fit' ? 'Hit-Fit' :
+                    sesion.juego_asignado === 'bici-paseo' ? 'BiciPaseo' :
+                    sesion.juego_asignado === 'biketona' ? 'Biketona' :
+                    sesion.juego_asignado
+                  }}
+                </p>
+              </div>
 
                   <div *ngIf="sesion.nota" class="mb-2 p-2 bg-dark-900 rounded">
                     <p class="text-gray-400 text-xs mb-1">Nota:</p>
@@ -241,11 +249,19 @@
         </button>
       </div>
 
-      <div *ngIf="sesion.juego_asignado" class="mb-2 px-2 py-1 bg-dark-900 rounded">
-        <p class="text-neon-blue text-xs font-bold uppercase">
-          🎮 {{ sesion.juego_asignado === 'brain-bike' ? 'Brain Bike' : sesion.juego_asignado }}
-        </p>
-      </div>
+    <div *ngIf="sesion.juego_asignado" class="mb-2 px-2 py-1 bg-dark-900 rounded">
+      <p class="text-neon-blue text-xs font-bold uppercase">
+        🎮 {{
+          sesion.juego_asignado === 'brain-bike' ? 'Brain Bike' :
+          sesion.juego_asignado === 'bicilicuadora' ? 'Bicilicuadora' :
+          sesion.juego_asignado === 'vr' ? 'VR' :
+          sesion.juego_asignado === 'hit-fit' ? 'Hit-Fit' :
+          sesion.juego_asignado === 'bici-paseo' ? 'BiciPaseo' :
+          sesion.juego_asignado === 'biketona' ? 'Biketona' :
+          sesion.juego_asignado
+        }}
+      </p>
+    </div>
 
       <div *ngIf="sesion.nota" class="mb-2 p-2 bg-dark-900 rounded">
         <p class="text-gray-400 text-xs mb-1">Nota:</p>

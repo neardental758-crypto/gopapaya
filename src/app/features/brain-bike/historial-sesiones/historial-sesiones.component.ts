@@ -16,6 +16,7 @@ import { Evidencia, SesionService } from '../../services/sesion.service';
 import { EnviarCorreoModalComponent } from './correos/enviar-correo-modal.component';
 import { HistorialJuegoAdapter } from './adapter/historial-juego.adapter';
 import { EvidenciasModalComponent } from '../../home/evidencias/evidencias-modal.component';
+import { HistorialBiciPaseoAdapter } from './adapter/historial-bici-paseo.adapter';
 
 @Component({
   selector: 'app-historial-sesiones',
@@ -382,7 +383,12 @@ export class HistorialSesionesComponent implements OnInit {
   }
 
   getNombreTipoActividad(juego: string): string {
-    if (juego === 'VR' || juego === 'Hit-Fit' || juego === 'Bicilicuadora') {
+    if (
+      juego === 'VR' ||
+      juego === 'Hit-Fit' ||
+      juego === 'Bicilicuadora' ||
+      juego === 'BiciPaseo'
+    ) {
       return 'Sesiones';
     }
     return 'Carreras';
@@ -572,6 +578,30 @@ export class HistorialSesionesComponent implements OnInit {
     });
   }
 
+  getDistribucionVehiculos(grupo: SesionAgrupada): any {
+    if (!grupo.carreras || grupo.carreras.length === 0) {
+      return { patineta: 0, bicicletaMecanica: 0, bicicletaElectrica: 0 };
+    }
+
+    const historial = grupo.carreras[0];
+    const estadisticas = this.juegoAdapter.getEstadisticasResumen(historial);
+    return (
+      estadisticas.distribucionVehiculos || {
+        patineta: 0,
+        bicicletaMecanica: 0,
+        bicicletaElectrica: 0,
+      }
+    );
+  }
+
+  getInfoRutaBiciPaseo(grupo: SesionAgrupada): string {
+    if (!grupo.carreras || grupo.carreras.length === 0) return 'N/A';
+
+    const historial = grupo.carreras[0];
+    const estadisticas = this.juegoAdapter.getEstadisticasResumen(historial);
+    return estadisticas.ruta || 'No especificada';
+  }
+
   exportarExcel(grupo: SesionAgrupada): void {
     this.excelExporthistorialService.exportarHistorialSesion(grupo);
   }
@@ -659,6 +689,10 @@ export class HistorialSesionesComponent implements OnInit {
     return grupo.carreras.some(
       (c) => c.juego_jugado === 'VR' || c.juego_jugado === 'Hit-Fit',
     );
+  }
+
+  esBiciPaseo(grupo: SesionAgrupada): boolean {
+    return grupo.carreras.some((c) => c.juego_jugado === 'BiciPaseo');
   }
 
   descargarPlanilla(sesionId: number): void {

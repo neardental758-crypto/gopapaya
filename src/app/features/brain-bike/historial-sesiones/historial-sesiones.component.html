@@ -37,6 +37,7 @@
       <option value="Biketona Equipos">Biketona Equipos</option>
       <option value="VR">VR</option>
       <option value="Hit-Fit">Hit-Fit</option>
+      <option value="BiciPaseo">BiciPaseo</option>
     </select>
   </div>
 
@@ -98,12 +99,6 @@
     <p class="text-3xl font-bold text-neon-yellow">{{ indicadores.totalSesiones }}</p>
     <p class="text-xs text-gray-400 mt-1">Sesiones</p>
   </div>
-  <!-- <div class="bg-dark-900 border border-neon-blue/30 rounded-card p-4 text-center">
-    <p class="text-3xl font-bold text-neon-blue">{{ indicadores.totalCarreras }}</p>
-
-    <p
-    class="text-xs text-gray-400 mt-1">Carreras</p>
-  </div> -->
   <div class="bg-dark-900 border border-neon-green/30 rounded-card p-4 text-center">
     <p class="text-3xl font-bold text-neon-green">{{ indicadores.totalParticipantes }}</p>
     <p class="text-xs text-gray-400 mt-1">Participantes</p>
@@ -196,208 +191,238 @@
       </div>
     </div>
 
-<div *ngIf="isSesionExpandida(grupo.sesion_id)" class="border-t border-dark-700">
-        <div class="p-3 sm:p-4 bg-dark-850 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-          <div class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
-            <p class="text-xs text-gray-400">Participantes Totales</p>
-            <p class="text-lg sm:text-xl font-bold text-neon-yellow">{{ grupo.totales.totalParticipantes }}</p>
+ <div *ngIf="isSesionExpandida(grupo.sesion_id)" class="border-t border-dark-700">
+  <div *ngIf="!esBiciPaseo(grupo)" class="p-3 sm:p-4 bg-dark-850 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+    <div class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+      <p class="text-xs text-gray-400">Participantes Totales</p>
+      <p class="text-lg sm:text-xl font-bold text-neon-yellow">{{ grupo.totales.totalParticipantes }}</p>
+    </div>
+
+    <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+      <p class="text-xs text-gray-400">Vel. Promedio</p>
+      <p class="text-lg sm:text-xl font-bold text-neon-green">{{ getVelocidadPromedioGrupo(grupo) }} km/h</p>
+    </div>
+
+    <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+      <p class="text-xs text-gray-400">Vel. Máxima</p>
+      <p class="text-lg sm:text-xl font-bold text-neon-blue">{{ getVelocidadMaximaGrupo(grupo) }} km/h</p>
+    </div>
+
+    <div *ngIf="!deberiaOcultarDistancia(grupo) && !esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+      <p class="text-xs text-gray-400">Distancia Total</p>
+      <p class="text-lg sm:text-xl font-bold text-neon-green">{{ getDistanciaTotalGrupo(grupo) }} km</p>
+    </div>
+
+    <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+      <p class="text-xs text-gray-400">Calorías Quemadas</p>
+      <p class="text-lg sm:text-xl font-bold text-neon-orange">{{ getCaloriasTotalesGrupo(grupo) }} kcal</p>
+    </div>
+
+    <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+      <p class="text-xs text-gray-400">Vatios Generados</p>
+      <p class="text-lg sm:text-xl font-bold text-neon-pink">{{ getVatiosTotalesGrupo(grupo) }} W</p>
+    </div>
+
+    <div *ngIf="juegoFiltradoTienePreguntas() && indicadores!.totalPreguntasRespondidas > 0" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+      <p class="text-xs text-gray-400">Preguntas</p>
+      <p class="text-lg sm:text-xl font-bold text-white">{{ indicadores!.totalPreguntasRespondidas }}</p>
+    </div>
+
+    <div class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
+      <p class="text-xs text-gray-400">Duración Total</p>
+      <p class="text-lg sm:text-xl font-bold text-neon-green">{{ formatearDuracionTexto(getDuracionTotalGrupo(grupo)) }}</p>
+      <p class="text-xs text-gray-500">{{ getUnidadDuracion(getDuracionTotalGrupo(grupo)) }}</p>
+    </div>
+
+    <div class="bg-dark-800 rounded-lg p-2 sm:p-3 col-span-2 lg:col-span-1">
+      <p class="text-xs text-gray-400 mb-2 text-center">Distribución Género</p>
+      <div class="flex items-center justify-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1 sm:gap-2 bg-neon-blue/10 border border-neon-blue/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neon-blue/20 flex items-center justify-center border border-neon-blue">
+            <span class="text-base sm:text-xl text-neon-blue">♂</span>
           </div>
+          <span class="text-base sm:text-xl font-bold text-neon-blue">{{ getDistribucionSexoGrupo(grupo).hombres }}</span>
+        </div>
 
-          <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
-            <p class="text-xs text-gray-400">Vel. Promedio</p>
-            <p class="text-lg sm:text-xl font-bold text-neon-green">{{ getVelocidadPromedioGrupo(grupo) }} km/h</p>
+        <div class="flex items-center gap-1 sm:gap-2 bg-neon-pink/10 border border-neon-pink/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neon-pink/20 flex items-center justify-center border border-neon-pink">
+            <span class="text-base sm:text-xl text-neon-pink">♀</span>
           </div>
+          <span class="text-base sm:text-xl font-bold text-neon-pink">{{ getDistribucionSexoGrupo(grupo).mujeres }}</span>
+        </div>
 
-          <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
-            <p class="text-xs text-gray-400">Vel. Máxima</p>
-            <p class="text-lg sm:text-xl font-bold text-neon-blue">{{ getVelocidadMaximaGrupo(grupo) }} km/h</p>
+        <div *ngIf="getDistribucionSexoGrupo(grupo).sinEspecificar > 0" class="flex items-center gap-1 sm:gap-2 bg-gray-600/10 border border-gray-500/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+          <span class="text-gray-400 font-bold text-sm sm:text-base">{{ getDistribucionSexoGrupo(grupo).sinEspecificar }}</span>
+          <span class="text-xs text-gray-500">N/E</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="esBiciPaseo(grupo)" class="p-3 sm:p-4 bg-dark-850">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+      <div class="bg-dark-800 rounded-lg p-3 text-center">
+        <p class="text-xs text-gray-400">Participantes Totales</p>
+        <p class="text-2xl font-bold text-neon-yellow">{{ grupo.totales.totalParticipantes }}</p>
+      </div>
+
+      <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-green/30">
+        <p class="text-xs text-gray-400">📍 Ruta</p>
+        <p class="text-base font-bold text-neon-green">{{ getInfoRutaBiciPaseo(grupo) }}</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-blue/30">
+        <p class="text-xs text-gray-400">🛹 Patinetas</p>
+        <p class="text-2xl font-bold text-neon-blue">{{ getDistribucionVehiculos(grupo).patineta }}</p>
+      </div>
+      <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-yellow/30">
+        <p class="text-xs text-gray-400">🚲 Bici Mecánica</p>
+        <p class="text-2xl font-bold text-neon-yellow">{{ getDistribucionVehiculos(grupo).bicicletaMecanica }}</p>
+      </div>
+      <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-pink/30">
+        <p class="text-xs text-gray-400">🚴 Bici Eléctrica</p>
+        <p class="text-2xl font-bold text-neon-pink">{{ getDistribucionVehiculos(grupo).bicicletaElectrica }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-4 bg-dark-850 border-b border-dark-700">
+    <p class="text-sm text-gray-400 font-bold mb-3">📋 Planilla</p>
+
+    <div *ngIf="isCargandoPlanilla(grupo.sesion_id)" class="text-center py-4">
+      <div class="animate-spin w-6 h-6 border-4 border-neon-blue border-t-transparent rounded-full mx-auto"></div>
+      <p class="text-gray-400 text-xs mt-2">Cargando...</p>
+    </div>
+
+    <div *ngIf="!isCargandoPlanilla(grupo.sesion_id)" class="flex items-center gap-3">
+      <div *ngIf="!getPlanilla(grupo.sesion_id)" class="flex-1">
+        <input
+          type="file"
+          (change)="onPlanillaSelected($event, grupo.sesion_id)"
+          accept=".xls,.xlsx,.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+          class="hidden"
+          [id]="'planilla-replace-' + grupo.sesion_id">
+
+        <label
+          [for]="'planilla-' + grupo.sesion_id"
+          [class.opacity-50]="isSubiendoPlanilla(grupo.sesion_id)"
+          [class.cursor-not-allowed]="isSubiendoPlanilla(grupo.sesion_id)"
+          class="flex items-center justify-center gap-2 px-4 py-3 bg-neon-blue/10 border-2 border-dashed border-neon-blue/50 rounded-lg hover:bg-neon-blue/20 hover:border-neon-blue transition-all cursor-pointer">
+          <span class="text-2xl" *ngIf="!isSubiendoPlanilla(grupo.sesion_id)">📤</span>
+          <div *ngIf="isSubiendoPlanilla(grupo.sesion_id)" class="animate-spin w-5 h-5 border-3 border-neon-blue border-t-transparent rounded-full"></div>
+          <span class="text-sm font-bold text-neon-blue">
+            {{ isSubiendoPlanilla(grupo.sesion_id) ? 'Subiendo...' : 'Subir Planilla (Excel, PDF, Word, Imagen)' }}
+          </span>
+        </label>
+        <input
+          [id]="'planilla-' + grupo.sesion_id"
+          type="file"
+          class="hidden"
+          accept=".xlsx,.xls,.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+          (change)="onPlanillaSelected($event, grupo.sesion_id)"
+          [disabled]="isSubiendoPlanilla(grupo.sesion_id)"
+        />
+      </div>
+
+      <div *ngIf="getPlanilla(grupo.sesion_id)" class="flex-1 flex items-center justify-between bg-neon-green/10 border border-neon-green/30 rounded-lg p-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-neon-green/20 flex items-center justify-center">
+            <span class="text-xl">✓</span>
           </div>
-
-          <div *ngIf="!deberiaOcultarDistancia(grupo) && !esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
-            <p class="text-xs text-gray-400">Distancia Total</p>
-            <p class="text-lg sm:text-xl font-bold text-neon-green">{{ getDistanciaTotalGrupo(grupo) }} km</p>
-          </div>
-
-          <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
-            <p class="text-xs text-gray-400">Calorías Quemadas</p>
-            <p class="text-lg sm:text-xl font-bold text-neon-orange">{{ getCaloriasTotalesGrupo(grupo) }} kcal</p>
-          </div>
-
-          <div *ngIf="!esVRoHitFit(grupo)" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
-            <p class="text-xs text-gray-400">Vatios Generados</p>
-            <p class="text-lg sm:text-xl font-bold text-neon-pink">{{ getVatiosTotalesGrupo(grupo) }} W</p>
-          </div>
-
-          <div *ngIf="juegoFiltradoTienePreguntas() && indicadores!.totalPreguntasRespondidas > 0" class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
-            <p class="text-xs text-gray-400">Preguntas</p>
-            <p class="text-lg sm:text-xl font-bold text-white">{{ indicadores!.totalPreguntasRespondidas }}</p>
-          </div>
-
-          <div class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
-            <p class="text-xs text-gray-400">Duración Total</p>
-            <p class="text-lg sm:text-xl font-bold text-neon-green">{{ formatearDuracionTexto(getDuracionTotalGrupo(grupo)) }}</p>
-            <p class="text-xs text-gray-500">{{ getUnidadDuracion(getDuracionTotalGrupo(grupo)) }}</p>
-          </div>
-
-          <div class="bg-dark-800 rounded-lg p-2 sm:p-3 col-span-2 lg:col-span-1">
-            <p class="text-xs text-gray-400 mb-2 text-center">Distribución Género</p>
-            <div class="flex items-center justify-center gap-2 flex-wrap">
-              <div class="flex items-center gap-1 sm:gap-2 bg-neon-blue/10 border border-neon-blue/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
-                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neon-blue/20 flex items-center justify-center border border-neon-blue">
-                  <span class="text-base sm:text-xl text-neon-blue">♂</span>
-                </div>
-                <span class="text-base sm:text-xl font-bold text-neon-blue">{{ getDistribucionSexoGrupo(grupo).hombres }}</span>
-              </div>
-
-              <div class="flex items-center gap-1 sm:gap-2 bg-neon-pink/10 border border-neon-pink/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
-                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neon-pink/20 flex items-center justify-center border border-neon-pink">
-                  <span class="text-base sm:text-xl text-neon-pink">♀</span>
-                </div>
-                <span class="text-base sm:text-xl font-bold text-neon-pink">{{ getDistribucionSexoGrupo(grupo).mujeres }}</span>
-              </div>
-
-              <div *ngIf="getDistribucionSexoGrupo(grupo).sinEspecificar > 0" class="flex items-center gap-1 sm:gap-2 bg-gray-600/10 border border-gray-500/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
-                <span class="text-gray-400 font-bold text-sm sm:text-base">{{ getDistribucionSexoGrupo(grupo).sinEspecificar }}</span>
-                <span class="text-xs text-gray-500">N/E</span>
-              </div>
-            </div>
+          <div>
+            <p class="text-sm font-bold text-neon-green">Planilla cargada</p>
+            <p class="text-xs text-gray-400">{{ getPlanilla(grupo.sesion_id)?.nombre_archivo }}</p>
           </div>
         </div>
 
-          <div class="p-4 bg-dark-850 border-b border-dark-700">
-            <p class="text-sm text-gray-400 font-bold mb-3">📋 Planilla</p>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="descargarPlanilla(grupo.sesion_id); $event.stopPropagation()"
+            class="px-3 py-2 bg-neon-green text-dark-950 rounded-lg font-bold text-xs hover:scale-105 transition-all">
+            📥 Descargar
+          </button>
 
-            <div *ngIf="isCargandoPlanilla(grupo.sesion_id)" class="text-center py-4">
-              <div class="animate-spin w-6 h-6 border-4 border-neon-blue border-t-transparent rounded-full mx-auto"></div>
-              <p class="text-gray-400 text-xs mt-2">Cargando...</p>
+          <input
+            type="file"
+            (change)="onPlanillaSelected($event, grupo.sesion_id)"
+            accept=".xls,.xlsx,.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
+            class="hidden"
+            [id]="'planilla-replace-' + grupo.sesion_id">
+
+          <label
+            [for]="'planilla-replace-' + grupo.sesion_id"
+            [class.opacity-50]="isSubiendoPlanilla(grupo.sesion_id)"
+            [class.cursor-not-allowed]="isSubiendoPlanilla(grupo.sesion_id)"
+            class="px-3 py-2 bg-dark-800 text-gray-400 rounded-lg font-bold text-xs hover:text-white hover:bg-dark-700 transition-all cursor-pointer">
+            🔄 Reemplazar
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="p-4 space-y-3">
+    <p class="text-sm text-gray-400 font-bold mb-2">
+      {{ grupo.carreras[0]?.juego_jugado === 'VR' || grupo.carreras[0]?.juego_jugado === 'Hit-Fit' || grupo.carreras[0]?.juego_jugado === 'Bicilicuadora' ? '🎮' : '🏁' }}
+      {{ getNombreTipoActividad(grupo.carreras[0]?.juego_jugado || '') }} de esta sesión:
+    </p>
+
+    <div *ngIf="isCargandoCarreras(grupo.sesion_id)" class="text-center py-8">
+      <div class="animate-spin w-8 h-8 border-4 border-neon-yellow border-t-transparent rounded-full mx-auto"></div>
+      <p class="text-gray-400 text-sm mt-2">Cargando carreras...</p>
+    </div>
+
+    <div *ngIf="!isCargandoCarreras(grupo.sesion_id)">
+      <div *ngFor="let carrera of getCarrerasSesion(grupo.sesion_id); let i = index"
+        (click)="verDetalle(carrera.id)"
+        class="bg-dark-800 rounded-lg p-4 hover:border-neon-blue border border-transparent transition-all cursor-pointer">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-neon-blue/20 flex items-center justify-center text-neon-blue font-bold">
+              {{ (getPaginacionCarreras(grupo.sesion_id)?.paginaActual - 1) * 5 + i + 1 }}
             </div>
-
-            <div *ngIf="!isCargandoPlanilla(grupo.sesion_id)" class="flex items-center gap-3">
-              <div *ngIf="!getPlanilla(grupo.sesion_id)" class="flex-1">
-              <input
-                type="file"
-                (change)="onPlanillaSelected($event, grupo.sesion_id)"
-                accept=".xls,.xlsx,.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
-                class="hidden"
-                [id]="'planilla-replace-' + grupo.sesion_id">
-
-              <label
-                [for]="'planilla-' + grupo.sesion_id"
-                [class.opacity-50]="isSubiendoPlanilla(grupo.sesion_id)"
-                [class.cursor-not-allowed]="isSubiendoPlanilla(grupo.sesion_id)"
-                class="flex items-center justify-center gap-2 px-4 py-3 bg-neon-blue/10 border-2 border-dashed border-neon-blue/50 rounded-lg hover:bg-neon-blue/20 hover:border-neon-blue transition-all cursor-pointer">
-                <span class="text-2xl" *ngIf="!isSubiendoPlanilla(grupo.sesion_id)">📤</span>
-                <div *ngIf="isSubiendoPlanilla(grupo.sesion_id)" class="animate-spin w-5 h-5 border-3 border-neon-blue border-t-transparent rounded-full"></div>
-                <span class="text-sm font-bold text-neon-blue">
-                  {{ isSubiendoPlanilla(grupo.sesion_id) ? 'Subiendo...' : 'Subir Planilla (Excel, PDF, Word, Imagen)' }}
-                </span>
-              </label>
-              <input
-                [id]="'planilla-' + grupo.sesion_id"
-                type="file"
-                class="hidden"
-                accept=".xlsx,.xls,.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
-                (change)="onPlanillaSelected($event, grupo.sesion_id)"
-                [disabled]="isSubiendoPlanilla(grupo.sesion_id)"
-              />
-              </div>
-
-              <div *ngIf="getPlanilla(grupo.sesion_id)" class="flex-1 flex items-center justify-between bg-neon-green/10 border border-neon-green/30 rounded-lg p-3">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-lg bg-neon-green/20 flex items-center justify-center">
-                    <span class="text-xl">✓</span>
-                  </div>
-                  <div>
-                    <p class="text-sm font-bold text-neon-green">Planilla cargada</p>
-                    <p class="text-xs text-gray-400">{{ getPlanilla(grupo.sesion_id)?.nombre_archivo }}</p>
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <button
-                    (click)="descargarPlanilla(grupo.sesion_id); $event.stopPropagation()"
-                    class="px-3 py-2 bg-neon-green text-dark-950 rounded-lg font-bold text-xs hover:scale-105 transition-all">
-                    📥 Descargar
-                  </button>
-
-                  <input
-                  type="file"
-                  (change)="onPlanillaSelected($event, grupo.sesion_id)"
-                  accept=".xls,.xlsx,.pdf,.doc,.docx,.jpg,.jpeg,.png,.webp"
-                  class="hidden"
-                  [id]="'planilla-replace-' + grupo.sesion_id">
-
-                  <label
-                    [for]="'planilla-replace-' + grupo.sesion_id"
-                    [class.opacity-50]="isSubiendoPlanilla(grupo.sesion_id)"
-                    [class.cursor-not-allowed]="isSubiendoPlanilla(grupo.sesion_id)"
-                    class="px-3 py-2 bg-dark-800 text-gray-400 rounded-lg font-bold text-xs hover:text-white hover:bg-dark-700 transition-all cursor-pointer">
-                    🔄 Reemplazar
-                  </label>
-                </div>
-              </div>
+            <div>
+              <p class="text-white font-bold">{{ carrera.juego_jugado }}</p>
+              <p class="text-xs text-gray-400">{{ formatearFecha(carrera.fecha_fin) }}</p>
             </div>
           </div>
-
-          <div class="p-4 space-y-3">
-          <p class="text-sm text-gray-400 font-bold mb-2">
-            {{ grupo.carreras[0]?.juego_jugado === 'VR' || grupo.carreras[0]?.juego_jugado === 'Hit-Fit' || grupo.carreras[0]?.juego_jugado === 'Bicilicuadora' ? '🎮' : '🏁' }}
-            {{ getNombreTipoActividad(grupo.carreras[0]?.juego_jugado || '') }} de esta sesión:
-          </p>
-
-            <div *ngIf="isCargandoCarreras(grupo.sesion_id)" class="text-center py-8">
-              <div class="animate-spin w-8 h-8 border-4 border-neon-yellow border-t-transparent rounded-full mx-auto"></div>
-              <p class="text-gray-400 text-sm mt-2">Cargando carreras...</p>
+          <div class="flex items-center gap-4">
+            <div class="text-center">
+              <p class="text-sm font-bold text-neon-yellow">{{ formatearDuracionTexto(getDuracionCarrera(carrera)) }}</p>
+              <p class="text-xs text-gray-500">{{ getUnidadDuracion(getDuracionCarrera(carrera)) }}</p>
             </div>
-
-            <div *ngIf="!isCargandoCarreras(grupo.sesion_id)">
-              <div *ngFor="let carrera of getCarrerasSesion(grupo.sesion_id); let i = index"
-                (click)="verDetalle(carrera.id)"
-                class="bg-dark-800 rounded-lg p-4 hover:border-neon-blue border border-transparent transition-all cursor-pointer">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-neon-blue/20 flex items-center justify-center text-neon-blue font-bold">
-                      {{ (getPaginacionCarreras(grupo.sesion_id)?.paginaActual - 1) * 5 + i + 1 }}
-                    </div>
-                    <div>
-                      <p class="text-white font-bold">{{ carrera.juego_jugado }}</p>
-                      <p class="text-xs text-gray-400">{{ formatearFecha(carrera.fecha_fin) }}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-4">
-                  <div class="text-center">
-                    <p class="text-sm font-bold text-neon-yellow">{{ formatearDuracionTexto(getDuracionCarrera(carrera)) }}</p>
-                    <p class="text-xs text-gray-500">{{ getUnidadDuracion(getDuracionCarrera(carrera)) }}</p>
-                  </div>
-                    <div class="text-center">
-                      <p class="text-sm font-bold text-neon-blue">{{ carrera.participantes_data!.length || 0 }}</p>
-                      <p class="text-xs text-gray-500">Jugadores</p>
-                    </div>
-                    <div class="text-neon-blue">→</div>
-                  </div>
-                </div>
-              </div>
-
-              <div *ngIf="getPaginacionCarreras(grupo.sesion_id) && getPaginacionCarreras(grupo.sesion_id).totalPaginas > 1"
-                   class="flex items-center justify-center gap-3 pt-4 mt-4 border-t border-dark-700">
-                <button (click)="cambiarPaginaCarreras(grupo.sesion_id, getPaginacionCarreras(grupo.sesion_id).paginaActual - 1); $event.stopPropagation()"
-                        [disabled]="getPaginacionCarreras(grupo.sesion_id).paginaActual === 1"
-                        class="px-3 py-1.5 text-sm bg-dark-800 text-neon-yellow border border-neon-yellow/30 rounded-lg hover:bg-dark-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
-                  ← Ant
-                </button>
-
-                <span class="text-sm text-neon-yellow/70">
-                  {{ getPaginacionCarreras(grupo.sesion_id).paginaActual }} / {{ getPaginacionCarreras(grupo.sesion_id).totalPaginas }}
-                    <span class="text-gray-500">({{ getPaginacionCarreras(grupo.sesion_id).totalCarreras }} {{ getNombreTipoActividad(grupo.carreras[0]?.juego_jugado || '').toLowerCase() }})</span>               </span>
-                <button (click)="cambiarPaginaCarreras(grupo.sesion_id, getPaginacionCarreras(grupo.sesion_id).paginaActual + 1); $event.stopPropagation()"
-                        [disabled]="getPaginacionCarreras(grupo.sesion_id).paginaActual === getPaginacionCarreras(grupo.sesion_id).totalPaginas"
-                        class="px-3 py-1.5 text-sm bg-dark-800 text-neon-yellow border border-neon-yellow/30 rounded-lg hover:bg-dark-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
-                  Sig →
-                </button>
-              </div>
+            <div class="text-center">
+              <p class="text-sm font-bold text-neon-blue">{{ carrera.participantes_data!.length || 0 }}</p>
+              <p class="text-xs text-gray-500">Jugadores</p>
             </div>
+            <div class="text-neon-blue">→</div>
           </div>
         </div>
+      </div>
+
+      <div *ngIf="getPaginacionCarreras(grupo.sesion_id) && getPaginacionCarreras(grupo.sesion_id).totalPaginas > 1"
+           class="flex items-center justify-center gap-3 pt-4 mt-4 border-t border-dark-700">
+        <button (click)="cambiarPaginaCarreras(grupo.sesion_id, getPaginacionCarreras(grupo.sesion_id).paginaActual - 1); $event.stopPropagation()"
+                [disabled]="getPaginacionCarreras(grupo.sesion_id).paginaActual === 1"
+                class="px-3 py-1.5 text-sm bg-dark-800 text-neon-yellow border border-neon-yellow/30 rounded-lg hover:bg-dark-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+          ← Ant
+        </button>
+
+        <span class="text-sm text-neon-yellow/70">
+          {{ getPaginacionCarreras(grupo.sesion_id).paginaActual }} / {{ getPaginacionCarreras(grupo.sesion_id).totalPaginas }}
+          <span class="text-gray-500">({{ getPaginacionCarreras(grupo.sesion_id).totalCarreras }} {{ getNombreTipoActividad(grupo.carreras[0]?.juego_jugado || '').toLowerCase() }})</span>
+        </span>
+        <button (click)="cambiarPaginaCarreras(grupo.sesion_id, getPaginacionCarreras(grupo.sesion_id).paginaActual + 1); $event.stopPropagation()"
+                [disabled]="getPaginacionCarreras(grupo.sesion_id).paginaActual === getPaginacionCarreras(grupo.sesion_id).totalPaginas"
+                class="px-3 py-1.5 text-sm bg-dark-800 text-neon-yellow border border-neon-yellow/30 rounded-lg hover:bg-dark-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+          Sig →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
       </div>
 
       <div *ngIf="paginacionSesiones && paginacionSesiones.totalPaginas > 1"
