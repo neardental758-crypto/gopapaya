@@ -250,6 +250,8 @@ export class CrearSesionComponent implements OnInit {
         distancia: '',
       };
     }
+    if (juego !== 'dr-bici') {
+    }
   }
 
   validarPaso(): boolean {
@@ -354,6 +356,10 @@ export class CrearSesionComponent implements OnInit {
       }
     }
 
+    if (this.paso === 3 && this.juegoAsignado === 'dr-bici') {
+      return true;
+    }
+
     return true;
   }
 
@@ -399,6 +405,10 @@ export class CrearSesionComponent implements OnInit {
         ruta: this.parametrosBiciPaseo.ruta,
         distancia: this.parametrosBiciPaseo.distancia,
       };
+    } else if (this.juegoAsignado === 'hit-fit') {
+      parametrosJuego = {};
+    } else if (this.juegoAsignado === 'dr-bici') {
+      parametrosJuego = {};
     }
 
     const nuevaSesion: any = {
@@ -524,7 +534,6 @@ export class CrearSesionComponent implements OnInit {
       this.paso++;
     }
   }
-
   pasoAnterior(): void {
     this.paso--;
   }

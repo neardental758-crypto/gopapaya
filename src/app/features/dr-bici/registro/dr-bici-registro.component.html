@@ -1,0 +1,262 @@
+<div class="min-h-screen bg-dark-950 p-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button (click)="volver()" class="w-12 h-12 flex items-center justify-center bg-dark-700 hover:bg-dark-600 rounded-lg transition-all">
+            <span class="text-2xl">←</span>
+          </button>
+          <div class="text-5xl">🩺</div>
+          <img
+            *ngIf="logoEmpresa"
+            [src]="logoEmpresa"
+            class="h-16 w-16 rounded-lg object-cover border-2 border-blue-500 shadow-lg"
+            [alt]="sesion?.nombreCliente || 'Logo'"
+          />
+          <div>
+            <h1 class="text-3xl font-display font-bold text-white mb-1">
+              Registro <span class="text-blue-500">DrBici</span>
+            </h1>
+            <p class="text-gray-400">{{ sesion?.nombreCliente || 'Mantenimiento de Vehículos' }}</p>
+          </div>
+        </div>
+
+        <div class="text-right">
+          <span class="text-2xl font-bold text-neon-green">{{ totalParticipantesRegistrados }}</span>
+          <p class="text-xs text-gray-500">Participantes</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-dark-900 border-2 border-blue-500 rounded-card p-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-display font-bold text-white flex items-center gap-2">
+          <span>{{ pasoActual === 1 ? '👤' : '🔧' }}</span>
+          {{ pasoActual === 1 ? 'Datos del Participante' : 'Trabajo Realizado' }}
+        </h2>
+        <div class="flex gap-2">
+          <div class="w-3 h-3 rounded-full" [class.bg-blue-500]="pasoActual === 1" [class.bg-dark-600]="pasoActual !== 1"></div>
+          <div class="w-3 h-3 rounded-full" [class.bg-blue-500]="pasoActual === 2" [class.bg-dark-600]="pasoActual !== 2"></div>
+        </div>
+      </div>
+
+      <div *ngIf="pasoActual === 1" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-300 mb-2">Nombre</label>
+            <input
+              type="text"
+              [(ngModel)]="participanteActual.nombreParticipante"
+              placeholder="Ingresa el nombre"
+              class="w-full px-4 py-3 bg-dark-700 border-2 border-dark-600 rounded-lg focus:outline-none focus:border-blue-500 transition-all text-white text-lg placeholder-gray-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-300 mb-2">Apellido</label>
+            <input
+              type="text"
+              [(ngModel)]="participanteActual.apellidoParticipante"
+              placeholder="Ingresa el apellido"
+              class="w-full px-4 py-3 bg-dark-700 border-2 border-dark-600 rounded-lg focus:outline-none focus:border-blue-500 transition-all text-white text-lg placeholder-gray-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold text-gray-300 mb-2">Documento (Opcional)</label>
+            <input
+              type="text"
+              [(ngModel)]="participanteActual.documento"
+              placeholder="Ingresa el documento"
+              class="w-full px-4 py-3 bg-dark-700 border-2 border-dark-600 rounded-lg focus:outline-none focus:border-blue-500 transition-all text-white text-lg placeholder-gray-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-3">Sexo</label>
+          <div class="grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              (click)="participanteActual.sexo = 'M'"
+              class="p-6 rounded-lg transition-all border-2"
+              [class.bg-neon-blue]="participanteActual.sexo === 'M'"
+              [class.border-neon-blue]="participanteActual.sexo === 'M'"
+              [class.shadow-neon-blue]="participanteActual.sexo === 'M'"
+              [class.bg-dark-700]="participanteActual.sexo !== 'M'"
+              [class.border-dark-600]="participanteActual.sexo !== 'M'"
+            >
+              <div class="text-6xl mb-2" [class.text-dark-950]="participanteActual.sexo === 'M'" [class.text-white]="participanteActual.sexo !== 'M'">♂</div>
+              <p class="font-bold text-lg" [class.text-dark-950]="participanteActual.sexo === 'M'" [class.text-gray-400]="participanteActual.sexo !== 'M'">Hombre</p>
+            </button>
+            <button
+              type="button"
+              (click)="participanteActual.sexo = 'F'"
+              class="p-6 rounded-lg transition-all border-2"
+              [class.bg-neon-pink]="participanteActual.sexo === 'F'"
+              [class.border-neon-pink]="participanteActual.sexo === 'F'"
+              [class.shadow-neon-pink]="participanteActual.sexo === 'F'"
+              [class.bg-dark-700]="participanteActual.sexo !== 'F'"
+              [class.border-dark-600]="participanteActual.sexo !== 'F'"
+            >
+              <div class="text-6xl mb-2" [class.text-dark-950]="participanteActual.sexo === 'F'" [class.text-white]="participanteActual.sexo !== 'F'">♀</div>
+              <p class="font-bold text-lg" [class.text-dark-950]="participanteActual.sexo === 'F'" [class.text-gray-400]="participanteActual.sexo !== 'F'">Mujer</p>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-3">Tipo de Vehículo</label>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              type="button"
+              *ngFor="let vehiculo of tiposVehiculo"
+              (click)="participanteActual.tipoVehiculo = vehiculo.id"
+              class="p-4 rounded-lg transition-all border-2"
+              [class.bg-blue-500]="participanteActual.tipoVehiculo === vehiculo.id"
+              [class.border-blue-500]="participanteActual.tipoVehiculo === vehiculo.id"
+              [class.shadow-lg]="participanteActual.tipoVehiculo === vehiculo.id"
+              [class.bg-dark-700]="participanteActual.tipoVehiculo !== vehiculo.id"
+              [class.border-dark-600]="participanteActual.tipoVehiculo !== vehiculo.id"
+            >
+              <div class="text-4xl mb-2" [class.text-white]="participanteActual.tipoVehiculo === vehiculo.id" [class.text-gray-400]="participanteActual.tipoVehiculo !== vehiculo.id">
+                {{ vehiculo.icono }}
+              </div>
+              <p class="font-bold text-sm" [class.text-white]="participanteActual.tipoVehiculo === vehiculo.id" [class.text-gray-400]="participanteActual.tipoVehiculo !== vehiculo.id">
+                {{ vehiculo.nombre }}
+              </p>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="pasoActual === 2" class="space-y-6">
+        <div class="bg-blue-500/10 border border-blue-500 rounded-lg p-4 mb-4">
+          <p class="text-blue-400 text-sm font-bold">Participante</p>
+          <p class="text-white text-lg">{{ participanteActual.nombreParticipante }} {{ participanteActual.apellidoParticipante }}</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-3">Tipos de Trabajo <span class="text-neon-red">*</span></label>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <button
+              type="button"
+              *ngFor="let trabajo of tiposTrabajo"
+              (click)="toggleTrabajo(trabajo.id)"
+              class="p-3 rounded-lg transition-all border-2 text-left"
+              [class.bg-neon-green]="isTrabajoSeleccionado(trabajo.id)"
+              [class.border-neon-green]="isTrabajoSeleccionado(trabajo.id)"
+              [class.bg-dark-700]="!isTrabajoSeleccionado(trabajo.id)"
+              [class.border-dark-600]="!isTrabajoSeleccionado(trabajo.id)"
+            >
+              <div class="flex items-center gap-2">
+                <span class="text-xl">{{ trabajo.icono }}</span>
+                <span class="font-bold text-sm" [class.text-dark-950]="isTrabajoSeleccionado(trabajo.id)" [class.text-gray-300]="!isTrabajoSeleccionado(trabajo.id)">
+                  {{ trabajo.nombre }}
+                </span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-300 mb-3">Componentes Utilizados (Opcional)</label>
+
+          <div class="space-y-2">
+            <div *ngFor="let categoria of categoriasComponentes">
+              <button
+                type="button"
+                (click)="toggleCategoria(categoria.id)"
+                class="w-full p-3 rounded-lg bg-dark-700 border border-dark-600 text-left flex items-center justify-between hover:bg-dark-600 transition-all"
+              >
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-bold text-blue-400">{{ categoria.nombre }}</span>
+                  <span *ngIf="getComponentesSeleccionadosPorCategoria(categoria.id) > 0" class="px-2 py-1 bg-blue-500 text-white text-xs rounded-full">
+                    {{ getComponentesSeleccionadosPorCategoria(categoria.id) }}
+                  </span>
+                </div>
+                <span class="text-white">{{ isCategoriaExpandida(categoria.id) ? '▼' : '▶' }}</span>
+              </button>
+
+              <div *ngIf="isCategoriaExpandida(categoria.id)" class="mt-2 grid grid-cols-2 gap-2 ml-4">
+                <button
+                  type="button"
+                  *ngFor="let componente of getComponentesPorCategoria(categoria.id)"
+                  (click)="toggleComponente(componente.id)"
+                  class="p-2 rounded-lg transition-all border text-left text-xs"
+                  [class.bg-blue-500]="isComponenteSeleccionado(componente.id)"
+                  [class.border-blue-500]="isComponenteSeleccionado(componente.id)"
+                  [class.text-white]="isComponenteSeleccionado(componente.id)"
+                  [class.bg-dark-700]="!isComponenteSeleccionado(componente.id)"
+                  [class.border-dark-600]="!isComponenteSeleccionado(componente.id)"
+                  [class.text-gray-400]="!isComponenteSeleccionado(componente.id)"
+                >
+                  {{ componente.nombre }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="participanteActual.repuestosUtilizados && participanteActual.repuestosUtilizados.length > 0" class="mt-3 p-3 bg-dark-700 rounded-lg">
+            <p class="text-xs text-gray-400">{{ participanteActual.repuestosUtilizados.length }} componente(s) seleccionado(s)</p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="mt-6 bg-neon-red/10 border border-neon-red rounded-lg p-4">
+        <p class="text-neon-red text-sm font-bold">⚠️ {{ errorMessage }}</p>
+      </div>
+
+      <div class="mt-8 flex gap-4">
+        <button
+          type="button"
+          *ngIf="pasoActual === 2"
+          (click)="pasoAnterior()"
+          class="flex-1 py-4 px-6 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 transition-all"
+        >
+          ← Anterior
+        </button>
+
+        <button
+          type="button"
+          *ngIf="pasoActual === 1"
+          (click)="volver()"
+          class="flex-1 py-4 px-6 bg-dark-700 text-gray-300 rounded-lg font-bold hover:bg-dark-600 transition-all"
+        >
+          ← Atrás
+        </button>
+
+        <button
+          type="button"
+          *ngIf="pasoActual === 1"
+          (click)="siguientePaso()"
+          [disabled]="!isPaso1Valid()"
+          class="flex-1 py-4 px-6 bg-blue-500 text-white rounded-lg font-bold shadow-lg hover:shadow-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        >
+          Siguiente →
+        </button>
+
+        <button
+          type="button"
+          *ngIf="pasoActual === 2"
+          (click)="registrarParticipante()"
+          [disabled]="loading || !isFormValid()"
+          class="flex-1 py-4 px-6 bg-blue-500 text-white rounded-lg font-bold shadow-lg hover:shadow-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        >
+          <span *ngIf="!loading">Iniciar Mantenimiento 🩺</span>
+          <span *ngIf="loading">Registrando...</span>
+        </button>
+      </div>
+
+      <div *ngIf="totalParticipantesRegistrados > 0" class="mt-4">
+        <button
+          type="button"
+          (click)="finalizarSesionDirecto()"
+          class="w-full py-4 px-6 bg-neon-red text-white rounded-lg font-bold shadow-neon-red hover:shadow-neon-red-lg transition-all"
+        >
+          🏁 Finalizar Sesión DrBici
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

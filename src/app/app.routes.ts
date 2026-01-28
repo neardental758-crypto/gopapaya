@@ -43,6 +43,8 @@ import { HitFitRegistroComponent } from './features/hit-fit/registro/hit-fit-reg
 import { HitFitJuegoComponent } from './features/hit-fit/juego/hit-fit-juego.component';
 import { BiciPaseoRegistroComponent } from './features/bici-paseo/registro/bici-paseo-registro.component';
 import { BiciPaseoJuegoComponent } from './features/bici-paseo/juego/bici-paseo-juego.component';
+import { DrBiciRegistroComponent } from './features/dr-bici/registro/dr-bici-registro.component';
+import { DrBiciJuegoComponent } from './features/dr-bici/juego/dr-bici-juego.component';
 
 export const routes: Routes = [
   {
@@ -255,6 +257,18 @@ export const routes: Routes = [
       {
         path: 'bici-paseo/juego',
         component: BiciPaseoJuegoComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'dr-bici/registro',
+        component: DrBiciRegistroComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'dr-bici/juego',
+        component: DrBiciJuegoComponent,
         canActivate: [sesionActivaGuard, rolGuard],
         data: { roles: ['super_admin', 'admin'] },
       },

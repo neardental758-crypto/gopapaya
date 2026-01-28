@@ -679,7 +679,6 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
       j.distanciaReal = 0;
     });
 
-    // Resetear estado de la llave
     if (this.llaveActual) {
       this.llaveActual.estado = 'pendiente';
 

@@ -241,6 +241,8 @@ export class HomeComponent implements OnInit {
       this.router.navigate(['/hit-fit/registro']);
     } else if (sesion.juego_asignado === 'bici-paseo') {
       this.router.navigate(['/bici-paseo/registro']);
+    } else if (sesion.juego_asignado === 'dr-bici') {
+      this.router.navigate(['/dr-bici/registro']);
     } else {
       this.router.navigate(['/sesion/seleccionar-juego', sesion.id]);
     }
