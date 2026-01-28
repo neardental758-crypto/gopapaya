@@ -195,7 +195,6 @@ export const routes: Routes = [
         canActivate: [sesionActivaGuard, rolGuard],
         data: { roles: ['super_admin', 'admin'] },
       },
-      // ✅ BICILICUADORA - Movido aquí dentro
       {
         path: 'bicilicuadora/parametros',
         component: BicilicuadoraParametrosComponent,
