@@ -17,6 +17,7 @@ import { EnviarCorreoModalComponent } from './correos/enviar-correo-modal.compon
 import { HistorialJuegoAdapter } from './adapter/historial-juego.adapter';
 import { EvidenciasModalComponent } from '../../home/evidencias/evidencias-modal.component';
 import { HistorialBiciPaseoAdapter } from './adapter/historial-bici-paseo.adapter';
+import { ComponenteService } from '../../services/dr-bici/componente.service';
 
 @Component({
   selector: 'app-historial-sesiones',
@@ -70,11 +71,19 @@ export class HistorialSesionesComponent implements OnInit {
     private excelExporthistorialService: ExcelExporthistorialService,
     private sesionService: SesionService,
     private juegoAdapter: HistorialJuegoAdapter,
-  ) {}
+    private componenteService: ComponenteService,
+  ) {
+    this.juegoAdapter = new HistorialJuegoAdapter(componenteService);
+    this.excelExporthistorialService = new ExcelExporthistorialService(
+      this.juegoAdapter,
+    );
+  }
 
   ngOnInit(): void {
-    this.cargarEmpresas();
-    this.cargarHistorial();
+    this.juegoAdapter.cargarComponentes().subscribe(() => {
+      this.cargarEmpresas();
+      this.cargarHistorial();
+    });
   }
 
   cargarEmpresas(): void {
@@ -241,6 +250,10 @@ export class HistorialSesionesComponent implements OnInit {
       )
       .subscribe({
         next: (response) => {
+          const drBiciSesiones = response.agrupado.filter((grupo) =>
+            grupo.carreras.some((c) => c.juego_jugado === 'DrBici'),
+          );
+
           this.sesionesAgrupadas = response.agrupado;
           this.indicadores = response.indicadores;
           this.paginacionSesiones = response.paginacion;
@@ -252,6 +265,16 @@ export class HistorialSesionesComponent implements OnInit {
           this.cargando = false;
         },
       });
+  }
+
+  esDrBici(grupo: SesionAgrupada): boolean {
+    return grupo.carreras.some((c) => c.juego_jugado === 'DrBici');
+  }
+
+  getInfoDrBici(grupo: SesionAgrupada): any {
+    if (!grupo.carreras || grupo.carreras.length === 0) return null;
+    const historial = grupo.carreras[0];
+    return this.juegoAdapter.getEstadisticasResumen(historial);
   }
 
   onJuegoChange(): void {
@@ -387,7 +410,8 @@ export class HistorialSesionesComponent implements OnInit {
       juego === 'VR' ||
       juego === 'Hit-Fit' ||
       juego === 'Bicilicuadora' ||
-      juego === 'BiciPaseo'
+      juego === 'BiciPaseo' ||
+      juego === 'DrBici'
     ) {
       return 'Sesiones';
     }

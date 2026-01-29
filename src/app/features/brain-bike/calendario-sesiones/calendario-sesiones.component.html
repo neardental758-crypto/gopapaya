@@ -28,179 +28,179 @@
         </button>
       </div>
 
-      <div class="flex flex-col gap-3 mb-6">
-        <div class="flex flex-wrap items-center gap-3">
-          <select
-            [(ngModel)]="filtroAliado"
-            (ngModelChange)="aplicarFiltros()"
-            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none"
-          >
-            <option value="">Todos los Aliados</option>
-            <option *ngFor="let aliado of aliados" [value]="aliado._id">{{ aliado.nombre }}</option>
-          </select>
+<div class="flex flex-col gap-3 mb-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+    <select
+      [(ngModel)]="filtroAliado"
+      (ngModelChange)="aplicarFiltros()"
+      class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none text-sm"
+    >
+      <option value="">Todos los Aliados</option>
+      <option *ngFor="let aliado of aliados" [value]="aliado._id">{{ aliado.nombre }}</option>
+    </select>
 
-          <select
-            [(ngModel)]="filtroAGR"
-            (ngModelChange)="aplicarFiltros()"
-            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none"
-          >
-            <option value="">Todos los AGR</option>
-            <option *ngFor="let agr of agrsDisponibles" [value]="agr._id">{{ agr.nombre }}</option>
-          </select>
+    <select
+      [(ngModel)]="filtroAGR"
+      (ngModelChange)="aplicarFiltros()"
+      class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none text-sm"
+    >
+      <option value="">Todos los AGR</option>
+      <option *ngFor="let agr of agrsDisponibles" [value]="agr._id">{{ agr.nombre }}</option>
+    </select>
 
-          <select
-            [(ngModel)]="filtroEmpresa"
-            (ngModelChange)="aplicarFiltros()"
-            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none"
-          >
-            <option value="">Todas las Empresas</option>
-            <option *ngFor="let empresa of empresasDisponibles" [value]="empresa._id">{{ empresa.nombre }}</option>
-          </select>
+    <select
+      [(ngModel)]="filtroEmpresa"
+      (ngModelChange)="aplicarFiltros()"
+      class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none text-sm"
+    >
+      <option value="">Todas las Empresas</option>
+      <option *ngFor="let empresa of empresasDisponibles" [value]="empresa._id">{{ empresa.nombre }}</option>
+    </select>
 
-          <select
-            [(ngModel)]="filtroAdmin"
-            (ngModelChange)="aplicarFiltros()"
-            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none"
-          >
-            <option value="">Todos los Admins</option>
-            <option *ngFor="let admin of adminsDisponibles" [value]="admin._id">{{ admin.nombre }}</option>
-          </select>
+    <select
+      [(ngModel)]="filtroAdmin"
+      (ngModelChange)="aplicarFiltros()"
+      class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none text-sm"
+    >
+      <option value="">Todos los Admins</option>
+      <option *ngFor="let admin of adminsDisponibles" [value]="admin._id">{{ admin.nombre }}</option>
+    </select>
 
-          <select
-            [(ngModel)]="filtroJuego"
-            (ngModelChange)="aplicarFiltros()"
-            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none"
-          >
-            <option value="">Todos los Juegos</option>
-            <option value="brain-bike">Brain Bike</option>
-            <option value="biketona">Biketona</option>
-            <option value="bicilicuadora">Bicilicuadora</option>
-            <option value="vr">VR</option>
-            <option value="hit-fit">Hit Fit</option>
-          </select>
-        </div>
-      </div>
+    <select
+      [(ngModel)]="filtroJuego"
+      (ngModelChange)="aplicarFiltros()"
+      class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 focus:border-neon-yellow focus:outline-none text-sm"
+    >
+      <option value="">Todos los Juegos</option>
+      <option value="brain-bike">Brain Bike</option>
+      <option value="biketona">Biketona</option>
+      <option value="bicilicuadora">Bicilicuadora</option>
+      <option value="vr">VR</option>
+      <option value="hit-fit">Hit Fit</option>
+    </select>
+  </div>
+</div>
 
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div class="flex items-center gap-2">
-          <button
-            (click)="mesAnterior()"
-            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 hover:border-neon-yellow transition-all"
-          >
-            ←
-          </button>
-          <button
-            (click)="irHoy()"
-            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 hover:border-neon-yellow transition-all"
-          >
-            Hoy
-          </button>
-          <button
-            (click)="mesSiguiente()"
-            class="px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 hover:border-neon-yellow transition-all"
-          >
-            →
-          </button>
-        </div>
+<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
+  <div class="flex items-center gap-2">
+    <button
+      (click)="mesAnterior()"
+      class="px-3 sm:px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 hover:border-neon-yellow transition-all text-sm"
+    >
+      ←
+    </button>
+    <button
+      (click)="irHoy()"
+      class="px-3 sm:px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 hover:border-neon-yellow transition-all text-sm font-bold"
+    >
+      Hoy
+    </button>
+    <button
+      (click)="mesSiguiente()"
+      class="px-3 sm:px-4 py-2 bg-dark-800 text-white rounded-lg border border-dark-600 hover:border-neon-yellow transition-all text-sm"
+    >
+      →
+    </button>
+  </div>
 
-        <div class="flex items-center gap-2">
-          <h2 class="text-xl font-bold text-white">
-            {{ obtenerNombreMes() }} {{ obtenerAnio() }}
-          </h2>
-        </div>
+  <div class="flex items-center">
+    <h2 class="text-lg sm:text-xl font-bold text-white">
+      {{ obtenerNombreMes() }} {{ obtenerAnio() }}
+    </h2>
+  </div>
 
-        <div class="flex items-center gap-2">
-          <button
-            (click)="cambiarVista('mes')"
-            [class]="vista === 'mes' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-white border-dark-600'"
-            class="px-4 py-2 rounded-lg border hover:border-neon-yellow transition-all font-bold"
-          >
-            Mes
-          </button>
-          <button
-            (click)="cambiarVista('semana')"
-            [class]="vista === 'semana' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-white border-dark-600'"
-            class="px-4 py-2 rounded-lg border hover:border-neon-yellow transition-all font-bold"
-          >
-            Semana
-          </button>
-          <button
-            (click)="cambiarVista('dia')"
-            [class]="vista === 'dia' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-white border-dark-600'"
-            class="px-4 py-2 rounded-lg border hover:border-neon-yellow transition-all font-bold"
-          >
-            Día
-          </button>
-        </div>
-      </div>
+  <div class="flex items-center gap-2 w-full lg:w-auto">
+    <button
+      (click)="cambiarVista('mes')"
+      [class]="vista === 'mes' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-white border-dark-600'"
+      class="flex-1 lg:flex-none px-3 sm:px-4 py-2 rounded-lg border hover:border-neon-yellow transition-all font-bold text-sm"
+    >
+      Mes
+    </button>
+    <button
+      (click)="cambiarVista('semana')"
+      [class]="vista === 'semana' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-white border-dark-600'"
+      class="flex-1 lg:flex-none px-3 sm:px-4 py-2 rounded-lg border hover:border-neon-yellow transition-all font-bold text-sm"
+    >
+      Semana
+    </button>
+    <button
+      (click)="cambiarVista('dia')"
+      [class]="vista === 'dia' ? 'bg-neon-yellow text-dark-950' : 'bg-dark-800 text-white border-dark-600'"
+      class="flex-1 lg:flex-none px-3 sm:px-4 py-2 rounded-lg border hover:border-neon-yellow transition-all font-bold text-sm"
+    >
+      Día
+    </button>
+  </div>
+</div>
 
       <div *ngIf="cargando" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-neon-yellow border-t-transparent"></div>
         <p class="text-gray-400 mt-4">Cargando calendario...</p>
       </div>
 
-      <div *ngIf="!cargando && vista === 'mes'" class="bg-dark-800 rounded-lg border border-dark-700 overflow-hidden">
-        <div class="grid grid-cols-7 bg-dark-900 border-b border-dark-700">
-          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Lun</div>
-          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Mar</div>
-          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Mié</div>
-          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Jue</div>
-          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Vie</div>
-          <div class="p-3 text-center text-gray-400 text-sm font-bold border-r border-dark-700">Sáb</div>
-          <div class="p-3 text-center text-gray-400 text-sm font-bold">Dom</div>
+<div *ngIf="!cargando && vista === 'mes'" class="bg-dark-800 rounded-lg border border-dark-700 overflow-hidden">
+  <div class="grid grid-cols-7 bg-dark-900 border-b border-dark-700">
+    <div class="p-2 sm:p-3 text-center text-gray-400 text-xs sm:text-sm font-bold border-r border-dark-700">Lun</div>
+    <div class="p-2 sm:p-3 text-center text-gray-400 text-xs sm:text-sm font-bold border-r border-dark-700">Mar</div>
+    <div class="p-2 sm:p-3 text-center text-gray-400 text-xs sm:text-sm font-bold border-r border-dark-700">Mié</div>
+    <div class="p-2 sm:p-3 text-center text-gray-400 text-xs sm:text-sm font-bold border-r border-dark-700">Jue</div>
+    <div class="p-2 sm:p-3 text-center text-gray-400 text-xs sm:text-sm font-bold border-r border-dark-700">Vie</div>
+    <div class="p-2 sm:p-3 text-center text-gray-400 text-xs sm:text-sm font-bold border-r border-dark-700">Sáb</div>
+    <div class="p-2 sm:p-3 text-center text-gray-400 text-xs sm:text-sm font-bold">Dom</div>
+  </div>
+
+  <div class="grid grid-cols-7">
+    <div
+      *ngFor="let dia of diasCalendario"
+      (click)="seleccionarDia(dia)"
+      class="min-h-[80px] sm:min-h-[100px] lg:min-h-[120px] p-1 sm:p-2 border-r border-b border-dark-700 cursor-pointer hover:bg-dark-750 transition-all relative"
+      [class.bg-dark-850]="!dia.esMesActual"
+      [class.bg-neon-yellow]="dia.esHoy"
+      [class.bg-opacity-5]="dia.esHoy"
+    >
+      <div class="flex justify-between items-start mb-1 sm:mb-2">
+        <span
+          class="text-xs sm:text-sm font-bold"
+          [class]="dia.esHoy ? 'text-neon-yellow' : (dia.esMesActual ? 'text-white' : 'text-gray-600')"
+        >
+          {{ dia.fecha.getDate() }}
+        </span>
+        <button
+          *ngIf="isSuperAdmin() && dia.esMesActual"
+          (click)="crearSesionEnFecha(dia, $event)"
+          class="text-neon-blue hover:text-neon-yellow transition-all text-xs"
+          title="Crear sesión"
+        >
+          ➕
+        </button>
+      </div>
+
+      <div class="space-y-1">
+        <div
+          *ngFor="let evento of dia.eventos.slice(0, 2)"
+          class="p-1 rounded text-[10px] sm:text-xs border-l-2 bg-dark-900 transition-all"
+          [class]="obtenerColorJuego(evento.sesion.juego_asignado)"
+          [class.opacity-50]="evento.sesion.estadoSesion === 'finalizada'"
+        >
+          <p class="text-white font-bold truncate">
+            <span class="hidden sm:inline">{{ obtenerHoraFormateada(evento.inicio) }} - </span>{{ evento.sesion.nombreCliente }}
+            <span *ngIf="evento.sesion.estadoSesion === 'finalizada'" class="text-gray-500">✓</span>
+          </p>
+          <p class="text-gray-400 truncate text-[9px] sm:text-[10px] hidden sm:block">
+            {{ evento.sesion.lugarEjecucion || 'Sin ubicación' }}
+          </p>
         </div>
-
-        <div class="grid grid-cols-7">
-          <div
-            *ngFor="let dia of diasCalendario"
-            (click)="seleccionarDia(dia)"
-            class="min-h-[120px] p-2 border-r border-b border-dark-700 cursor-pointer hover:bg-dark-750 transition-all relative"
-            [class.bg-dark-850]="!dia.esMesActual"
-            [class.bg-neon-yellow]="dia.esHoy"
-            [class.bg-opacity-5]="dia.esHoy"
-          >
-            <div class="flex justify-between items-start mb-2">
-              <span
-                class="text-sm font-bold"
-                [class]="dia.esHoy ? 'text-neon-yellow' : (dia.esMesActual ? 'text-white' : 'text-gray-600')"
-              >
-                {{ dia.fecha.getDate() }}
-              </span>
-              <button
-                *ngIf="isSuperAdmin() && dia.esMesActual"
-                (click)="crearSesionEnFecha(dia, $event)"
-                class="text-neon-blue hover:text-neon-yellow transition-all text-xs"
-                title="Crear sesión"
-              >
-                ➕
-              </button>
-            </div>
-
-            <div class="space-y-1">
-              <div
-                *ngFor="let evento of dia.eventos.slice(0, 2)"
-                class="p-1 rounded text-xs border-l-2 bg-dark-900 transition-all"
-                [class]="obtenerColorJuego(evento.sesion.juego_asignado)"
-                [class.opacity-50]="evento.sesion.estadoSesion === 'finalizada'"
-              >
-                <p class="text-white font-bold truncate">
-                  {{ obtenerHoraFormateada(evento.inicio) }} - {{ evento.sesion.nombreCliente }}
-                  <span *ngIf="evento.sesion.estadoSesion === 'finalizada'" class="text-gray-500">✓</span>
-                </p>
-                <p class="text-gray-400 truncate text-[10px]">
-                  {{ evento.sesion.lugarEjecucion || 'Sin ubicación' }}
-                </p>
-              </div>
-              <div
-                *ngIf="dia.eventos.length > 2"
-                class="text-xs text-neon-yellow font-bold"
-              >
-                +{{ dia.eventos.length - 2 }} más
-              </div>
-            </div>
-          </div>
+        <div
+          *ngIf="dia.eventos.length > 2"
+          class="text-[10px] sm:text-xs text-neon-yellow font-bold"
+        >
+          +{{ dia.eventos.length - 2 }} más
         </div>
       </div>
+    </div>
+  </div>
+</div>
 
       <div *ngIf="!cargando && vista === 'semana'" class="bg-dark-800 rounded-lg border border-dark-700 overflow-x-auto">
         <div class="grid grid-cols-8 min-w-[800px]">
@@ -293,30 +293,30 @@
                     {{ evento.fin.getHours() }}:{{ evento.fin.getMinutes().toString().padStart(2, '0') }}
                   </p>
                 </div>
-                <div class="flex gap-2">
-                  <span
-                    *ngIf="evento.sesion.estadoSesion === 'finalizada'"
-                    class="px-3 py-1 bg-dark-700 text-gray-400 rounded text-xs font-bold border border-dark-600"
-                  >
-                    ✓ Sesión Finalizada
-                  </span>
+<div class="flex flex-col sm:flex-row gap-2">
+  <span
+    *ngIf="evento.sesion.estadoSesion === 'finalizada'"
+    class="px-3 py-1 bg-dark-700 text-gray-400 rounded text-xs font-bold border border-dark-600 text-center"
+  >
+    ✓ Sesión Finalizada
+  </span>
 
-                  <button
-                    *ngIf="isSuperAdmin() && evento.sesion.estadoSesion !== 'finalizada' && puedeEditarSesion(evento.sesion)"
-                    (click)="editarParametros(evento.sesion, $event)"
-                    class="px-3 py-1 bg-neon-blue text-white rounded text-xs font-bold hover:shadow-neon-blue transition-all"
-                  >
-                    Editar
-                  </button>
+  <button
+    *ngIf="isSuperAdmin() && evento.sesion.estadoSesion !== 'finalizada' && puedeEditarSesion(evento.sesion)"
+    (click)="editarParametros(evento.sesion, $event)"
+    class="px-3 py-1 bg-neon-blue text-white rounded text-xs font-bold hover:shadow-neon-blue transition-all"
+  >
+    Editar
+  </button>
 
-                  <button
-                    *ngIf="evento.sesion.estadoSesion !== 'finalizada'"
-                    (click)="finalizarSesion(evento.sesion, $event)"
-                    class="px-3 py-1 bg-neon-red text-white rounded text-xs font-bold hover:shadow-neon-red transition-all"
-                  >
-                    Finalizar
-                  </button>
-                </div>
+  <button
+    *ngIf="evento.sesion.estadoSesion !== 'finalizada'"
+    (click)="finalizarSesion(evento.sesion, $event)"
+    class="px-3 py-1 bg-neon-red text-white rounded text-xs font-bold hover:shadow-neon-red transition-all"
+  >
+    Finalizar
+  </button>
+</div>
               </div>
 
               <div *ngIf="evento.sesion.juego_asignado" class="mb-2 px-3 py-2 bg-dark-800 rounded">

@@ -95,7 +95,7 @@
                 </span>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div
                   *ngFor="let sesion of grupoAdmin.sesiones"
                   class="bg-dark-800 border border-neon-yellow rounded-lg p-4 group"
@@ -112,19 +112,19 @@
                         📅 {{ sesion.fecha_sesion | date: 'dd/MM/yyyy HH:mm' }}
                       </p>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex gap-1 sm:gap-2 flex-shrink-0">
                       <button
-                        (click)="editarParametros(sesion, $event)"
-                        [disabled]="!puedeEditarSesion(sesion)"
-                        class="px-2 py-1 bg-neon-blue text-white rounded text-xs font-bold hover:shadow-neon-blue transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      (click)="editarParametros(sesion, $event)"
+                      [disabled]="!puedeEditarSesion(sesion)"
+                      class="px-2 sm:px-3 py-1 bg-neon-blue text-white rounded text-[10px] sm:text-xs font-bold hover:shadow-neon-blue transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         [title]="!puedeEditarSesion(sesion) ? 'No se puede editar (menos de 1 hora para inicio)' : ''"
                       >
                         Editar
                       </button>
-                      <button
-                        (click)="finalizarSesion(sesion, $event)"
-                        class="px-2 py-1 bg-neon-red text-white rounded text-xs font-bold hover:shadow-neon-red transition-all"
-                      >
+                    <button
+                      (click)="finalizarSesion(sesion, $event)"
+                      class="px-2 sm:px-3 py-1 bg-neon-red text-white rounded text-[10px] sm:text-xs font-bold hover:shadow-neon-red transition-all"
+                    >
                         Finalizar
                       </button>
                     </div>
@@ -241,10 +241,10 @@
           </p>
         </div>
 
-        <button
-          (click)="abrirEvidencias(sesion, $event)"
-          class="px-3 py-2 bg-neon-green text-white rounded text-xs font-bold hover:shadow-neon-green transition-all flex-shrink-0"
-        >
+          <button
+            (click)="abrirEvidencias(sesion, $event)"
+            class="px-2 sm:px-3 py-1.5 sm:py-2 bg-neon-green text-white rounded text-xs font-bold hover:shadow-neon-green transition-all flex-shrink-0"
+          >
           📸
         </button>
       </div>
@@ -282,10 +282,10 @@
 
     <div *ngIf="isSuperAdmin()" class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8">
       <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-6">⚙️ Administración</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <button
           (click)="irAUsuarios()"
-          class="p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group"
+          class="p-4 sm:p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group"
         >
           <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">👥</div>
           <p class="text-white font-bold text-lg mb-1">Usuarios</p>
@@ -294,7 +294,7 @@
 
         <button
           (click)="irABrainBike()"
-          class="p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-blue hover:shadow-neon-blue transition-all text-left group"
+          class="p-4 sm:p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group"
         >
           <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🧠</div>
           <p class="text-white font-bold text-lg mb-1">Brain Bike</p>

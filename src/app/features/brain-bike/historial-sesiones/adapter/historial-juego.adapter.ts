@@ -4,6 +4,9 @@ import {
   SesionAgrupada,
 } from '../../../services/historial-sesion.service';
 import { HistorialBiciPaseoAdapter } from './historial-bici-paseo.adapter';
+import { HistorialDrBiciAdapter } from './historial-dr-bici.adapter';
+import { ComponenteService } from '../../../services/dr-bici/componente.service';
+import { catchError, map, Observable, of } from 'rxjs';
 
 interface EstadisticasJuego {
   tabs: Array<
@@ -15,6 +18,30 @@ interface EstadisticasJuego {
 
 @Injectable({ providedIn: 'root' })
 export class HistorialJuegoAdapter {
+  private componentesMap: Map<string, string> = new Map();
+  private componentesCargados = false;
+
+  constructor(private componenteService?: ComponenteService) {}
+
+  cargarComponentes(): Observable<void> {
+    if (!this.componenteService) {
+      return of(undefined);
+    }
+
+    return this.componenteService.getAll().pipe(
+      map((data) => {
+        data.componentes.forEach((comp) => {
+          this.componentesMap.set(String(comp.id), comp.nombre);
+        });
+        this.componentesCargados = true;
+      }),
+      catchError((error) => {
+        console.error('Error cargando componentes:', error);
+        return of(undefined);
+      }),
+    );
+  }
+
   getConfiguracionJuego(juegoJugado: string): EstadisticasJuego {
     const configs: { [key: string]: EstadisticasJuego } = {
       'Brain Bike': {
@@ -117,11 +144,31 @@ export class HistorialJuegoAdapter {
           'documento',
         ],
       },
+      DrBici: {
+        tabs: ['resumen', 'participantes'],
+        tienePreguntas: false,
+        camposParticipante: [
+          'nombreParticipante',
+          'apellidoParticipante',
+          'sexo',
+          'tipoVehiculo',
+          'documento',
+          'tiposTrabajo',
+          'repuestosUtilizados',
+        ],
+      },
     };
     return configs[juegoJugado] || configs['Brain Bike'];
   }
 
   getEstadisticasResumen(historial: HistorialSesion): any {
+    if (historial.juego_jugado === 'DrBici') {
+      return HistorialDrBiciAdapter.getEstadisticas(
+        historial,
+        this.componentesMap,
+      );
+    }
+
     if (historial.juego_jugado === 'VR') {
       return {
         totalParticipantes: historial.participantes_data?.length || 0,
@@ -138,6 +185,10 @@ export class HistorialJuegoAdapter {
           this.calcularTiempoPromedioHitFit(historial),
         tiempoTotalParticipacion: this.calcularTiempoTotalHitFit(historial),
       };
+    }
+
+    if (historial.juego_jugado === 'DrBici') {
+      return HistorialDrBiciAdapter.getEstadisticas(historial);
     }
 
     if (historial.juego_jugado === 'BiciPaseo') {
@@ -318,6 +369,12 @@ export class HistorialJuegoAdapter {
   }
 
   adaptarParticipantesBiketona(historial: HistorialSesion): any[] {
+    if (historial.juego_jugado === 'DrBici') {
+      return HistorialDrBiciAdapter.adaptarParticipantes(
+        historial,
+        this.componentesMap,
+      );
+    }
     if (historial.juego_jugado === 'VR') {
       return historial.participantes_data.map((p, index) => ({
         ...p,
@@ -325,6 +382,10 @@ export class HistorialJuegoAdapter {
         posicionGeneral: index + 1,
         totalParticipantesGeneral: historial.participantes_data.length,
       }));
+    }
+
+    if (historial.juego_jugado === 'DrBici') {
+      return HistorialDrBiciAdapter.adaptarParticipantes(historial);
     }
 
     if (historial.juego_jugado === 'Hit-Fit') {

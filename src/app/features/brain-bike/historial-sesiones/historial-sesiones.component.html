@@ -24,13 +24,13 @@
     </select>
   </div>
 
-    <div>
+  <div>
     <label class="block text-white text-sm font-bold mb-2">Juego</label>
     <select [(ngModel)]="filtroJuego" (ngModelChange)="onJuegoChange()"
       class="w-full px-4 py-3 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-blue focus:outline-none">
       <option value="">Todos los juegos</option>
       <option value="Brain Bike">Brain Bike</option>
-       <option value="Bicilicuadora">Bicilicuadora</option>
+      <option value="Bicilicuadora">Bicilicuadora</option>
       <option value="Biketona">Biketona (Todos)</option>
       <option value="Biketona Campeonato">Biketona Campeonato</option>
       <option value="Biketona 1v1">Biketona 1v1</option>
@@ -38,6 +38,7 @@
       <option value="VR">VR</option>
       <option value="Hit-Fit">Hit-Fit</option>
       <option value="BiciPaseo">BiciPaseo</option>
+      <option value="DrBici">Dr-Bici</option>
     </select>
   </div>
 
@@ -191,8 +192,8 @@
       </div>
     </div>
 
- <div *ngIf="isSesionExpandida(grupo.sesion_id)" class="border-t border-dark-700">
-  <div *ngIf="!esBiciPaseo(grupo)" class="p-3 sm:p-4 bg-dark-850 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+<div *ngIf="isSesionExpandida(grupo.sesion_id)" class="border-t border-dark-700">
+  <div *ngIf="!esBiciPaseo(grupo) && !esDrBici(grupo)" class="p-3 sm:p-4 bg-dark-850 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
     <div class="bg-dark-800 rounded-lg p-2 sm:p-3 text-center">
       <p class="text-xs text-gray-400">Participantes Totales</p>
       <p class="text-lg sm:text-xl font-bold text-neon-yellow">{{ grupo.totales.totalParticipantes }}</p>
@@ -259,6 +260,49 @@
     </div>
   </div>
 
+<div *ngIf="esDrBici(grupo)" class="p-3 sm:p-4 bg-dark-850">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="bg-dark-800 rounded-lg p-3 text-center">
+      <p class="text-xs text-gray-400">Participantes</p>
+      <p class="text-2xl font-bold text-neon-yellow">{{ getInfoDrBici(grupo)?.totalParticipantes || 0 }}</p>
+    </div>
+
+    <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-green/30">
+      <p class="text-xs text-gray-400">⏱️ Tiempo Total</p>
+      <p class="text-xl font-bold text-neon-green">{{ getInfoDrBici(grupo)?.tiempoTotal || 0 }} seg</p>
+    </div>
+
+    <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-blue/30">
+      <p class="text-xs text-gray-400">🔧 Trabajos Realizados</p>
+      <p class="text-2xl font-bold text-neon-blue">{{ getInfoDrBici(grupo)?.totalTrabajos || 0 }}</p>
+    </div>
+
+    <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-pink/30">
+      <p class="text-xs text-gray-400">⚙️ Repuestos Usados</p>
+      <p class="text-2xl font-bold text-neon-pink">{{ getInfoDrBici(grupo)?.totalRepuestos || 0 }}</p>
+    </div>
+
+    <div class="bg-dark-800 rounded-lg p-3 col-span-1 sm:col-span-2 lg:col-span-4">
+      <p class="text-xs text-gray-400 mb-2 text-center">Distribución Género</p>
+      <div class="flex items-center justify-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1 sm:gap-2 bg-neon-blue/10 border border-neon-blue/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neon-blue/20 flex items-center justify-center border border-neon-blue">
+            <span class="text-base sm:text-xl text-neon-blue">♂</span>
+          </div>
+          <span class="text-base sm:text-xl font-bold text-neon-blue">{{ getInfoDrBici(grupo)?.distribucionSexo?.hombres || 0 }}</span>
+        </div>
+
+        <div class="flex items-center gap-1 sm:gap-2 bg-neon-pink/10 border border-neon-pink/30 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">
+          <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-neon-pink/20 flex items-center justify-center border border-neon-pink">
+            <span class="text-base sm:text-xl text-neon-pink">♀</span>
+          </div>
+          <span class="text-base sm:text-xl font-bold text-neon-pink">{{ getInfoDrBici(grupo)?.distribucionSexo?.mujeres || 0 }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
   <div *ngIf="esBiciPaseo(grupo)" class="p-3 sm:p-4 bg-dark-850">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
       <div class="bg-dark-800 rounded-lg p-3 text-center">
@@ -266,10 +310,23 @@
         <p class="text-2xl font-bold text-neon-yellow">{{ grupo.totales.totalParticipantes }}</p>
       </div>
 
-      <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-green/30">
-        <p class="text-xs text-gray-400">📍 Ruta</p>
-        <p class="text-base font-bold text-neon-green">{{ getInfoRutaBiciPaseo(grupo) }}</p>
-      </div>
+        <div class="bg-dark-800 rounded-lg p-3 text-center border border-neon-green/30">
+          <p class="text-xs text-gray-400">📍 Ruta</p>
+          <ng-container *ngIf="getInfoRutaBiciPaseo(grupo) && (getInfoRutaBiciPaseo(grupo).includes('http') || getInfoRutaBiciPaseo(grupo).includes('maps')); else textoRuta">
+            <a
+              [href]="getInfoRutaBiciPaseo(grupo)"
+              target="_blank"
+              class="text-neon-blue hover:text-neon-yellow transition-colors text-sm font-bold underline inline-block"
+            >
+              Ver Mapa 🗺️
+            </a>
+          </ng-container>
+          <ng-template #textoRuta>
+            <p class="text-base font-bold text-neon-green">
+              {{ getInfoRutaBiciPaseo(grupo) || 'No especificada' }}
+            </p>
+          </ng-template>
+        </div>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">

@@ -5,12 +5,33 @@ import {
 } from '../../../services/historial-sesion.service';
 import { Injectable } from '@angular/core';
 import { HistorialBiciPaseoAdapter } from '../adapter/historial-bici-paseo.adapter';
+import { ExcelExportDrBiciService } from './ExcelExportDrBiciService.service';
+import { HistorialJuegoAdapter } from '../adapter/historial-juego.adapter';
 
 @Injectable({ providedIn: 'root' })
 export class ExcelExporthistorialService {
+  constructor(private juegoAdapter: HistorialJuegoAdapter) {}
+
+  private drBiciService = new ExcelExportDrBiciService();
+
   exportarHistorialSesion(grupo: SesionAgrupada): void {
-    const wb = XLSX.utils.book_new();
     const juego = grupo.carreras[0]?.juego_jugado;
+
+    if (juego === 'DrBici') {
+      this.juegoAdapter.cargarComponentes().subscribe(() => {
+        const wb = XLSX.utils.book_new();
+        this.drBiciService.exportarDrBici(
+          wb,
+          grupo,
+          this.juegoAdapter['componentesMap'],
+        );
+        const nombreArchivo = `Historial_${grupo.sesion.nombreCliente}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, nombreArchivo);
+      });
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
 
     if (juego === 'BiciPaseo') {
       this.exportarBiciPaseo(wb, grupo);
@@ -424,93 +445,6 @@ export class ExcelExporthistorialService {
     XLSX.utils.book_append_sheet(wb, ws, 'Top 3');
   }
 
-  private agregarHojaCarrerasDetalleBiketona(
-    wb: XLSX.WorkBook,
-    grupo: SesionAgrupada,
-  ): void {
-    const data = [
-      ['DETALLE DE TODAS LAS CARRERAS'],
-      [],
-      [
-        'Carrera #',
-        'Fecha',
-        'Duración (min)',
-        'Participantes',
-        'Ganador',
-        'Mejor Tiempo',
-      ],
-    ];
-
-    grupo.carreras.forEach((carrera, index) => {
-      const ganador = carrera.ranking_final?.[0];
-      const duracionMinutos = carrera.estadisticas_generales?.duracionTotal
-        ? (carrera.estadisticas_generales.duracionTotal / 60).toFixed(1)
-        : carrera.duracion_minutos;
-
-      data.push([
-        index + 1,
-        new Date(carrera.fecha_fin).toLocaleDateString('es-ES'),
-        duracionMinutos,
-        carrera.participantes_data?.length || 0,
-        ganador?.nombre || 'N/A',
-        ganador?.puntos || 0,
-      ]);
-    });
-
-    data.push([], ['DETALLE POR PARTICIPANTE EN CADA CARRERA'], []);
-
-    grupo.carreras.forEach((carrera, carreraIndex) => {
-      data.push([
-        `CARRERA ${carreraIndex + 1} - ${new Date(carrera.fecha_fin).toLocaleDateString('es-ES')}`,
-      ]);
-      data.push([
-        'Posición',
-        'Nombre',
-        'Sexo',
-        'Mejor Tiempo',
-        'Vel. Prom.',
-        'Vel. Máx.',
-        'Calorías',
-        'Vatios',
-      ]);
-
-      if (carrera.participantes_data) {
-        const participantesOrdenados =
-          carrera.ranking_final || carrera.participantes_data;
-        participantesOrdenados.forEach((p, index) => {
-          data.push([
-            index + 1,
-            p.nombre,
-            p.genero === 'masculino'
-              ? 'Masculino'
-              : p.genero === 'femenino'
-                ? 'Femenino'
-                : 'N/E',
-            Number(p.puntos || p.mejorTiempo) || 0,
-            Number(p.velocidadPromedio || 0).toFixed(2),
-            Number(p.velocidadMaxima || 0).toFixed(2),
-            Number(p.calorias) || 0,
-            Number(p.vatios) || 0,
-          ]);
-        });
-      }
-      data.push([]);
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet(data);
-    ws['!cols'] = [
-      { wch: 12 },
-      { wch: 25 },
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 12 },
-      { wch: 10 },
-      { wch: 10 },
-    ];
-    XLSX.utils.book_append_sheet(wb, ws, 'Detalle Carreras');
-  }
-
   private calcularVelocidadPromedioBiketona(grupo: SesionAgrupada): string {
     let suma = 0,
       total = 0;
@@ -570,11 +504,6 @@ export class ExcelExporthistorialService {
     this.agregarHojaEstadisticasGenerales(wb, grupo);
   }
 
-  private esVRoHitFit(grupo: SesionAgrupada): boolean {
-    return grupo.carreras.some(
-      (c) => c.juego_jugado === 'VR' || c.juego_jugado === 'Hit-Fit',
-    );
-  }
   private agregarHojaResumenSesion(
     wb: XLSX.WorkBook,
     grupo: SesionAgrupada,
@@ -1265,6 +1194,15 @@ export class ExcelExporthistorialService {
 
     sesionesAgrupadas.forEach((grupo) => {
       grupo.carreras.forEach((carrera) => {
+        if (
+          carrera.juego_jugado === 'DrBici' ||
+          carrera.juego_jugado === 'VR' ||
+          carrera.juego_jugado === 'Hit-Fit' ||
+          carrera.juego_jugado === 'BiciPaseo'
+        ) {
+          return;
+        }
+
         if (carrera.participantes_data) {
           carrera.participantes_data.forEach((p) => {
             const existente = todosParticipantes.find(
@@ -1487,6 +1425,15 @@ export class ExcelExporthistorialService {
 
     sesionesAgrupadas.forEach((grupo) => {
       grupo.carreras.forEach((carrera) => {
+        if (
+          carrera.juego_jugado === 'DrBici' ||
+          carrera.juego_jugado === 'VR' ||
+          carrera.juego_jugado === 'Hit-Fit' ||
+          carrera.juego_jugado === 'BiciPaseo'
+        ) {
+          return;
+        }
+
         if (carrera.participantes_data) {
           carrera.participantes_data.forEach((p) => {
             velocidadPromedioTotal += Number(p.velocidadPromedio) || 0;

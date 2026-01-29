@@ -8,6 +8,7 @@ import {
 } from '../../../services/historial-sesion.service';
 import { FormsModule } from '@angular/forms';
 import { HistorialJuegoAdapter } from '../adapter/historial-juego.adapter';
+import { ComponenteService } from '../../../services/dr-bici/componente.service';
 
 type TabHistorial =
   | 'resumen'
@@ -39,14 +40,18 @@ export class HistorialDetalleComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private juegoAdapter: HistorialJuegoAdapter,
+    private componenteService: ComponenteService,
   ) {
     this.tabActiva = 'resumen';
+    this.juegoAdapter = new HistorialJuegoAdapter(componenteService);
   }
 
   ngOnInit(): void {
     this.tabActiva = 'resumen';
-    const id = this.route.snapshot.params['id'];
-    this.cargarDetalle(id);
+    this.juegoAdapter.cargarComponentes().subscribe(() => {
+      const id = this.route.snapshot.params['id'];
+      this.cargarDetalle(id);
+    });
   }
 
   cargarDetalle(id: number): void {
@@ -374,12 +379,17 @@ export class HistorialDetalleComponent implements OnInit {
     return (
       this.historial?.juego_jugado === 'VR' ||
       this.historial?.juego_jugado === 'Hit-Fit' ||
-      this.historial?.juego_jugado === 'BiciPaseo'
+      this.historial?.juego_jugado === 'BiciPaseo' ||
+      this.historial?.juego_jugado === 'DrBici'
     );
   }
 
   esBiciPaseo(): boolean {
     return this.historial?.juego_jugado === 'BiciPaseo';
+  }
+
+  esDrBici(): boolean {
+    return this.historial?.juego_jugado === 'DrBici';
   }
 
   formatearTipoVehiculo(tipo: string): string {
