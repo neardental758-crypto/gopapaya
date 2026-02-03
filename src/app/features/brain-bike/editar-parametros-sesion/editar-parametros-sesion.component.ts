@@ -79,6 +79,8 @@ export class EditarParametrosSesionComponent implements OnInit {
 
   lugarEjecucion: string = '';
   fechaHoraSesion: string = '';
+  fechaHoraFinSesion: string = '';
+  fechaHoraFinMinima: string = '';
   horaSesion: string = '';
   fechaSesion: string = '';
   adminsSeleccionados: string[] = [];
@@ -198,6 +200,21 @@ export class EditarParametrosSesionComponent implements OnInit {
       this.fechaSesion = fechaPart;
       this.horaSesion = horaPart.substring(0, 5);
       this.fechaHoraSesion = `${fechaPart}T${this.horaSesion}`;
+      this.fechaHoraFinMinima = this.fechaHoraSesion;
+    }
+
+    if (sesion.hora_fin) {
+      const [fechaFinPart, horaFinPart] = sesion.hora_fin.split(' ');
+      this.fechaHoraFinSesion = `${fechaFinPart}T${horaFinPart.substring(0, 5)}`;
+    } else if (sesion.fecha_sesion) {
+      const inicio = new Date(this.fechaHoraSesion);
+      inicio.setHours(inicio.getHours() + 2);
+      const año = inicio.getFullYear();
+      const mes = String(inicio.getMonth() + 1).padStart(2, '0');
+      const dia = String(inicio.getDate()).padStart(2, '0');
+      const horas = String(inicio.getHours()).padStart(2, '0');
+      const minutos = String(inicio.getMinutes()).padStart(2, '0');
+      this.fechaHoraFinSesion = `${año}-${mes}-${dia}T${horas}:${minutos}`;
     }
 
     if (sesion.parametros_juego) {
@@ -302,6 +319,8 @@ export class EditarParametrosSesionComponent implements OnInit {
     this.cargando = true;
 
     let fechaSesionFinal: string | undefined = undefined;
+    let fechaFinFinal: string | undefined = undefined;
+
     if (this.fechaHoraSesion) {
       const fechaLocal = new Date(this.fechaHoraSesion);
       const año = fechaLocal.getFullYear();
@@ -310,6 +329,16 @@ export class EditarParametrosSesionComponent implements OnInit {
       const horas = String(fechaLocal.getHours()).padStart(2, '0');
       const minutos = String(fechaLocal.getMinutes()).padStart(2, '0');
       fechaSesionFinal = `${año}-${mes}-${dia} ${horas}:${minutos}:00`;
+    }
+
+    if (this.fechaHoraFinSesion) {
+      const fechaFin = new Date(this.fechaHoraFinSesion);
+      const año2 = fechaFin.getFullYear();
+      const mes2 = String(fechaFin.getMonth() + 1).padStart(2, '0');
+      const dia2 = String(fechaFin.getDate()).padStart(2, '0');
+      const horas2 = String(fechaFin.getHours()).padStart(2, '0');
+      const minutos2 = String(fechaFin.getMinutes()).padStart(2, '0');
+      fechaFinFinal = `${año2}-${mes2}-${dia2} ${horas2}:${minutos2}:00`;
     }
 
     let parametrosJuego = null;
@@ -341,6 +370,10 @@ export class EditarParametrosSesionComponent implements OnInit {
       datosActualizados.fecha_sesion = fechaSesionFinal;
     }
 
+    if (fechaFinFinal) {
+      datosActualizados.hora_fin = fechaFinFinal;
+    }
+
     this.sesionService
       .actualizarSesion(this.sesion!.id, datosActualizados)
       .subscribe({
@@ -350,8 +383,10 @@ export class EditarParametrosSesionComponent implements OnInit {
         },
         error: (error) => {
           this.cargando = false;
+          const mensajeRaw = error.error?.error || error.error?.message || '';
           this.errorMensaje =
-            error.error?.message || 'Error al actualizar la sesión';
+            mensajeRaw.replace('ERROR_UPDATE_SESION ', '') ||
+            'Error al actualizar la sesión';
         },
       });
   }

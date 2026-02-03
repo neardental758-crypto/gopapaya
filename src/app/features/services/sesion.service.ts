@@ -21,6 +21,7 @@ export interface Sesion {
   admins?: Admin[];
   fechaCreacion: Date;
   fecha_sesion?: string;
+  hora_fin?: string;
   nota?: string;
   juego_asignado?: string;
   parametros_juego?: any;
@@ -120,7 +121,7 @@ export class SesionService {
         map((response) => response.data),
         tap((sesion) => {
           this.setSesionSeleccionada(sesion);
-        })
+        }),
       );
   }
 
@@ -157,16 +158,16 @@ export class SesionService {
 
   getEvidencias(sesionId: number): Observable<Evidencia[]> {
     return this.http
-      .get<{ data: Evidencia[] }>(
-        `${environment.apiUrl}/sesionEvidencia/${sesionId}`
-      )
+      .get<{
+        data: Evidencia[];
+      }>(`${environment.apiUrl}/sesionEvidencia/${sesionId}`)
       .pipe(map((response) => response.data));
   }
 
   crearEvidenciaTexto(
     sesionId: number,
     contenido: string,
-    seccion: string
+    seccion: string,
   ): Observable<Evidencia> {
     return this.http
       .post<{ data: Evidencia }>(
@@ -175,7 +176,7 @@ export class SesionService {
           tipo: 'texto',
           contenido: contenido,
           seccion: seccion,
-        }
+        },
       )
       .pipe(map((response) => response.data));
   }
@@ -184,7 +185,7 @@ export class SesionService {
     sesionId: number,
     archivo: File,
     seccion: string,
-    orden?: number
+    orden?: number,
   ): Observable<Evidencia> {
     const formData = new FormData();
     formData.append('tipo', 'foto');
@@ -193,10 +194,9 @@ export class SesionService {
     if (orden !== undefined) formData.append('orden', orden.toString());
 
     return this.http
-      .post<{ data: Evidencia }>(
-        `${environment.apiUrl}/sesionEvidencia/${sesionId}`,
-        formData
-      )
+      .post<{
+        data: Evidencia;
+      }>(`${environment.apiUrl}/sesionEvidencia/${sesionId}`, formData)
       .pipe(map((response) => response.data));
   }
 
@@ -205,13 +205,13 @@ export class SesionService {
       `${environment.apiUrl}/sesionEvidencia/${sesionId}/informe-pdf`,
       {
         responseType: 'blob',
-      }
+      },
     );
   }
 
   eliminarEvidencia(id: number): Observable<void> {
     return this.http.delete<void>(
-      `${environment.apiUrl}/sesionEvidencia/${id}`
+      `${environment.apiUrl}/sesionEvidencia/${id}`,
     );
   }
 
@@ -220,18 +220,17 @@ export class SesionService {
     formData.append('archivo', archivo);
 
     return this.http
-      .post<{ data: Evidencia }>(
-        `${environment.apiUrl}/sesionEvidencia/${sesionId}/planilla`,
-        formData
-      )
+      .post<{
+        data: Evidencia;
+      }>(`${environment.apiUrl}/sesionEvidencia/${sesionId}/planilla`, formData)
       .pipe(map((response) => response.data));
   }
 
   getPlanilla(sesionId: number): Observable<Evidencia | null> {
     return this.http
-      .get<{ data: Evidencia | null }>(
-        `${environment.apiUrl}/sesionEvidencia/${sesionId}/planilla`
-      )
+      .get<{
+        data: Evidencia | null;
+      }>(`${environment.apiUrl}/sesionEvidencia/${sesionId}/planilla`)
       .pipe(map((response) => response.data));
   }
 
@@ -241,7 +240,7 @@ export class SesionService {
     tiposEnvio: string[],
     archivos: { tipo: string; blob: Blob; nombre: string }[],
     asunto?: string,
-    mensaje?: string
+    mensaje?: string,
   ): Observable<any> {
     const formData = new FormData();
 
@@ -256,15 +255,15 @@ export class SesionService {
 
     return this.http.post(
       `${environment.apiUrl}/sesionEvidencia/${sesionId}/enviar-correo`,
-      formData
+      formData,
     );
   }
 
   getDestinatariosSesion(sesionId: number): Observable<any[]> {
     return this.http
-      .get<{ data: any[] }>(
-        `${environment.apiUrl}/sesionEvidencia/${sesionId}/destinatarios`
-      )
+      .get<{
+        data: any[];
+      }>(`${environment.apiUrl}/sesionEvidencia/${sesionId}/destinatarios`)
       .pipe(map((response) => response.data));
   }
 }
