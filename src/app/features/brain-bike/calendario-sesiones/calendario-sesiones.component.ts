@@ -248,15 +248,23 @@ export class CalendarioSesionesComponent implements OnInit {
         const [hora, minuto] = horaPart.split(':').map(Number);
 
         const inicio = new Date(año, mes - 1, dia, hora, minuto);
-        const fin = new Date(inicio);
-        fin.setHours(inicio.getHours() + 2);
 
-        return {
-          sesion,
-          inicio,
-          fin,
-          duracion: 2,
-        };
+        let fin: Date;
+        let duracion: number;
+
+        if (sesion.hora_fin) {
+          const [fechaFinPart, horaFinPart] = sesion.hora_fin.split(' ');
+          const [aÑoFin, mesFin, diaFin] = fechaFinPart.split('-').map(Number);
+          const [horaFin, minutoFin] = horaFinPart.split(':').map(Number);
+          fin = new Date(aÑoFin, mesFin - 1, diaFin, horaFin, minutoFin);
+          duracion = (fin.getTime() - inicio.getTime()) / (1000 * 60 * 60);
+        } else {
+          fin = new Date(inicio);
+          fin.setHours(inicio.getHours() + 2);
+          duracion = 2;
+        }
+
+        return { sesion, inicio, fin, duracion };
       })
       .sort((a, b) => a.inicio.getTime() - b.inicio.getTime());
   }

@@ -34,6 +34,8 @@ export class CrearSesionComponent implements OnInit {
   fechaHoraSesion: string = '';
   fechaSesionPreseleccionada: string = '';
   horaSesion: string = '09:00';
+  horaFinSesion: string = '11:00';
+  horaMinFin: string = '';
   fechaPreseleccionada: boolean = false;
   fechaHoraMinima: string = '';
   horaMinima: string = '';
@@ -128,6 +130,8 @@ export class CrearSesionComponent implements OnInit {
   ];
 
   tipoVRSeleccionado: string = '';
+  fechaHoraFinSesion: string = '';
+  fechaHoraFinMinima: string = '';
   constructor(
     private sesionService: SesionService,
     private empresaService: EmpresaService,
@@ -161,6 +165,7 @@ export class CrearSesionComponent implements OnInit {
     const horas = String(ahora.getHours()).padStart(2, '0');
     const minutos = String(ahora.getMinutes()).padStart(2, '0');
     this.fechaHoraMinima = `${año}-${mes}-${dia}T${horas}:${minutos}`;
+    this.fechaHoraFinMinima = this.fechaHoraMinima;
   }
 
   establecerHoraMinima(): void {
@@ -267,6 +272,24 @@ export class CrearSesionComponent implements OnInit {
         if (!this.horaSesion) {
           this.errorMensaje = 'Debe seleccionar una hora';
           return false;
+        }
+
+        if (this.fechaPreseleccionada) {
+          if (!this.horaFinSesion || this.horaFinSesion <= this.horaSesion) {
+            this.errorMensaje =
+              'La hora de fin debe ser posterior a la hora de inicio';
+            return false;
+          }
+        } else {
+          if (!this.fechaHoraFinSesion) {
+            this.errorMensaje = 'Debe seleccionar hora de finalización';
+            return false;
+          }
+          if (this.fechaHoraFinSesion <= this.fechaHoraSesion) {
+            this.errorMensaje =
+              'La hora de fin debe ser posterior a la hora de inicio';
+            return false;
+          }
         }
 
         const fechaHoraCompleta = new Date(
@@ -385,6 +408,20 @@ export class CrearSesionComponent implements OnInit {
       fechaSesionFinal = `${año}-${mes}-${dia} ${horas}:${minutos}:00`;
     }
 
+    let fechaFinFinal: string;
+
+    if (this.fechaPreseleccionada) {
+      fechaFinFinal = `${this.fechaSesionPreseleccionada} ${this.horaFinSesion}:00`;
+    } else {
+      const fechaFin = new Date(this.fechaHoraFinSesion);
+      const año2 = fechaFin.getFullYear();
+      const mes2 = String(fechaFin.getMonth() + 1).padStart(2, '0');
+      const dia2 = String(fechaFin.getDate()).padStart(2, '0');
+      const horas2 = String(fechaFin.getHours()).padStart(2, '0');
+      const minutos2 = String(fechaFin.getMinutes()).padStart(2, '0');
+      fechaFinFinal = `${año2}-${mes2}-${dia2} ${horas2}:${minutos2}:00`;
+    }
+
     let parametrosJuego = null;
 
     if (this.juegoAsignado === 'brain-bike') {
@@ -415,6 +452,7 @@ export class CrearSesionComponent implements OnInit {
       empresa_id: this.empresaSeleccionada,
       lugarEjecucion: this.lugarEjecucion,
       fecha_sesion: fechaSesionFinal,
+      hora_fin: fechaFinFinal,
       admins_asignados: this.adminsSeleccionados,
       nota: this.nota,
       cronograma: this.cronograma,
@@ -430,7 +468,10 @@ export class CrearSesionComponent implements OnInit {
       },
       error: (error) => {
         this.cargando = false;
-        this.errorMensaje = error.error?.message || 'Error al crear la sesión';
+        const mensajeRaw = error.error?.error || error.error?.message || '';
+        this.errorMensaje =
+          mensajeRaw.replace('ERROR_CREATE_SESION ', '') ||
+          'Error al crear la sesión';
       },
     });
   }
@@ -549,6 +590,19 @@ export class CrearSesionComponent implements OnInit {
 
   isAdminSeleccionado(adminId: string): boolean {
     return this.adminsSeleccionados.includes(adminId);
+  }
+
+  actualizarHoraMinFin(): void {
+    if (this.fechaPreseleccionada && this.horaSesion) {
+      const [h, m] = this.horaSesion.split(':').map(Number);
+      const min = new Date(2000, 0, 1, h, m);
+      min.setMinutes(min.getMinutes() + 30);
+      this.horaMinFin = `${String(min.getHours()).padStart(2, '0')}:${String(min.getMinutes()).padStart(2, '0')}`;
+
+      if (this.horaFinSesion <= this.horaSesion) {
+        this.horaFinSesion = this.horaMinFin;
+      }
+    }
   }
 
   get nombreEmpresaSeleccionada(): string {

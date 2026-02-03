@@ -79,6 +79,7 @@ module.exports = {
         'bounce-slow': 'bounce 3s infinite',
         'slideRoad': 'slideRoad 0.5s linear infinite',
         'slideRoadReverse': 'slideRoadReverse 0.5s linear infinite',
+        'slideRoadInfinite': 'slideRoadInfinite 3s linear infinite',
         'bikeFast': 'bikeFast 3.5s ease-in-out forwards',
         'bikeMedium': 'bikeMedium 4s ease-in-out forwards',
         'bikeSlow': 'bikeSlow 4.5s ease-in-out forwards',
@@ -88,6 +89,7 @@ module.exports = {
         'speedLine': 'speedLine 0.3s linear infinite',
         'speedLineReverse': 'speedLineReverse 0.3s linear infinite',
         'goText': 'goText 0.6s ease-out 2.5s forwards',
+
       },
       keyframes: {
         glow: {
@@ -105,6 +107,10 @@ module.exports = {
         slideRoad: {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-8rem)' },
+        },
+        slideRoadInfinite: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-100%)' },
         },
         slideRoadReverse: {
           '0%': { transform: 'translateX(0)' },
