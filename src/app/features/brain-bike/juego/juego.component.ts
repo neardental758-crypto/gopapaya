@@ -412,6 +412,8 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         });
 
         this.ble.subscribe('bici1', 'btns', (btns) => {
+          console.log('📥 Botones recibidos:', btns);
+
           const grupos = btns.split(',');
 
           if (grupos.length !== 2) return;
@@ -446,6 +448,10 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     participante: ParticipanteJuego,
     index: number,
   ): void {
+    console.log(
+      `🎮 Botón presionado - ${participante.nombreParticipante}, Sección: ${this.seccionActual}, MostrandoRespuestas: ${this.mostrandoRespuestas}`,
+    );
+
     if (this.seccionActual === 'video' && this.mostrandoBonoColor) {
       if (this.participantesQueRespondieron.has(participante.id)) return;
 
