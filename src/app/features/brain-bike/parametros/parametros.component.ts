@@ -10,13 +10,23 @@ import {
 import { TematicaService } from '../../services/tematica.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { BrainBikeAudioService } from '../../services/audio/brain-bike-audio.service';
+import {
+  BikeKey,
+  BleEsp32BrainBikeService,
+} from '../../services/brain-bike/ble-esp32-brain-bike.service';
 
 interface VelocidadPreset {
   nombre: string;
   video: number;
   trivia: number;
 }
-
+interface BiciUI {
+  key: BikeKey;
+  label: string;
+  status: string;
+  conectado: boolean;
+  deviceId: string;
+}
 @Component({
   selector: 'app-brain-bike-parametros',
   standalone: true,
@@ -38,13 +48,24 @@ export class BrainBikeParametrosComponent implements OnInit {
   loading = false;
   errorMessage = '';
 
+  bicis: BiciUI[] = [
+    {
+      key: 'bici1',
+      label: 'ESP32 Principal',
+      status: 'Desconectado',
+      conectado: false,
+      deviceId: '',
+    },
+  ];
+
   constructor(
     private sesionService: SesionService,
     private brainBikeService: BrainBikeService,
     private tematicaService: TematicaService,
     private router: Router,
     private authService: AuthService,
-    private audioService: BrainBikeAudioService
+    public audioService: BrainBikeAudioService,
+    private ble: BleEsp32BrainBikeService,
   ) {}
 
   ngOnInit(): void {
@@ -84,7 +105,7 @@ export class BrainBikeParametrosComponent implements OnInit {
         this.tematicaSeleccionada = tematica;
 
         const contenido = tematica.contenidos?.find(
-          (c: any) => c._id === parametros.contenido_id
+          (c: any) => c._id === parametros.contenido_id,
         );
 
         if (contenido) {
@@ -134,12 +155,101 @@ export class BrainBikeParametrosComponent implements OnInit {
     this.paso = 2;
   }
 
+  isSuperAdmin(): boolean {
+    const usuario = this.authService.getUsuario();
+    return usuario?.rol === 'super_admin';
+  }
+
+  cambiarPaso(nuevoPaso: number): void {
+    this.paso = nuevoPaso;
+  }
+
+  getNumeroContenidos(tematica: any): number {
+    if (!tematica.contenidos) return 0;
+    return Array.isArray(tematica.contenidos) ? tematica.contenidos.length : 0;
+  }
+
+  getNumeroPreguntas(tematica: any): number {
+    if (!tematica.contenidos || !Array.isArray(tematica.contenidos)) return 0;
+
+    let total = 0;
+    tematica.contenidos.forEach((contenido: any) => {
+      if (contenido.preguntas && Array.isArray(contenido.preguntas)) {
+        total += contenido.preguntas.length;
+      }
+    });
+    return total;
+  }
+
+  getNumeroPreguntasContenido(contenido: any): number {
+    if (!contenido.preguntas || !Array.isArray(contenido.preguntas)) {
+      return contenido.num_preguntas || 0;
+    }
+    return contenido.preguntas.length;
+  }
+
+  volver(): void {
+    this.router.navigate(['/sesion/seleccionar-juego']);
+  }
+
+  todasBicisConectadas(): boolean {
+    return this.bicis.every((b) => b.conectado);
+  }
+
+  async buscarBici(key: BikeKey) {
+    const biciUI = this.bicis.find((x) => x.key === key)!;
+    try {
+      const device = await this.ble.requestDevice(key);
+      biciUI.status = `Dispositivo seleccionado: ${device.name ?? 'sin nombre'}`;
+      biciUI.deviceId = device.id;
+    } catch (e: any) {
+      console.error(`Error buscando dispositivo para ${key}`, e);
+      biciUI.status = 'Error buscando dispositivo';
+      biciUI.conectado = false;
+      biciUI.deviceId = '';
+    }
+  }
+
+  async conectarBici(key: BikeKey) {
+    const biciUI = this.bicis.find((x) => x.key === key)!;
+
+    try {
+      await this.ble.connect(key);
+      biciUI.status = 'Conectado a ESP32';
+      biciUI.conectado = true;
+
+      this.ble
+        .readValue(key, 'id')
+        .then((id) => (biciUI.deviceId = id))
+        .catch(() => {});
+
+      await this.ble.subscribe(key, 'vel', (v) => {});
+    } catch (e: any) {
+      console.error(`Error al conectar BLE (${key})`, e);
+      biciUI.status = 'Error al conectar';
+      biciUI.conectado = false;
+    }
+  }
+
+  desconectarBici(key: BikeKey) {
+    const biciUI = this.bicis.find((x) => x.key === key)!;
+    this.ble.disconnect(key);
+    biciUI.conectado = false;
+    biciUI.status = 'Desconectado';
+    biciUI.deviceId = '';
+  }
+
   seleccionarContenido(contenido: any): void {
     this.contenidoSeleccionado = contenido;
-    this.paso = 3;
+    this.paso = 4;
   }
 
   guardarConfiguracion(): void {
+    if (!this.todasBicisConectadas()) {
+      this.errorMessage = 'Debes conectar el ESP32 antes de continuar';
+      return;
+    }
+
     const sesion = this.sesionService.getSesionSeleccionada();
     if (!sesion) {
       this.errorMessage = 'No hay sesión activa';
@@ -181,41 +291,5 @@ export class BrainBikeParametrosComponent implements OnInit {
           error.error?.message || 'Error al guardar configuración';
       },
     });
-  }
-  isSuperAdmin(): boolean {
-    const usuario = this.authService.getUsuario();
-    return usuario?.rol === 'super_admin';
-  }
-
-  cambiarPaso(nuevoPaso: number): void {
-    this.paso = nuevoPaso;
-  }
-
-  getNumeroContenidos(tematica: any): number {
-    if (!tematica.contenidos) return 0;
-    return Array.isArray(tematica.contenidos) ? tematica.contenidos.length : 0;
-  }
-
-  getNumeroPreguntas(tematica: any): number {
-    if (!tematica.contenidos || !Array.isArray(tematica.contenidos)) return 0;
-
-    let total = 0;
-    tematica.contenidos.forEach((contenido: any) => {
-      if (contenido.preguntas && Array.isArray(contenido.preguntas)) {
-        total += contenido.preguntas.length;
-      }
-    });
-    return total;
-  }
-
-  getNumeroPreguntasContenido(contenido: any): number {
-    if (!contenido.preguntas || !Array.isArray(contenido.preguntas)) {
-      return contenido.num_preguntas || 0;
-    }
-    return contenido.preguntas.length;
-  }
-
-  volver(): void {
-    this.router.navigate(['/sesion/seleccionar-juego']);
   }
 }

@@ -68,7 +68,6 @@ export class BrainBikeAudioService {
       const data = await response.json();
 
       this.ttsService.registrarUso(caracteres).subscribe({
-        next: (uso) => console.log('Uso registrado:', uso),
         error: (err) => console.error('Error registrando uso:', err),
       });
 

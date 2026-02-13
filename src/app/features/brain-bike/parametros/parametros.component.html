@@ -210,160 +210,300 @@
       </div>
     </div>
 
-    <div *ngIf="paso === 3" class="space-y-4 sm:space-y-6 animate-fadeIn">
-      <div class="bg-dark-900 border-2 border-neon-yellow rounded-card p-4 sm:p-6 shadow-neon-yellow-lg">
-        <div class="flex items-start gap-3 sm:gap-5 flex-col xs:flex-row">
-          <div class="flex-shrink-0 mx-auto xs:mx-0">
-            <div class="text-5xl sm:text-6xl">🎬</div>
+ <div *ngIf="paso === 3" class="space-y-4 sm:space-y-6 animate-fadeIn">
+  <div class="bg-dark-900 border-2 border-neon-yellow rounded-card p-4 sm:p-6 shadow-neon-yellow-lg">
+    <div class="flex items-start gap-3 sm:gap-5 flex-col xs:flex-row">
+      <div class="flex-shrink-0 mx-auto xs:mx-0">
+        <div class="text-5xl sm:text-6xl">🎬</div>
+      </div>
+      <div class="flex-1 min-w-0 text-center xs:text-left">
+        <h3 class="text-xl sm:text-2xl font-display font-bold text-white mb-2">
+          {{ contenidoSeleccionado?.nombre_contenido }}
+        </h3>
+        <div class="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm justify-center xs:justify-start flex-wrap">
+          <div class="flex items-center gap-2 bg-dark-800 px-2.5 sm:px-3 py-1.5 rounded-lg border border-dark-600">
+            <span class="text-neon-blue">📚</span>
+            <span class="text-gray-400">{{ tematicaSeleccionada?.nombre_tematica }}</span>
           </div>
-          <div class="flex-1 min-w-0 text-center xs:text-left">
-            <h3 class="text-xl sm:text-2xl font-display font-bold text-white mb-2">
-              {{ contenidoSeleccionado?.nombre_contenido }}
-            </h3>
-            <div class="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm justify-center xs:justify-start flex-wrap">
-              <div class="flex items-center gap-2 bg-dark-800 px-2.5 sm:px-3 py-1.5 rounded-lg border border-dark-600">
-                <span class="text-neon-blue">📚</span>
-                <span class="text-gray-400">{{ tematicaSeleccionada?.nombre_tematica }}</span>
-              </div>
-              <div class="flex items-center gap-2 bg-dark-800 px-2.5 sm:px-3 py-1.5 rounded-lg border border-dark-600">
-                <span class="text-neon-green">❓</span>
-                <span class="text-white font-bold">{{ getNumeroPreguntasContenido(contenidoSeleccionado) }}</span>
-                <span class="text-gray-500 hidden xs:inline">preguntas</span>
-              </div>
-            </div>
+          <div class="flex items-center gap-2 bg-dark-800 px-2.5 sm:px-3 py-1.5 rounded-lg border border-dark-600">
+            <span class="text-neon-green">❓</span>
+            <span class="text-white font-bold">{{ getNumeroPreguntasContenido(contenidoSeleccionado) }}</span>
+            <span class="text-gray-500 hidden xs:inline">preguntas</span>
           </div>
+        </div>
+      </div>
+      <button
+      *ngIf="isSuperAdmin()"
+        (click)="cambiarPaso(2)"
+        class="px-4 sm:px-5 py-2 sm:py-2.5 bg-dark-700 text-neon-yellow rounded-lg font-bold hover:bg-dark-600 border-2 border-dark-600 hover:border-neon-yellow transition-all flex-shrink-0 text-sm sm:text-base w-full xs:w-auto"
+      >
+        Cambiar
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-5 sm:p-8 shadow-lg">
+    <div class="mb-6 sm:mb-8">
+      <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-1 sm:mb-2">
+        ⚙️ Configuración de la Actividad
+      </h2>
+      <p class="text-gray-400 text-sm sm:text-base">Ajusta los parámetros de la competencia</p>
+    </div>
+
+    <div class="space-y-6 sm:space-y-8">
+      <div>
+        <label class="block text-sm sm:text-base font-bold text-white mb-3 sm:mb-4">
+          Número de Participantes / Bicicletas
+        </label>
+        <div class="grid grid-cols-3 gap-3 sm:gap-4">
           <button
-          *ngIf="isSuperAdmin()"
-            (click)="cambiarPaso(2)"
-            class="px-4 sm:px-5 py-2 sm:py-2.5 bg-dark-700 text-neon-yellow rounded-lg font-bold hover:bg-dark-600 border-2 border-dark-600 hover:border-neon-yellow transition-all flex-shrink-0 text-sm sm:text-base w-full xs:w-auto"
+            *ngFor="let num of [2, 3, 4]"
+            (click)="numeroBicicletas = num"
+            class="relative p-5 sm:p-8 rounded-xl border-2 transition-all font-bold active:scale-95 sm:hover:scale-105"
+            [class.border-neon-yellow]="numeroBicicletas === num"
+            [class.bg-neon-yellow]="numeroBicicletas === num"
+            [class.bg-opacity-10]="numeroBicicletas === num"
+            [class.text-neon-yellow]="numeroBicicletas === num"
+            [class.shadow-neon-yellow-lg]="numeroBicicletas === num"
+            [class.border-dark-600]="numeroBicicletas !== num"
+            [class.bg-dark-800]="numeroBicicletas !== num"
+            [class.text-gray-500]="numeroBicicletas !== num"
+            [class.hover:border-dark-500]="numeroBicicletas !== num"
           >
-            Cambiar
+            <div class="text-3xl sm:text-5xl mb-2 sm:mb-3">🚴</div>
+            <div class="text-2xl sm:text-3xl font-display">{{ num }}</div>
+            <div class="text-xs mt-1 sm:mt-2 opacity-75" [class.text-neon-yellow]="numeroBicicletas === num" [class.text-gray-600]="numeroBicicletas !== num">
+              {{ num === 2 ? 'Dúo' : num === 3 ? 'Trío' : 'Cuarteto' }}
+            </div>
           </button>
         </div>
       </div>
 
-      <div class="bg-dark-900 border border-dark-700 rounded-card p-5 sm:p-8 shadow-lg">
-        <div class="mb-6 sm:mb-8">
-          <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-1 sm:mb-2">
-            ⚙️ Configuración de la Actividad
-          </h2>
-          <p class="text-gray-400 text-sm sm:text-base">Ajusta los parámetros de la competencia</p>
-        </div>
-
-        <div class="space-y-6 sm:space-y-8">
-          <div>
-            <label class="block text-sm sm:text-base font-bold text-white mb-3 sm:mb-4">
-              Número de Participantes / Bicicletas
-            </label>
-            <div class="grid grid-cols-3 gap-3 sm:gap-4">
-              <button
-                *ngFor="let num of [2, 3, 4]"
-                (click)="numeroBicicletas = num"
-                class="relative p-5 sm:p-8 rounded-xl border-2 transition-all font-bold active:scale-95 sm:hover:scale-105"
-                [class.border-neon-yellow]="numeroBicicletas === num"
-                [class.bg-neon-yellow]="numeroBicicletas === num"
-                [class.bg-opacity-10]="numeroBicicletas === num"
-                [class.text-neon-yellow]="numeroBicicletas === num"
-                [class.shadow-neon-yellow-lg]="numeroBicicletas === num"
-                [class.border-dark-600]="numeroBicicletas !== num"
-                [class.bg-dark-800]="numeroBicicletas !== num"
-                [class.text-gray-500]="numeroBicicletas !== num"
-                [class.hover:border-dark-500]="numeroBicicletas !== num"
-              >
-                <div class="text-3xl sm:text-5xl mb-2 sm:mb-3">🚴</div>
-                <div class="text-2xl sm:text-3xl font-display">{{ num }}</div>
-                <div class="text-xs mt-1 sm:mt-2 opacity-75" [class.text-neon-yellow]="numeroBicicletas === num" [class.text-gray-600]="numeroBicicletas !== num">
-                  {{ num === 2 ? 'Dúo' : num === 3 ? 'Trío' : 'Cuarteto' }}
-                </div>
-              </button>
+      <div>
+        <label class="block text-sm sm:text-base font-bold text-white mb-3 sm:mb-4">
+          Nivel de Dificultad
+          <span class="text-xs sm:text-sm font-normal text-gray-500 block xs:inline xs:ml-2 mt-1 xs:mt-0">
+            (Velocidad mínima requerida)
+          </span>
+        </label>
+        <div class="grid grid-cols-1 xs:grid-cols-3 gap-3 sm:gap-4">
+          <button
+            *ngFor="let preset of velocidadPresets; let i = index"
+            (click)="velocidadPresetSeleccionado = i"
+            class="p-5 sm:p-6 rounded-xl border-2 transition-all active:scale-95 sm:hover:scale-105"
+            [class.border-neon-blue]="velocidadPresetSeleccionado === i"
+            [class.bg-neon-blue]="velocidadPresetSeleccionado === i"
+            [class.bg-opacity-10]="velocidadPresetSeleccionado === i"
+            [class.shadow-neon-blue-lg]="velocidadPresetSeleccionado === i"
+            [class.border-dark-600]="velocidadPresetSeleccionado !== i"
+            [class.bg-dark-800]="velocidadPresetSeleccionado !== i"
+            [class.hover:border-dark-500]="velocidadPresetSeleccionado !== i"
+          >
+            <div class="text-3xl sm:text-4xl mb-2 sm:mb-3">
+              {{ i === 0 ? '🌱' : i === 1 ? '⚡' : '🔥' }}
             </div>
-          </div>
-
-          <div>
-            <label class="block text-sm sm:text-base font-bold text-white mb-3 sm:mb-4">
-              Nivel de Dificultad
-              <span class="text-xs sm:text-sm font-normal text-gray-500 block xs:inline xs:ml-2 mt-1 xs:mt-0">
-                (Velocidad mínima requerida)
-              </span>
-            </label>
-            <div class="grid grid-cols-1 xs:grid-cols-3 gap-3 sm:gap-4">
-              <button
-                *ngFor="let preset of velocidadPresets; let i = index"
-                (click)="velocidadPresetSeleccionado = i"
-                class="p-5 sm:p-6 rounded-xl border-2 transition-all active:scale-95 sm:hover:scale-105"
-                [class.border-neon-blue]="velocidadPresetSeleccionado === i"
-                [class.bg-neon-blue]="velocidadPresetSeleccionado === i"
-                [class.bg-opacity-10]="velocidadPresetSeleccionado === i"
-                [class.shadow-neon-blue-lg]="velocidadPresetSeleccionado === i"
-                [class.border-dark-600]="velocidadPresetSeleccionado !== i"
-                [class.bg-dark-800]="velocidadPresetSeleccionado !== i"
-                [class.hover:border-dark-500]="velocidadPresetSeleccionado !== i"
-              >
-                <div class="text-3xl sm:text-4xl mb-2 sm:mb-3">
-                  {{ i === 0 ? '🌱' : i === 1 ? '⚡' : '🔥' }}
-                </div>
-                <h4 class="font-display font-bold text-base sm:text-lg mb-3 sm:mb-4"
+            <h4 class="font-display font-bold text-base sm:text-lg mb-3 sm:mb-4"
+              [class.text-neon-blue]="velocidadPresetSeleccionado === i"
+              [class.text-white]="velocidadPresetSeleccionado !== i"
+            >
+              {{ preset.nombre }}
+            </h4>
+            <div class="space-y-2 text-xs sm:text-sm">
+              <div class="flex items-center justify-between bg-dark-900 px-2.5 sm:px-3 py-2 rounded-lg border border-dark-700">
+                <span class="text-gray-500">Durante video:</span>
+                <span class="font-bold"
                   [class.text-neon-blue]="velocidadPresetSeleccionado === i"
                   [class.text-white]="velocidadPresetSeleccionado !== i"
                 >
-                  {{ preset.nombre }}
-                </h4>
-                <div class="space-y-2 text-xs sm:text-sm">
-                  <div class="flex items-center justify-between bg-dark-900 px-2.5 sm:px-3 py-2 rounded-lg border border-dark-700">
-                    <span class="text-gray-500">Durante video:</span>
-                    <span class="font-bold"
-                      [class.text-neon-blue]="velocidadPresetSeleccionado === i"
-                      [class.text-white]="velocidadPresetSeleccionado !== i"
-                    >
-                      {{ preset.video }} km/h
-                    </span>
-                  </div>
-                  <div class="flex items-center justify-between bg-dark-900 px-2.5 sm:px-3 py-2 rounded-lg border border-dark-700">
-                    <span class="text-gray-500">Durante trivia:</span>
-                    <span class="font-bold"
-                      [class.text-neon-blue]="velocidadPresetSeleccionado === i"
-                      [class.text-white]="velocidadPresetSeleccionado !== i"
-                    >
-                      {{ preset.trivia }} km/h
-                    </span>
-                  </div>
-                </div>
-              </button>
+                  {{ preset.video }} km/h
+                </span>
+              </div>
+              <div class="flex items-center justify-between bg-dark-900 px-2.5 sm:px-3 py-2 rounded-lg border border-dark-700">
+                <span class="text-gray-500">Durante trivia:</span>
+                <span class="font-bold"
+                  [class.text-neon-blue]="velocidadPresetSeleccionado === i"
+                  [class.text-white]="velocidadPresetSeleccionado !== i"
+                >
+                  {{ preset.trivia }} km/h
+                </span>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="bg-neon-red/10 border-2 border-neon-red/50 rounded-card p-3 sm:p-4 shadow-neon-red animate-fadeIn">
+    <div class="flex items-center gap-2 sm:gap-3">
+      <span class="text-xl sm:text-2xl">⚠️</span>
+      <p class="text-neon-red font-medium text-sm sm:text-base">{{ errorMessage }}</p>
+    </div>
+  </div>
+
+  <div class="flex flex-col xs:flex-row gap-3 sm:gap-4">
+    <button
+    *ngIf="isSuperAdmin()"
+      (click)="cambiarPaso(2)"
+      class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-dark-800 text-gray-300 rounded-xl font-bold border-2 border-dark-600 hover:bg-dark-700 hover:border-dark-500 transition-all text-sm sm:text-base min-h-touch"
+    >
+      ← Atrás
+    </button>
+    <button
+      (click)="cambiarPaso(4)"
+      [disabled]="loading || !contenidoSeleccionado"
+      class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-yellow text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
+    >
+      <span class="flex items-center justify-center gap-2">
+        <span>Siguiente → Bluetooth</span>
+        <span class="text-lg sm:text-xl">→</span>
+      </span>
+    </button>
+  </div>
+</div>
+<div *ngIf="paso === 4" class="space-y-6">
+  <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6 shadow-neon-blue">
+    <div class="flex items-center justify-between gap-4 flex-wrap">
+      <div>
+        <h2 class="text-2xl sm:text-3xl font-display font-bold text-white">
+          <span class="text-neon-blue">🔌 Conexión Bluetooth</span>
+        </h2>
+        <p class="text-gray-400 text-sm sm:text-base mt-1">
+          <span
+            class="font-bold"
+            [class.text-neon-green]="todasBicisConectadas()"
+            [class.text-neon-yellow]="!todasBicisConectadas()">
+            {{
+              todasBicisConectadas()
+                ? '✓ Listo para continuar'
+                : '⚠ Conecta el ESP32 para continuar'
+            }}
+          </span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6">
+    <div
+      *ngFor="let bici of bicis"
+      class="bg-gradient-to-br from-dark-900/80 to-dark-950/80 rounded-card p-6 border-2 backdrop-blur-sm transition-all hover:scale-[1.01]"
+      [class.border-neon-green]="bici.conectado"
+      [class.shadow-neon-green]="bici.conectado"
+      [class.border-dark-700]="!bici.conectado">
+
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Dispositivo</p>
+          <h4 class="text-white font-bold text-xl font-display">{{ bici.label }}</h4>
+        </div>
+        <span
+          class="px-3 py-1.5 rounded-full text-xs font-bold"
+          [ngClass]="{
+            'bg-dark-700 text-gray-300 border border-dark-500':
+              !bici.conectado && bici.status === 'Desconectado',
+            'bg-yellow-400/20 text-yellow-300 border-2 border-yellow-400':
+              !bici.conectado && bici.status !== 'Desconectado',
+            'bg-green-400/20 text-green-400 border-2 border-green-400': bici.conectado
+          }">
+          {{ bici.conectado ? '✓ Conectado' : bici.status }}
+        </span>
+      </div>
+
+      <div class="flex items-center justify-center gap-6 my-8">
+        <div class="text-center">
+          <div class="relative">
+            <div *ngIf="bici.conectado" class="absolute inset-0 bg-green-400/20 blur-xl animate-pulse"></div>
+            <div
+              class="relative text-6xl sm:text-7xl transition-all"
+              [class.animate-pulse]="bici.conectado"
+              [class.text-green-400]="bici.conectado">
+              💻
             </div>
           </div>
+          <span class="text-xs text-gray-400 uppercase tracking-wide mt-2 block">ESP32</span>
+        </div>
+
+        <div
+          class="flex-1 h-1 rounded-full transition-all"
+          [class.bg-gradient-to-r]="bici.conectado"
+          [class.from-green-400]="bici.conectado"
+          [class.to-neon-yellow]="bici.conectado"
+          [class.animate-pulse]="bici.conectado"
+          [class.bg-dark-700]="!bici.conectado">
+          <div *ngIf="bici.conectado" class="h-full bg-gradient-to-r from-green-400 to-neon-yellow animate-pulse"></div>
+        </div>
+
+        <div class="text-center">
+          <div class="relative">
+            <div *ngIf="bici.conectado" class="absolute inset-0 bg-yellow-400/20 blur-xl animate-pulse"></div>
+            <div
+              class="relative text-6xl sm:text-7xl transition-all"
+              [class.animate-bounce]="bici.conectado"
+              [class.text-neon-yellow]="bici.conectado">
+              🚴‍♂️
+            </div>
+          </div>
+          <span class="text-xs text-gray-400 uppercase tracking-wide mt-2 block">
+            Bicicletas
+          </span>
         </div>
       </div>
 
-      <div *ngIf="errorMessage" class="bg-neon-red/10 border-2 border-neon-red/50 rounded-card p-3 sm:p-4 shadow-neon-red animate-fadeIn">
-        <div class="flex items-center gap-2 sm:gap-3">
-          <span class="text-xl sm:text-2xl">⚠️</span>
-          <p class="text-neon-red font-medium text-sm sm:text-base">{{ errorMessage }}</p>
-        </div>
+      <div *ngIf="bici.deviceId" class="mb-6 p-3 bg-dark-800 rounded-lg border border-dark-700">
+        <p class="text-xs text-gray-400 mb-1">ID del dispositivo</p>
+        <p class="text-sm text-white font-mono truncate">{{ bici.deviceId }}</p>
       </div>
 
-      <div class="flex flex-col xs:flex-row gap-3 sm:gap-4">
+      <div class="grid grid-cols-3 gap-3">
         <button
-        *ngIf="isSuperAdmin()"
-          (click)="cambiarPaso(2)"
-          class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-dark-800 text-gray-300 rounded-xl font-bold border-2 border-dark-600 hover:bg-dark-700 hover:border-dark-500 transition-all text-sm sm:text-base min-h-touch"
-        >
-          ← Atrás
+          (click)="buscarBici(bici.key); audioService.reproducirSonidoClick()"
+          class="px-4 py-3 bg-neon-blue text-dark-950 rounded-lg font-display font-bold text-sm shadow-neon-blue transition-all hover:scale-105 active:scale-95">
+          🔍 Buscar
         </button>
         <button
-          (click)="guardarConfiguracion()"
-          [disabled]="loading || !contenidoSeleccionado"
-          class="w-full xs:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-neon-yellow text-dark-950 rounded-xl font-display font-bold shadow-neon-yellow-lg hover:shadow-neon-yellow active:scale-95 sm:hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all text-sm sm:text-base min-h-touch"
-        >
-          <span *ngIf="!loading" class="flex items-center justify-center gap-2">
-            <span>Iniciar Actividad</span>
-            <span class="text-lg sm:text-xl">→</span>
-          </span>
-          <span *ngIf="loading" class="flex items-center justify-center gap-2">
-            <span class="inline-block w-4 h-4 border-2 border-dark-950 border-t-transparent rounded-full animate-spin"></span>
-            <span>Guardando...</span>
-          </span>
+          (click)="conectarBici(bici.key); audioService.reproducirSonidoExito()"
+          class="px-4 py-3 bg-neon-yellow text-dark-950 rounded-lg font-display font-bold text-sm shadow-neon-yellow transition-all hover:scale-105 active:scale-95">
+          📡 Conectar
+        </button>
+        <button
+          (click)="desconectarBici(bici.key); audioService.reproducirSonidoError()"
+          class="px-4 py-3 bg-dark-700 text-gray-300 border border-dark-600 rounded-lg font-display font-bold text-sm transition-all hover:border-neon-red hover:text-neon-red hover:scale-105 active:scale-95">
+          ❌ Desconectar
         </button>
       </div>
     </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="bg-neon-red/10 border-2 border-neon-red/50 rounded-card p-3 sm:p-4 shadow-neon-red animate-fadeIn">
+    <div class="flex items-center gap-2 sm:gap-3">
+      <span class="text-xl sm:text-2xl">⚠️</span>
+      <p class="text-neon-red font-medium text-sm sm:text-base">{{ errorMessage }}</p>
+    </div>
+  </div>
+
+  <div class="flex justify-between">
+    <button
+      (click)="cambiarPaso(3); audioService.reproducirSonidoClick()"
+      class="px-8 py-4 bg-dark-700 text-gray-300 border border-dark-600 rounded-lg font-display font-bold text-lg transition-all hover:scale-105">
+      ← Volver
+    </button>
+    <button
+      (click)="guardarConfiguracion(); audioService.reproducirSonidoCambioLlave()"
+      [disabled]="!todasBicisConectadas() || loading"
+      class="px-8 py-4 rounded-lg font-display font-bold text-lg shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+      [ngClass]="
+        !todasBicisConectadas()
+          ? 'bg-dark-700 text-gray-500 border border-dark-600'
+          : 'bg-neon-green text-dark-950 border-2 border-neon-green shadow-neon-green'"
+      [style.box-shadow]="todasBicisConectadas() ? '0 0 25px rgba(57, 255, 20, 0.4)' : 'none'">
+      <span *ngIf="!loading">Siguiente → Registro</span>
+      <span *ngIf="loading" class="flex items-center gap-2">
+        <span class="inline-block w-4 h-4 border-2 border-dark-950 border-t-transparent rounded-full animate-spin"></span>
+        Guardando...
+      </span>
+    </button>
+  </div>
+</div>
   </div>
 </div>

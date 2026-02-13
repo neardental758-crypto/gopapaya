@@ -17,6 +17,10 @@ import {
   BrainBikeGameService,
   RespuestaParticipante,
 } from './service/brain-bike-game.service';
+import {
+  BikeKey,
+  BleEsp32BrainBikeService,
+} from '../../services/brain-bike/ble-esp32-brain-bike.service';
 
 interface PreguntaBrain {
   _id: string;
@@ -101,6 +105,10 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
   private player: any;
   private playerReady = false;
 
+  private sensorAnterior1 = 0;
+  private sensorAnterior2 = 0;
+  private estadoESP32: number = 0;
+
   constructor(
     private brainBikeService: BrainBikeService,
     private participanteService: BrainBikeParticipanteService,
@@ -110,7 +118,8 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     private sesionService: SesionService,
     private historialService: HistorialService,
     private audioService: BrainBikeAudioService,
-    private gameService: BrainBikeGameService
+    private gameService: BrainBikeGameService,
+    private ble: BleEsp32BrainBikeService,
   ) {}
 
   ngOnInit(): void {
@@ -140,13 +149,13 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
 
     this.gameService.setVelocidadesMinimas(
       this.config.velocidadMinimaVideo || 10,
-      this.config.velocidadMinimaTrivia || 15
+      this.config.velocidadMinimaTrivia || 15,
     );
 
     this.participantesSubscription = this.gameService.participantes.subscribe(
       (p) => {
         this.participantes = p;
-      }
+      },
     );
 
     this.iniciarSesionJuego();
@@ -155,6 +164,39 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     history.pushState(null, '', location.href);
     window.addEventListener('popstate', this.prevenirRetroceso);
     this.cargarRankingGeneral();
+  }
+
+  private procesarSensores(
+    sensor1: number,
+    sensor2: number,
+    estadoID: number,
+  ): void {
+    if (estadoID === 1 || estadoID === 2) {
+      this.sensorAnterior1 = sensor1;
+      this.sensorAnterior2 = sensor2;
+      return;
+    }
+
+    if (estadoID === 3) {
+      return;
+    }
+
+    if (sensor1 === 1 && this.sensorAnterior1 === 0) {
+      if (this.participantes[0]) {
+        const actual = this.participantes[0].distanciaRecorrida || 0;
+        this.participantes[0].distanciaRecorrida = actual + 100;
+      }
+    }
+
+    if (sensor2 === 1 && this.sensorAnterior2 === 0) {
+      if (this.participantes[1]) {
+        const actual = this.participantes[1].distanciaRecorrida || 0;
+        this.participantes[1].distanciaRecorrida = actual + 100;
+      }
+    }
+
+    this.sensorAnterior1 = sensor1;
+    this.sensorAnterior2 = sensor2;
   }
 
   cargarRankingGeneral(): void {
@@ -186,8 +228,11 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     this.participantesSubscription?.unsubscribe();
     this.bonoColorInterval?.unsubscribe();
     if (this.respuestaTimeout) clearTimeout(this.respuestaTimeout);
-    this.gameService.detenerSimulacion();
+    this.gameService.limpiar();
     this.audioService.detenerTodo();
+
+    this.ble.unsubscribe('bici1', 'vel');
+    this.ble.unsubscribe('bici1', 'btns');
   }
 
   private prevenirRetroceso = (): void => {
@@ -224,9 +269,9 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       if (videoId) {
         this.gameService.registrarEvento(
           'video_iniciado',
-          'Video educativo iniciado'
+          'Video educativo iniciado',
         );
-        this.gameService.iniciarSimulacion('video');
+
         this.iniciarBonosColorVideo();
 
         setTimeout(() => {
@@ -271,10 +316,8 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       typeof (window as any).YT !== 'undefined' &&
       (window as any).YT.Player
     ) {
-      console.log('YT ya disponible');
       initPlayer();
     } else {
-      console.log('Esperando YT API...');
       (window as any).onYouTubeIframeAPIReady = initPlayer;
     }
   }
@@ -306,7 +349,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     this.bonoColorInterval?.unsubscribe();
     this.gameService.registrarEvento(
       'video_finalizado',
-      'Video educativo finalizado'
+      'Video educativo finalizado',
     );
     this.mostrarMensajeTransicion();
   }
@@ -325,48 +368,39 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
   }
 
   mostrarBonoColor(): void {
-    const { color } = this.gameService.simularBonoColorVideo();
-    this.colorBonoActual = color;
+    const colores = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
+    const colorAleatorio = colores[Math.floor(Math.random() * colores.length)];
+
+    this.colorBonoActual = colorAleatorio;
     this.mostrandoBonoColor = true;
     this.ganadorBonoColor = null;
+    this.participantesQueRespondieron.clear();
 
     setTimeout(() => {
-      const ganador = this.gameService.simularGanadorBonoColor(color);
-      if (ganador) {
-        this.ganadorBonoColor = ganador;
-        this.audioService.reproducirSonidoExito();
-        this.agregarNotificacionBono(
-          ganador.nombreParticipante,
-          '+1 punto por botón de color',
-          ganador.colorBicicleta,
-          '🎯'
-        );
-      }
-
-      setTimeout(() => {
+      if (!this.ganadorBonoColor) {
         this.mostrandoBonoColor = false;
-        this.ganadorBonoColor = null;
-      }, 2500);
-    }, Math.random() * 2000 + 1500);
+        this.participantesQueRespondieron.clear();
+      }
+    }, 5000);
   }
 
   extractYouTubeId(url: string): string | null {
     const match = url.match(
-      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/,
     );
     return match && match[2].length === 11 ? match[2] : null;
   }
 
   cargarParticipantes(): void {
     if (!this.config?.id) {
-      console.error('❌ [JUEGO] No hay config.id para cargar participantes');
+      console.error('No hay config.id para cargar participantes');
       return;
     }
 
     this.participanteService.getByBrainBike(this.config.id).subscribe({
       next: (participantes) => {
         if (participantes.length === 0) {
-          console.error('❌ [JUEGO] NO SE ENCONTRARON PARTICIPANTES');
+          console.error('NO SE ENCONTRARON PARTICIPANTES');
           alert('Error: No hay participantes registrados para esta sesión');
           this.router.navigate(['/brain-bike/parametros']);
           return;
@@ -374,18 +408,130 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
 
         this.gameService.inicializarParticipantes(participantes);
         this.gameService.iniciarCarrera();
+
+        this.ble.unsubscribe('bici1', 'vel');
+        this.ble.unsubscribe('bici1', 'btns');
+
+        this.ble.subscribe('bici1', 'vel', (v) => {
+          const velocidades = v.split(',').map((val) => parseFloat(val) || 0);
+
+          this.participantes.forEach((p, index) => {
+            if (velocidades[index] !== undefined) {
+              const nuevaVelocidad = velocidades[index];
+              const lecturas = [
+                ...(p.lecturaVelocidades || []),
+                nuevaVelocidad,
+              ].slice(-10);
+              const velocidadPromedio =
+                lecturas.reduce((a, b) => a + b, 0) / lecturas.length;
+
+              p.velocidadActual = nuevaVelocidad;
+              p.velocidadMaxima = Math.max(p.velocidadMaxima, nuevaVelocidad);
+              p.velocidadPromedio = Math.round(velocidadPromedio * 10) / 10;
+              p.lecturaVelocidades = lecturas;
+
+              const velMinima =
+                this.seccionActual === 'video'
+                  ? this.config?.velocidadMinimaVideo || 10
+                  : this.config?.velocidadMinimaTrivia || 15;
+
+              p.botonesActivos = nuevaVelocidad >= velMinima;
+              p.alertaVelocidad = nuevaVelocidad < velMinima;
+            }
+          });
+        });
+
+        this.ble.subscribe('bici1', 'btns', (btns) => {
+          if (btns.length !== 4) return;
+
+          this.participantes.forEach((p, index) => {
+            const botonPresionado = btns[index] === '1';
+
+            if (botonPresionado && p.botonesActivos) {
+              this.manejarBotonPresionado(p, index);
+            }
+          });
+        });
+
+        this.ble.subscribeSensores('bici1', (sensor1, sensor2, estadoID) => {
+          this.estadoESP32 = estadoID;
+          this.procesarSensores(sensor1, sensor2, estadoID);
+        });
       },
       error: (error) => {
-        console.error('❌ [JUEGO] Error cargando participantes:', error);
+        console.error('Error cargando participantes:', error);
         alert('Error al cargar participantes');
         this.router.navigate(['/brain-bike/parametros']);
       },
     });
   }
 
+  private manejarBotonPresionado(
+    participante: ParticipanteJuego,
+    index: number,
+  ): void {
+    if (this.seccionActual === 'video' && this.mostrandoBonoColor) {
+      if (this.participantesQueRespondieron.has(participante.id)) return;
+
+      this.participantesQueRespondieron.add(participante.id);
+
+      const colorIndex = index % 4;
+      const colores = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
+      const colorBoton = colores[colorIndex];
+
+      if (colorBoton === this.colorBonoActual) {
+        this.ganadorBonoColor = participante;
+        participante.puntosCarrera += 1;
+        this.audioService.reproducirSonidoExito();
+        this.agregarNotificacionBono(
+          participante.nombreParticipante,
+          '+1 punto por botón de color',
+          participante.colorBicicleta,
+          '🎯',
+        );
+
+        setTimeout(() => {
+          this.mostrandoBonoColor = false;
+          this.ganadorBonoColor = null;
+          this.participantesQueRespondieron.clear();
+        }, 2500);
+      }
+      return;
+    }
+
+    if (this.seccionActual === 'trivia' && this.mostrandoRespuestas) {
+      if (this.participantesQueRespondieron.has(participante.id)) return;
+
+      if (!participante.botonesActivos) return;
+
+      const pregunta = this.preguntaActualData;
+      if (!pregunta) return;
+
+      const colorIndex = index % 4;
+      const coloresRespuestas = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
+      const colorBoton = coloresRespuestas[colorIndex];
+
+      const respuestaSeleccionada = pregunta.respuestas.find(
+        (r: any) => r.color_respuesta === colorBoton,
+      );
+
+      if (!respuestaSeleccionada) return;
+
+      const esCorrecta = respuestaSeleccionada.es_correcta;
+      const tiempoUsado = 15 - this.tiempoRestante;
+
+      this.procesarRespuestaParticipante({
+        participante,
+        respuesta: respuestaSeleccionada,
+        tiempoRespuesta: tiempoUsado,
+        esCorrecta,
+      });
+    }
+  }
+
   async actualizarParticipantesBD(): Promise<void> {
     this.duracionCarrera = Math.floor(
-      (new Date().getTime() - this.fechaInicioCarrera.getTime()) / 60000
+      (new Date().getTime() - this.fechaInicioCarrera.getTime()) / 60000,
     );
 
     const ranking = this.rankingCarrera;
@@ -420,7 +566,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     try {
       await Promise.all(participantesActualizados.map((item) => item.promise));
       this.participantes = participantesActualizados.map(
-        (item) => item.participante
+        (item) => item.participante,
       );
     } catch (error) {
       console.error('❌ [JUEGO] Error actualizando:', error);
@@ -436,7 +582,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         next: (preguntas) => {
           this.preguntas = preguntas.slice(
             0,
-            this.config?.numeroPreguntas || 10
+            this.config?.numeroPreguntas || 10,
           );
         },
         error: (error) => console.error('Error al cargar preguntas:', error),
@@ -452,7 +598,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     this.guardarEstado();
 
     if (seccion === 'trivia') {
-      this.gameService.iniciarSimulacion('trivia');
       if (this.preguntas.length > 0) {
         this.preguntaActual = 0;
         setTimeout(() => this.iniciarPregunta(), 500);
@@ -465,7 +610,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
 
     this.gameService.registrarEvento(
       'pregunta_iniciada',
-      `Pregunta ${this.preguntaActual + 1} iniciada`
+      `Pregunta ${this.preguntaActual + 1} iniciada`,
     );
     this.leyendoPregunta = true;
     this.mostrandoRespuestas = false;
@@ -481,14 +626,14 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     try {
       await this.audioService.leerTexto(textoPregunta);
     } catch (error) {
-      console.error('❌ Error leyendo pregunta:', error);
+      console.error('Error leyendo pregunta:', error);
     }
 
     await this.esperar(1000);
 
     this.leyendoPregunta = false;
     this.mostrandoRespuestas = true;
-    this.iniciarTemporizadorConSimulacion(15);
+    this.iniciarTemporizador(15);
   }
 
   esperar(ms: number): Promise<void> {
@@ -502,19 +647,25 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       this.ganadorRetoVelocidad = null;
       this.tiempoDescansoReto = 0;
 
-      await this.esperar(Math.random() * 5000 + 3000);
+      const verificarVelocidad = setInterval(() => {
+        const ganador = this.participantes.find((p) => p.velocidadActual >= 30);
 
-      const ganador = this.gameService.simularRetoVelocidad30();
-      if (ganador) {
-        this.ganadorRetoVelocidad = ganador;
-        this.audioService.reproducirSonidoExito();
-        this.agregarNotificacionBono(
-          ganador.nombreParticipante,
-          '+1 punto por alcanzar 30 km/h',
-          ganador.colorBicicleta,
-          '🚀'
-        );
-      }
+        if (ganador && !this.ganadorRetoVelocidad) {
+          clearInterval(verificarVelocidad);
+          this.ganadorRetoVelocidad = ganador;
+          ganador.puntosCarrera += 1;
+          this.audioService.reproducirSonidoExito();
+          this.agregarNotificacionBono(
+            ganador.nombreParticipante,
+            '+1 punto por alcanzar 30 km/h',
+            ganador.colorBicicleta,
+            '🚀',
+          );
+        }
+      }, 200);
+
+      await this.esperar(10000);
+      clearInterval(verificarVelocidad);
 
       for (let i = 10; i >= 0; i--) {
         this.tiempoDescansoReto = i;
@@ -527,21 +678,9 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     });
   }
 
-  iniciarTemporizadorConSimulacion(segundos: number): void {
+  iniciarTemporizador(segundos: number): void {
     this.tiempoRestante = segundos;
     this.timerSubscription?.unsubscribe();
-
-    const nadieResponde = Math.random() < 0.15;
-
-    if (!nadieResponde) {
-      const tiempoRespuestaSimulado =
-        Math.floor(Math.random() * (segundos - 4)) + 2;
-      this.respuestaTimeout = setTimeout(() => {
-        if (this.mostrandoRespuestas) {
-          this.simularRespuesta();
-        }
-      }, tiempoRespuestaSimulado * 1000);
-    }
 
     this.timerSubscription = timer(0, 1000)
       .pipe(take(segundos + 1))
@@ -561,7 +700,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     if (!this.preguntaActualData) return;
 
     const participantesDisponibles = this.participantes.filter(
-      (p) => p.botonesActivos && !this.participantesQueRespondieron.has(p.id)
+      (p) => p.botonesActivos && !this.participantesQueRespondieron.has(p.id),
     );
 
     if (participantesDisponibles.length === 0) return;
@@ -577,11 +716,11 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     let respuestaSeleccionada;
     if (esCorrecta) {
       respuestaSeleccionada = this.preguntaActualData.respuestas.find(
-        (r: any) => r.es_correcta
+        (r: any) => r.es_correcta,
       );
     } else {
       const respuestasIncorrectas = this.preguntaActualData.respuestas.filter(
-        (r: any) => !r.es_correcta
+        (r: any) => !r.es_correcta,
       );
       respuestaSeleccionada =
         respuestasIncorrectas[
@@ -600,7 +739,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
   procesarRespuestaParticipante(resultado: RespuestaParticipante): void {
     if (this.respuestaTimeout) clearTimeout(this.respuestaTimeout);
 
-    const pregunta = this.preguntaActualData!;
     const tiempoUsado = 15 - this.tiempoRestante;
 
     this.participantesQueRespondieron.add(resultado.participante.id);
@@ -608,7 +746,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     this.gameService.procesarRespuesta(
       resultado.participante.id,
       resultado.esCorrecta,
-      tiempoUsado
+      tiempoUsado,
     );
 
     if (resultado.esCorrecta) {
@@ -617,7 +755,10 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       this.gameService.registrarEvento(
         'respuesta_correcta',
         `${resultado.participante.nombreParticipante} respondió correctamente (+2 pts)`,
-        { tiempoUsado, participante: resultado.participante.nombreParticipante }
+        {
+          tiempoUsado,
+          participante: resultado.participante.nombreParticipante,
+        },
       );
       this.mostrarCelebracion(resultado.participante, 2);
     } else {
@@ -625,21 +766,22 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       this.gameService.registrarEvento(
         'respuesta_incorrecta',
         `${resultado.participante.nombreParticipante} respondió incorrectamente`,
-        { tiempoUsado, participante: resultado.participante.nombreParticipante }
+        {
+          tiempoUsado,
+          participante: resultado.participante.nombreParticipante,
+        },
       );
 
       const participantesActivos = this.participantes.filter(
-        (p) => p.botonesActivos
+        (p) => p.botonesActivos,
       );
       const todosRespondieron = participantesActivos.every((p) =>
-        this.participantesQueRespondieron.has(p.id)
+        this.participantesQueRespondieron.has(p.id),
       );
 
       if (todosRespondieron) {
         this.timerSubscription?.unsubscribe();
         this.manejarTodosRespondieroMal();
-      } else {
-        this.programarSiguienteRespuestaSimulada();
       }
     }
   }
@@ -648,14 +790,14 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     this.mostrandoRespuestas = false;
     this.mostrandoRespuestaCorrecta = true;
     this.respuestaCorrecta = this.preguntaActualData?.respuestas.find(
-      (r) => r.es_correcta
+      (r) => r.es_correcta,
     );
 
     this.gameService.registrarEvento(
       'todos_fallaron',
       `Todos respondieron incorrectamente en pregunta ${
         this.preguntaActual + 1
-      }`
+      }`,
     );
 
     await this.esperar(3000);
@@ -680,14 +822,14 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
 
   async mostrarCelebracion(
     participante: ParticipanteJuego,
-    puntos: number
+    puntos: number,
   ): Promise<void> {
     this.mostrandoRespuestas = false;
     this.mostrandoCelebracion = true;
     this.participanteCelebracion = participante;
     this.puntosGanados = puntos;
     this.respuestaCorrecta = this.preguntaActualData?.respuestas.find(
-      (r) => r.es_correcta
+      (r) => r.es_correcta,
     );
 
     await this.esperar(3500);
@@ -698,7 +840,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
   }
 
   mostrarRespuestaIncorrectaParticipante(
-    participante: ParticipanteJuego
+    participante: ParticipanteJuego,
   ): void {
     this.participanteIncorrecto = participante;
     this.mostrandoRespuestaIncorrecta = true;
@@ -717,12 +859,12 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     this.mostrandoRespuestaCorrecta = true;
 
     this.respuestaCorrecta = this.preguntaActualData?.respuestas.find(
-      (r) => r.es_correcta
+      (r) => r.es_correcta,
     );
 
     this.gameService.registrarEvento(
       'tiempo_agotado',
-      `Tiempo agotado en pregunta ${this.preguntaActual + 1}`
+      `Tiempo agotado en pregunta ${this.preguntaActual + 1}`,
     );
 
     await this.esperar(3000);
@@ -751,19 +893,25 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       this.ganadorRetoVelocidad = null;
       this.tiempoDescansoReto = 0;
 
-      await this.esperar(Math.random() * 5000 + 3000);
+      const verificarVelocidad = setInterval(() => {
+        const ganador = this.participantes.find((p) => p.velocidadActual >= 30);
 
-      const ganador = this.gameService.simularRetoVelocidadFinal();
-      if (ganador) {
-        this.ganadorRetoVelocidad = ganador;
-        this.audioService.reproducirSonidoExito();
-        this.agregarNotificacionBono(
-          ganador.nombreParticipante,
-          '+2 puntos por alcanzar 30 km/h (Reto Final)',
-          ganador.colorBicicleta,
-          '🏆'
-        );
-      }
+        if (ganador && !this.ganadorRetoVelocidad) {
+          clearInterval(verificarVelocidad);
+          this.ganadorRetoVelocidad = ganador;
+          ganador.puntosCarrera += 2;
+          this.audioService.reproducirSonidoExito();
+          this.agregarNotificacionBono(
+            ganador.nombreParticipante,
+            '+2 puntos por alcanzar 30 km/h (Reto Final)',
+            ganador.colorBicicleta,
+            '🏆',
+          );
+        }
+      }, 200);
+
+      await this.esperar(10000);
+      clearInterval(verificarVelocidad);
 
       await this.esperar(3000);
 
@@ -806,25 +954,25 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       (a, b) =>
         b.puntosAcumulados +
         b.puntosCarrera -
-        (a.puntosAcumulados + a.puntosCarrera)
+        (a.puntosAcumulados + a.puntosCarrera),
     );
     return sorted;
   }
 
   get rankingCarrera(): ParticipanteJuego[] {
     return [...this.participantes].sort(
-      (a, b) => b.puntosCarrera - a.puntosCarrera
+      (a, b) => b.puntosCarrera - a.puntosCarrera,
     );
   }
 
   get estadisticasGenerales() {
     const correctas = this.participantes.reduce(
       (acc, p) => acc + p.respuestasCorrectas,
-      0
+      0,
     );
     const incorrectas = this.participantes.reduce(
       (acc, p) => acc + p.respuestasIncorrectas,
-      0
+      0,
     );
     const total = correctas + incorrectas;
     return {
@@ -840,7 +988,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
 
   calcularDistancia(p: ParticipanteJuego): number {
     return parseFloat(
-      ((p.velocidadPromedio * this.duracionCarrera) / 60).toFixed(2)
+      ((p.velocidadPromedio * this.duracionCarrera) / 60).toFixed(2),
     );
   }
 
@@ -883,20 +1031,21 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     texto: string,
     subtexto: string,
     color: string,
-    icono: string
+    icono: string,
   ): void {
     const notif = { texto, subtexto, color, icono, timestamp: Date.now() };
     this.notificacionesBonos.push(notif);
 
     setTimeout(() => {
       this.notificacionesBonos = this.notificacionesBonos.filter(
-        (n) => n.timestamp !== notif.timestamp
+        (n) => n.timestamp !== notif.timestamp,
       );
     }, 5000);
   }
 
   async finalizarTrivia(): Promise<void> {
-    this.gameService.detenerSimulacion();
+    this.ble.unsubscribe('bici1', 'vel');
+    this.ble.unsubscribe('bici1', 'btns');
 
     await this.mostrarBonosVelocidadFinal();
 
@@ -913,7 +1062,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
 
   calcularDuracion(): void {
     this.duracionCarrera = Math.floor(
-      (new Date().getTime() - this.fechaInicioCarrera.getTime()) / 60000
+      (new Date().getTime() - this.fechaInicioCarrera.getTime()) / 60000,
     );
   }
 
@@ -928,7 +1077,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
           velocidadMaxima: p.velocidadMaxima,
           posicionRanking: p.posicionRanking,
         })
-        .toPromise()
+        .toPromise(),
     );
 
     try {
@@ -938,9 +1087,12 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     }
   }
 
-  finalizarJuego(): void {
+  nuevaCarrera(): void {
     sessionStorage.removeItem('brainBikeEstado');
-    if (!confirm('¿Deseas finalizar el juego y la sesión?')) return;
+    if (!confirm('¿Deseas iniciar una nueva carrera?')) return;
+
+    this.ble.unsubscribe('bici1', 'vel');
+    this.ble.unsubscribe('bici1', 'btns');
 
     this.audioService.detenerTodo();
     this.timerSubscription?.unsubscribe();
@@ -949,7 +1101,37 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     const historial = this.gameService.construirHistorial(
       this.sesion.id,
       this.config?.id || 0,
-      this.config
+      this.config,
+    );
+
+    this.historialService.crearHistorial(historial).subscribe({
+      next: () => {
+        this.gameService.resetear();
+        this.brainBikeService.clearConfigActual();
+        this.router.navigate(['/brain-bike/parametros']);
+      },
+      error: (error) => {
+        console.error('Error al guardar historial:', error);
+        this.audioService.reproducirSonidoError();
+      },
+    });
+  }
+
+  finalizarJuego(): void {
+    sessionStorage.removeItem('brainBikeEstado');
+    if (!confirm('¿Deseas finalizar el juego y la sesión?')) return;
+
+    this.ble.unsubscribe('bici1', 'vel');
+    this.ble.unsubscribe('bici1', 'btns');
+
+    this.audioService.detenerTodo();
+    this.timerSubscription?.unsubscribe();
+    this.bonoColorInterval?.unsubscribe();
+
+    const historial = this.gameService.construirHistorial(
+      this.sesion.id,
+      this.config?.id || 0,
+      this.config,
     );
 
     this.audioService.reproducirSonidoExito();
@@ -973,39 +1155,29 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     });
   }
 
-  nuevaCarrera(): void {
-    sessionStorage.removeItem('brainBikeEstado');
-    if (!confirm('¿Deseas iniciar una nueva carrera?')) return;
+  async mostrarBonosVelocidadFinal(): Promise<void> {
+    const velocidadPromedioGeneral =
+      this.participantes.reduce((sum, p) => sum + p.velocidadPromedio, 0) /
+      this.participantes.length;
 
-    this.audioService.detenerTodo();
-    this.timerSubscription?.unsubscribe();
-    this.bonoColorInterval?.unsubscribe();
-
-    const historial = this.gameService.construirHistorial(
-      this.sesion.id,
-      this.config?.id || 0,
-      this.config
+    const bonosPromedio = this.participantes.filter(
+      (p) => p.velocidadPromedio >= velocidadPromedioGeneral,
     );
 
-    this.historialService.crearHistorial(historial).subscribe({
-      next: () => {
-        this.gameService.resetear();
-        this.brainBikeService.clearConfigActual();
-        this.router.navigate(['/brain-bike/parametros']);
-      },
-      error: (error) => {
-        console.error('Error al guardar historial:', error);
-        this.audioService.reproducirSonidoError();
-      },
-    });
-  }
-
-  async mostrarBonosVelocidadFinal(): Promise<void> {
-    const { bonosPromedio, masRapido } =
-      this.gameService.otorgarBonoVelocidadFinal();
+    const masRapido = this.participantes.reduce((max, p) =>
+      p.velocidadPromedio > max.velocidadPromedio ? p : max,
+    );
 
     if (bonosPromedio.length === 0 && !masRapido) {
       return;
+    }
+
+    bonosPromedio.forEach((p) => {
+      p.puntosCarrera += 1;
+    });
+
+    if (masRapido) {
+      masRapido.puntosCarrera += 2;
     }
 
     this.bonosVelocidadPromedio = bonosPromedio;
@@ -1017,7 +1189,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         p.nombreParticipante,
         '+1 punto por velocidad promedio (sesión)',
         p.colorBicicleta,
-        '🚴'
+        '🚴',
       );
     });
 
@@ -1027,7 +1199,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
           masRapido.nombreParticipante,
           '+2 puntos velocidad más alta (sesión)',
           masRapido.colorBicicleta,
-          '🏆'
+          '🏆',
         );
       }, 1000);
     }
@@ -1060,7 +1232,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     if (this.participantes.length === 0) return 0;
     const total = this.participantes.reduce(
       (acc, p) => acc + p.velocidadPromedio,
-      0
+      0,
     );
     return total / this.participantes.length;
   }
@@ -1073,7 +1245,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
   getParticipanteVelocidadMaxima(): ParticipanteJuego | null {
     if (this.participantes.length === 0) return null;
     return this.participantes.reduce((max, p) =>
-      p.velocidadMaxima > max.velocidadMaxima ? p : max
+      p.velocidadMaxima > max.velocidadMaxima ? p : max,
     );
   }
 
@@ -1083,7 +1255,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       this.estadisticasGenerales.totalIncorrectas;
     if (total === 0) return 0;
     return Math.round(
-      (this.estadisticasGenerales.totalCorrectas / total) * 100
+      (this.estadisticasGenerales.totalCorrectas / total) * 100,
     );
   }
 
@@ -1093,7 +1265,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       this.estadisticasGenerales.totalIncorrectas;
     if (total === 0) return 0;
     return Math.round(
-      (this.estadisticasGenerales.totalIncorrectas / total) * 100
+      (this.estadisticasGenerales.totalIncorrectas / total) * 100,
     );
   }
 }
