@@ -475,10 +475,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     participante: ParticipanteJuego,
     index: number,
   ): void {
-    console.log(
-      `Botón presionado - Participante: ${participante.nombreParticipante}, Index: ${index}, Sección: ${this.seccionActual}`,
-    );
-
     if (this.seccionActual === 'video' && this.mostrandoBonoColor) {
       if (this.participantesQueRespondieron.has(participante.id)) return;
 
@@ -487,10 +483,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       const colorIndex = index % 4;
       const colores = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
       const colorBoton = colores[colorIndex];
-
-      console.log(
-        `Bono Color - Color botón: ${colorBoton}, Color actual: ${this.colorBonoActual}`,
-      );
 
       if (colorBoton === this.colorBonoActual) {
         this.ganadorBonoColor = participante;
@@ -513,40 +505,22 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     }
 
     if (this.seccionActual === 'trivia' && this.mostrandoRespuestas) {
-      if (this.participantesQueRespondieron.has(participante.id)) {
-        console.log('Participante ya respondió');
-        return;
-      }
+      if (this.participantesQueRespondieron.has(participante.id)) return;
 
-      if (!participante.botonesActivos) {
-        console.log('Botones no activos por baja velocidad');
-        return;
-      }
+      if (!participante.botonesActivos) return;
 
       const pregunta = this.preguntaActualData;
-      if (!pregunta) {
-        console.log('No hay pregunta actual');
-        return;
-      }
+      if (!pregunta) return;
 
       const colorIndex = index % 4;
       const coloresRespuestas = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
       const colorBoton = coloresRespuestas[colorIndex];
 
-      console.log(`Trivia - Color botón: ${colorBoton}`);
-
       const respuestaSeleccionada = pregunta.respuestas.find(
         (r: any) => r.color_respuesta === colorBoton,
       );
 
-      if (!respuestaSeleccionada) {
-        console.log('No se encontró respuesta con ese color');
-        return;
-      }
-
-      console.log(
-        `Respuesta encontrada: ${respuestaSeleccionada.texto_respuesta}, Correcta: ${respuestaSeleccionada.es_correcta}`,
-      );
+      if (!respuestaSeleccionada) return;
 
       const esCorrecta = respuestaSeleccionada.es_correcta;
       const tiempoUsado = 15 - this.tiempoRestante;
