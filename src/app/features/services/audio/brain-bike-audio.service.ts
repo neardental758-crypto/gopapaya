@@ -17,8 +17,9 @@ export class BrainBikeAudioService {
 
   constructor(ttsService: TextToSpeechService) {
     if ('AudioContext' in window || 'webkitAudioContext' in window) {
-      this.audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      this.audioContext = new (
+        window.AudioContext || (window as any).webkitAudioContext
+      )();
     }
     this.ttsService = ttsService;
   }
@@ -61,19 +62,18 @@ export class BrainBikeAudioService {
       });
 
       if (!response.ok) {
-        const error = await response.json();
         throw new Error('Error API');
       }
 
       const data = await response.json();
 
       this.ttsService.registrarUso(caracteres).subscribe({
-        error: (err) => console.error('Error registrando uso:', err),
+        error: (err) => {},
       });
 
       return new Promise((resolve, reject) => {
         this.audioActual = new Audio(
-          `data:audio/mp3;base64,${data.audioContent}`
+          `data:audio/mp3;base64,${data.audioContent}`,
         );
 
         if (this.musicaFondo) this.bajarVolumenMusica();
@@ -116,7 +116,7 @@ export class BrainBikeAudioService {
         voices.find(
           (voice) =>
             voice.lang.includes('es') &&
-            (voice.name.includes('Google') || voice.name.includes('Microsoft'))
+            (voice.name.includes('Google') || voice.name.includes('Microsoft')),
         ) || voices.find((voice) => voice.lang.includes('es'));
 
       const utterance = new SpeechSynthesisUtterance(texto);
@@ -202,7 +202,7 @@ export class BrainBikeAudioService {
       if (this.musicaFondo && this.musicaFondo.volume > volumenBajo) {
         this.musicaFondo.volume = Math.max(
           this.musicaFondo.volume - 0.02,
-          volumenBajo
+          volumenBajo,
         );
       } else {
         clearInterval(fadeDown);
@@ -217,7 +217,7 @@ export class BrainBikeAudioService {
       if (this.musicaFondo && this.musicaFondo.volume < this.volumenMusica) {
         this.musicaFondo.volume = Math.min(
           this.musicaFondo.volume + 0.02,
-          this.volumenMusica
+          this.volumenMusica,
         );
       } else {
         clearInterval(fadeUp);
@@ -550,11 +550,11 @@ export class BrainBikeAudioService {
         gainNode.gain.setValueAtTime(0, now);
         gainNode.gain.linearRampToValueAtTime(
           this.volumenEfectos * 0.6,
-          now + 0.1
+          now + 0.1,
         );
         gainNode.gain.linearRampToValueAtTime(
           this.volumenEfectos * 0.4,
-          now + 0.5
+          now + 0.5,
         );
         gainNode.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
         oscillator.stop(now + 1.0);
@@ -619,7 +619,7 @@ export class BrainBikeAudioService {
     }
 
     this.musicaFondo = new Audio(
-      'https://www.bensound.com/bensound-music/bensound-actionable.mp3'
+      'https://www.bensound.com/bensound-music/bensound-actionable.mp3',
     );
     this.musicaFondo.loop = true;
     this.musicaFondo.volume = 0;
@@ -756,7 +756,7 @@ export class BrainBikeAudioService {
     const noiseBuffer = this.audioContext.createBuffer(
       1,
       this.audioContext.sampleRate * 0.3,
-      this.audioContext.sampleRate
+      this.audioContext.sampleRate,
     );
     const output = noiseBuffer.getChannelData(0);
 

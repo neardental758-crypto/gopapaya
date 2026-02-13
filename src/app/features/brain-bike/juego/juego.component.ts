@@ -412,8 +412,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         });
 
         this.ble.subscribe('bici1', 'btns', (btns) => {
-          console.log('📥 Botones recibidos:', btns);
-
           const grupos = btns.split(',');
 
           if (grupos.length !== 2) return;
@@ -448,10 +446,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     participante: ParticipanteJuego,
     index: number,
   ): void {
-    console.log(
-      `🎮 Botón presionado - ${participante.nombreParticipante}, Sección: ${this.seccionActual}, MostrandoRespuestas: ${this.mostrandoRespuestas}`,
-    );
-
     if (this.seccionActual === 'video' && this.mostrandoBonoColor) {
       if (this.participantesQueRespondieron.has(participante.id)) return;
 
@@ -562,10 +556,17 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       .getPreguntasContenido(this.config.contenido_id)
       .subscribe({
         next: (preguntas) => {
-          this.preguntas = preguntas.slice(
-            0,
-            this.config?.numeroPreguntas || 10,
-          );
+          const colores = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
+
+          this.preguntas = preguntas
+            .slice(0, this.config?.numeroPreguntas || 10)
+            .map((p) => ({
+              ...p,
+              respuestas: p.respuestas.map((r: any, index: number) => ({
+                ...r,
+                color_respuesta: colores[index % 4],
+              })),
+            }));
         },
         error: (error) => console.error('Error al cargar preguntas:', error),
       });
