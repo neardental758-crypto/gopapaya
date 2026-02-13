@@ -42,7 +42,6 @@ export class BleEsp32BrainBikeService {
     });
 
     this.devices[bike] = device;
-    console.log('📱 Dispositivo BLE encontrado:', device.name);
     return device;
   }
 
@@ -73,10 +72,7 @@ export class BleEsp32BrainBikeService {
         const ch = await service.getCharacteristic(uuid);
         chars[key] = ch;
       } catch (e) {
-        console.error(
-          `❌ [${bike}] NO se encontró characteristic ${key} (${uuid})`,
-          e,
-        );
+        console.error(`Error obteniendo ${key}:`, e);
       }
     }
 
@@ -102,8 +98,12 @@ export class BleEsp32BrainBikeService {
   ) {
     const ch = this.characteristics[bike][key];
     if (!ch) {
-      console.warn(`⚠️ [${bike}] Characteristic ${key} no encontrada`);
       return;
+    }
+
+    const existingHandler = this.subscriptionHandlers[bike][key];
+    if (existingHandler) {
+      ch.removeEventListener('characteristicvaluechanged', existingHandler);
     }
 
     await ch.startNotifications();
@@ -124,7 +124,6 @@ export class BleEsp32BrainBikeService {
     if (char && handler) {
       char.removeEventListener('characteristicvaluechanged', handler);
       delete this.subscriptionHandlers[key][characteristic];
-      console.log(`🔕 Desuscrito de ${key}:${characteristic}`);
     }
   }
 
@@ -162,28 +161,6 @@ export class BleEsp32BrainBikeService {
     return await this.readValue(bike, 'id');
   }
 
-  async subscribeSensores(
-    bike: BikeKey,
-    callback: (sensor1: number, sensor2: number, estadoID: number) => void,
-  ) {
-    const ch = this.characteristics[bike]['btns'];
-    if (!ch) {
-      console.warn(`⚠️ [${bike}] Characteristic btns no encontrada`);
-      return;
-    }
-
-    await ch.startNotifications();
-
-    const handler = (event: any) => {
-      const text = new TextDecoder().decode(event.target.value).trim();
-      const [s1, s2, estado] = text.split(',').map((v) => parseInt(v) || 0);
-      callback(s1, s2, estado);
-    };
-
-    this.subscriptionHandlers[bike]['btns'] = handler;
-    ch.addEventListener('characteristicvaluechanged', handler);
-  }
-
   async enviarComando(bike: BikeKey, comando: string): Promise<void> {
     const ch = this.characteristics[bike]['id'];
     if (!ch) {
@@ -193,6 +170,5 @@ export class BleEsp32BrainBikeService {
 
     const encoder = new TextEncoder();
     await ch.writeValue(encoder.encode(comando));
-    console.log(`📤 Comando enviado al ESP32: ${comando}`);
   }
 }

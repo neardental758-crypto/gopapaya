@@ -166,39 +166,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     this.cargarRankingGeneral();
   }
 
-  private procesarSensores(
-    sensor1: number,
-    sensor2: number,
-    estadoID: number,
-  ): void {
-    if (estadoID === 1 || estadoID === 2) {
-      this.sensorAnterior1 = sensor1;
-      this.sensorAnterior2 = sensor2;
-      return;
-    }
-
-    if (estadoID === 3) {
-      return;
-    }
-
-    if (sensor1 === 1 && this.sensorAnterior1 === 0) {
-      if (this.participantes[0]) {
-        const actual = this.participantes[0].distanciaRecorrida || 0;
-        this.participantes[0].distanciaRecorrida = actual + 100;
-      }
-    }
-
-    if (sensor2 === 1 && this.sensorAnterior2 === 0) {
-      if (this.participantes[1]) {
-        const actual = this.participantes[1].distanciaRecorrida || 0;
-        this.participantes[1].distanciaRecorrida = actual + 100;
-      }
-    }
-
-    this.sensorAnterior1 = sensor1;
-    this.sensorAnterior2 = sensor2;
-  }
-
   cargarRankingGeneral(): void {
     this.participanteService.getRankingSesion(this.sesion.id).subscribe({
       next: (data) => {
@@ -445,22 +412,26 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         });
 
         this.ble.subscribe('bici1', 'btns', (btns) => {
-          const valorLimpio = btns.replace(/^b/, '').trim();
+          const grupos = btns.split(',');
 
-          if (valorLimpio.length !== 4) return;
+          if (grupos.length !== 2) return;
+
+          const bici1Btns = grupos[0].trim();
+          const bici2Btns = grupos[1].trim();
+
+          if (bici1Btns.length !== 4 || bici2Btns.length !== 4) return;
+
+          const todosLosBotones = bici1Btns + bici2Btns;
 
           this.participantes.forEach((p, index) => {
-            const botonPresionado = valorLimpio[index] === '1';
+            if (index >= 8) return;
+
+            const botonPresionado = todosLosBotones[index] === '1';
 
             if (botonPresionado && p.botonesActivos) {
               this.manejarBotonPresionado(p, index);
             }
           });
-        });
-
-        this.ble.subscribeSensores('bici1', (sensor1, sensor2, estadoID) => {
-          this.estadoESP32 = estadoID;
-          this.procesarSensores(sensor1, sensor2, estadoID);
         });
       },
       error: (error) => {
