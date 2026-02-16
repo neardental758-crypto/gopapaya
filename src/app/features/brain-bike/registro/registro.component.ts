@@ -79,7 +79,7 @@ export class BrainBikeRegistroComponent implements OnInit {
     private participanteService: BrainBikeParticipanteService,
     private sesionService: SesionService,
     private router: Router,
-    public audioService: BrainBikeAudioService
+    public audioService: BrainBikeAudioService,
   ) {}
 
   ngOnInit(): void {
@@ -187,7 +187,7 @@ export class BrainBikeRegistroComponent implements OnInit {
 
   seleccionarColor(index: number, color: ColorBicicleta): void {
     const colorYaUsado = this.participantes.some(
-      (p, i) => i !== index && p.colorBicicleta === color.valor
+      (p, i) => i !== index && p.colorBicicleta === color.valor,
     );
 
     if (colorYaUsado) {
@@ -208,7 +208,21 @@ export class BrainBikeRegistroComponent implements OnInit {
   comenzarJuego(): void {
     if (!this.isFormValid()) {
       this.audioService.reproducirSonidoError();
-      this.errorMessage = 'Todos los participantes deben tener nombre';
+
+      const sinNombre = this.participantes.some(
+        (p) => p.nombreParticipante.trim() === '',
+      );
+      const sinSexo = this.participantes.some((p) => !p.sexo);
+
+      if (sinNombre && sinSexo) {
+        this.errorMessage = 'Todos los participantes deben tener nombre y sexo';
+      } else if (sinNombre) {
+        this.errorMessage = 'Todos los participantes deben tener nombre';
+      } else if (sinSexo) {
+        this.errorMessage =
+          'Todos los participantes deben tener sexo seleccionado';
+      }
+
       return;
     }
 
@@ -230,7 +244,7 @@ export class BrainBikeRegistroComponent implements OnInit {
 
   isColorDisponible(colorValor: string, indexActual: number): boolean {
     return !this.participantes.some(
-      (p, i) => i !== indexActual && p.colorBicicleta === colorValor
+      (p, i) => i !== indexActual && p.colorBicicleta === colorValor,
     );
   }
 
@@ -240,7 +254,11 @@ export class BrainBikeRegistroComponent implements OnInit {
   }
 
   isFormValid(): boolean {
-    return this.participantes.every((p) => p.nombreParticipante.trim() !== '');
+    return this.participantes.every(
+      (p) =>
+        p.nombreParticipante.trim() !== '' &&
+        (p.sexo === 'M' || p.sexo === 'F'),
+    );
   }
 
   crearParticipantes(): void {
@@ -263,6 +281,7 @@ export class BrainBikeRegistroComponent implements OnInit {
         return this.participanteService.update(participante.id, {
           nombreParticipante: participante.nombreParticipante.trim(),
           colorBicicleta: participante.colorBicicleta,
+          sexo: participante.sexo,
         });
       } else {
         return this.participanteService.create(participante);

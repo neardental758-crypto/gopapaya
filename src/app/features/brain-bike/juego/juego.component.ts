@@ -335,7 +335,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
   }
 
   mostrarBonoColor(): void {
-    const colores = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
+    const colores = ['#FFF700', '#00F0FF', '#FF003C', '#FFFFFF'];
     const colorAleatorio = colores[Math.floor(Math.random() * colores.length)];
 
     this.colorBonoActual = colorAleatorio;
@@ -380,8 +380,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         this.ble.unsubscribe('bici1', 'btns');
 
         this.ble.subscribe('bici1', 'vel', (v) => {
-          console.log('🚴 Velocidades recibidas:', v);
-
           const valorLimpio = v.replace(/^v/, '').trim();
           const velocidades = valorLimpio
             .split(',')
@@ -414,8 +412,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         });
 
         this.ble.subscribe('bici1', 'btns', (btns) => {
-          console.log('🎮 Botones recibidos:', btns);
-
           const grupos = btns.split(',');
 
           if (grupos.length !== 2) return;
@@ -424,15 +420,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
           const bici2Btns = grupos[1].trim();
 
           if (bici1Btns.length !== 4 || bici2Btns.length !== 4) return;
-
-          console.log(
-            '🔢 Bici1:',
-            bici1Btns,
-            'Bici2:',
-            bici2Btns,
-            'Total participantes:',
-            this.participantes.length,
-          );
 
           this.participantes.forEach((p, indexParticipante) => {
             let botonPresionado = false;
@@ -455,10 +442,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
                 }
               }
             }
-
-            console.log(
-              `👤 ${p.nombreParticipante} (Bici ${p.numeroBicicleta}): Presionado=${botonPresionado}, ColorIndex=${colorIndex}, Activo=${p.botonesActivos}`,
-            );
 
             if (botonPresionado && p.botonesActivos) {
               this.manejarBotonPresionado(p, colorIndex);
@@ -483,7 +466,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
 
       this.participantesQueRespondieron.add(participante.id);
 
-      const colores = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
+      const colores = ['#FFF700', '#00F0FF', '#FF003C', '#FFFFFF'];
       const colorBoton = colores[colorIndex];
 
       if (colorBoton === this.colorBonoActual) {
@@ -514,7 +497,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       const pregunta = this.preguntaActualData;
       if (!pregunta) return;
 
-      const coloresRespuestas = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
+      const coloresRespuestas = ['#FFF700', '#00F0FF', '#FF003C', '#FFFFFF'];
       const colorBoton = coloresRespuestas[colorIndex];
 
       const respuestaSeleccionada = pregunta.respuestas.find(
@@ -586,7 +569,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       .getPreguntasContenido(this.config.contenido_id)
       .subscribe({
         next: (preguntas) => {
-          const colores = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
+          const colores = ['#FFF700', '#00F0FF', '#FF003C', '#FFFFFF'];
 
           this.preguntas = preguntas
             .slice(0, this.config?.numeroPreguntas || 10)
