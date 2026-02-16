@@ -380,6 +380,8 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         this.ble.unsubscribe('bici1', 'btns');
 
         this.ble.subscribe('bici1', 'vel', (v) => {
+          console.log('🚴 Velocidades recibidas:', v);
+
           const valorLimpio = v.replace(/^v/, '').trim();
           const velocidades = valorLimpio
             .split(',')
@@ -412,6 +414,8 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         });
 
         this.ble.subscribe('bici1', 'btns', (btns) => {
+          console.log('🎮 Botones recibidos:', btns);
+
           const grupos = btns.split(',');
 
           if (grupos.length !== 2) return;
@@ -422,11 +426,21 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
           if (bici1Btns.length !== 4 || bici2Btns.length !== 4) return;
 
           const todosLosBotones = bici1Btns + bici2Btns;
+          console.log(
+            '🔢 Botones procesados:',
+            todosLosBotones,
+            'Total participantes:',
+            this.participantes.length,
+          );
 
           this.participantes.forEach((p, index) => {
             if (index >= 8) return;
 
             const botonPresionado = todosLosBotones[index] === '1';
+
+            console.log(
+              `👤 P${index}: ${p.nombreParticipante} - Botón[${index}]=${todosLosBotones[index]}, Presionado=${botonPresionado}, Activo=${p.botonesActivos}`,
+            );
 
             if (botonPresionado && p.botonesActivos) {
               this.manejarBotonPresionado(p, index);
