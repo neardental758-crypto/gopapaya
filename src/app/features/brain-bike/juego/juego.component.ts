@@ -425,25 +425,43 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
 
           if (bici1Btns.length !== 4 || bici2Btns.length !== 4) return;
 
-          const todosLosBotones = bici1Btns + bici2Btns;
           console.log(
-            '🔢 Botones procesados:',
-            todosLosBotones,
+            '🔢 Bici1:',
+            bici1Btns,
+            'Bici2:',
+            bici2Btns,
             'Total participantes:',
             this.participantes.length,
           );
 
-          this.participantes.forEach((p, index) => {
-            if (index >= 8) return;
+          this.participantes.forEach((p, indexParticipante) => {
+            let botonPresionado = false;
+            let colorIndex = -1;
 
-            const botonPresionado = todosLosBotones[index] === '1';
+            if (p.numeroBicicleta === 1) {
+              for (let i = 0; i < 4; i++) {
+                if (bici1Btns[i] === '1') {
+                  botonPresionado = true;
+                  colorIndex = i;
+                  break;
+                }
+              }
+            } else if (p.numeroBicicleta === 2) {
+              for (let i = 0; i < 4; i++) {
+                if (bici2Btns[i] === '1') {
+                  botonPresionado = true;
+                  colorIndex = i;
+                  break;
+                }
+              }
+            }
 
             console.log(
-              `👤 P${index}: ${p.nombreParticipante} - Botón[${index}]=${todosLosBotones[index]}, Presionado=${botonPresionado}, Activo=${p.botonesActivos}`,
+              `👤 ${p.nombreParticipante} (Bici ${p.numeroBicicleta}): Presionado=${botonPresionado}, ColorIndex=${colorIndex}, Activo=${p.botonesActivos}`,
             );
 
             if (botonPresionado && p.botonesActivos) {
-              this.manejarBotonPresionado(p, index);
+              this.manejarBotonPresionado(p, colorIndex);
             }
           });
         });
@@ -458,14 +476,13 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
 
   private manejarBotonPresionado(
     participante: ParticipanteJuego,
-    index: number,
+    colorIndex: number,
   ): void {
     if (this.seccionActual === 'video' && this.mostrandoBonoColor) {
       if (this.participantesQueRespondieron.has(participante.id)) return;
 
       this.participantesQueRespondieron.add(participante.id);
 
-      const colorIndex = index % 4;
       const colores = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
       const colorBoton = colores[colorIndex];
 
@@ -497,7 +514,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
       const pregunta = this.preguntaActualData;
       if (!pregunta) return;
 
-      const colorIndex = index % 4;
       const coloresRespuestas = ['#00F0FF', '#FFF700', '#FF003C', '#39FF14'];
       const colorBoton = coloresRespuestas[colorIndex];
 
