@@ -380,14 +380,18 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         this.ble.unsubscribe('bici1', 'btns');
 
         this.ble.subscribe('bici1', 'vel', (v) => {
+          console.log('🚴 Velocidades recibidas:', v);
+
           const valorLimpio = v.replace(/^v/, '').trim();
           const velocidades = valorLimpio
             .split(',')
             .map((val) => parseFloat(val) || 0);
 
-          this.participantes.forEach((p, index) => {
-            if (velocidades[index] !== undefined) {
-              const nuevaVelocidad = velocidades[index];
+          this.participantes.forEach((p) => {
+            const indexVelocidad = p.numeroBicicleta - 1;
+
+            if (velocidades[indexVelocidad] !== undefined) {
+              const nuevaVelocidad = velocidades[indexVelocidad];
               const lecturas = [
                 ...(p.lecturaVelocidades || []),
                 nuevaVelocidad,
