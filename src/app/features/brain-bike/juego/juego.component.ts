@@ -573,13 +573,25 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
 
           this.preguntas = preguntas
             .slice(0, this.config?.numeroPreguntas || 10)
-            .map((p) => ({
-              ...p,
-              respuestas: p.respuestas.map((r: any, index: number) => ({
-                ...r,
-                color_respuesta: colores[index % 4],
-              })),
-            }));
+            .map((p) => {
+              const respuestasOrdenadas = [...p.respuestas].sort(
+                (a: any, b: any) => {
+                  if (a.es_correcta) return -1;
+                  if (b.es_correcta) return 1;
+                  return 0;
+                },
+              );
+
+              return {
+                ...p,
+                respuestas: respuestasOrdenadas.map(
+                  (r: any, index: number) => ({
+                    ...r,
+                    color_respuesta: colores[index % 4],
+                  }),
+                ),
+              };
+            });
         },
         error: (error) => console.error('Error al cargar preguntas:', error),
       });
