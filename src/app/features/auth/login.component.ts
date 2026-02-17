@@ -56,7 +56,6 @@ export class LoginComponent implements OnInit {
           if (usuario.rol === 'viewer') {
             this.router.navigate(['/historial']);
           } else {
-            console.log('Redirigiendo a home...');
             this.router.navigate(['/home']);
           }
         },
