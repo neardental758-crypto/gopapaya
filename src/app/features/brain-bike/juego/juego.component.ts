@@ -380,8 +380,6 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         this.ble.unsubscribe('bici1', 'btns');
 
         this.ble.subscribe('bici1', 'vel', (v) => {
-          console.log('🚴 Velocidades recibidas:', v);
-
           const valorLimpio = v.replace(/^v/, '').trim();
           const velocidades = valorLimpio
             .split(',')

@@ -84,7 +84,7 @@ export class BrainBikeParametrosComponent implements OnInit {
           ? JSON.parse(sesion.parametros_juego)
           : sesion.parametros_juego;
 
-      if (parametros.tematica_id && parametros.contenido_id) {
+      if (parametros.tematica_id) {
         this.cargarParametrosPreconfigurados(parametros);
         return;
       }
@@ -104,17 +104,24 @@ export class BrainBikeParametrosComponent implements OnInit {
       next: (tematica) => {
         this.tematicaSeleccionada = tematica;
 
-        const contenido = tematica.contenidos?.find(
-          (c: any) => c._id === parametros.contenido_id,
-        );
+        const contenidos = Array.isArray(tematica.contenidos)
+          ? tematica.contenidos
+          : [];
 
-        if (contenido) {
-          this.contenidoSeleccionado = contenido;
-          this.paso = 3;
-          this.loading = false;
-        } else {
+        const contenido = this.isSuperAdmin()
+          ? contenidos[Math.floor(Math.random() * contenidos.length)]
+          : parametros.contenido_id
+            ? contenidos.find((c: any) => c._id === parametros.contenido_id)
+            : contenidos[Math.floor(Math.random() * contenidos.length)];
+
+        if (!contenido) {
           this.router.navigate(['/home']);
+          return;
         }
+
+        this.contenidoSeleccionado = contenido;
+        this.paso = 3;
+        this.loading = false;
       },
       error: () => {
         this.router.navigate(['/home']);
@@ -151,6 +158,16 @@ export class BrainBikeParametrosComponent implements OnInit {
     }
 
     this.tematicaSeleccionada = tematica;
+    if (this.isSuperAdmin()) {
+      const contenidos = Array.isArray(tematica.contenidos)
+        ? tematica.contenidos
+        : [];
+      this.contenidoSeleccionado =
+        contenidos[Math.floor(Math.random() * contenidos.length)] || null;
+      this.paso = 3;
+      return;
+    }
+
     this.contenidoSeleccionado = null;
     this.paso = 2;
   }
@@ -265,6 +282,29 @@ export class BrainBikeParametrosComponent implements OnInit {
     }
 
     const preset = this.velocidadPresets[this.velocidadPresetSeleccionado];
+
+    if (
+      this.isSuperAdmin() &&
+      this.tematicaSeleccionada &&
+      !this.contenidoSeleccionado
+    ) {
+      const contenidos = Array.isArray(this.tematicaSeleccionada.contenidos)
+        ? this.tematicaSeleccionada.contenidos
+        : [];
+      this.contenidoSeleccionado =
+        contenidos[Math.floor(Math.random() * contenidos.length)] || null;
+    }
+
+    if (!this.contenidoSeleccionado) {
+      this.errorMessage = 'No hay contenido seleccionado';
+      return;
+    }
+
+    console.log(
+      '[BrainBike] Contenido elegido:',
+      this.contenidoSeleccionado._id,
+      this.contenidoSeleccionado.nombre_contenido,
+    );
 
     const config: BrainBikeConfig = {
       idSesion: sesionData.id,

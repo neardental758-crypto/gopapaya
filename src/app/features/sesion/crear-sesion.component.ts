@@ -336,10 +336,6 @@ export class CrearSesionComponent implements OnInit {
         this.errorMensaje = 'Debe seleccionar una temática';
         return false;
       }
-      if (!this.parametrosBrainBike.contenido_id) {
-        this.errorMensaje = 'Debe seleccionar un contenido';
-        return false;
-      }
     }
 
     if (this.paso === 3 && this.juegoAsignado === 'bicilicuadora') {
