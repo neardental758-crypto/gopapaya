@@ -27,26 +27,51 @@
         <div class="w-full">
           <!-- Página 0: Video -->
           <div *ngIf="reglasActuales === 0" class="animate-fadeIn">
-            <div class="bg-dark-800 border-2 border-neon-blue rounded-card p-6 sm:p-8 shadow-neon-blue">
-              <div class="text-center mb-4">
-                <div class="text-5xl sm:text-6xl mb-3">📹</div>
-                <h3 class="text-xl sm:text-2xl font-display font-bold text-neon-blue mb-4">Video Tutorial</h3>
+            <div class="bg-dark-800 border-2 border-neon-blue rounded-card p-4 sm:p-6 shadow-neon-blue">
+              <div class="space-y-2 sm:space-y-3">
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 border border-dark-700 flex gap-3">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neon-blue/10 border border-neon-blue/30 flex items-center justify-center font-display font-bold text-neon-blue text-sm sm:text-base flex-shrink-0">1</div>
+                  <p class="text-sm sm:text-base font-body text-gray-300">
+                    Cada pregunta tiene una duración de 15 segundos, si pasado este tiempo no respondes se pasará a la siguiente pregunta.
+                  </p>
+                </div>
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 border border-dark-700 flex gap-3">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neon-blue/10 border border-neon-blue/30 flex items-center justify-center font-display font-bold text-neon-blue text-sm sm:text-base flex-shrink-0">2</div>
+                  <p class="text-sm sm:text-base font-body text-gray-300">
+                    Tienes solo una oportunidad de responder por pregunta.
+                  </p>
+                </div>
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 border border-dark-700 flex gap-3">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neon-blue/10 border border-neon-blue/30 flex items-center justify-center font-display font-bold text-neon-blue text-sm sm:text-base flex-shrink-0">3</div>
+                  <p class="text-sm sm:text-base font-body text-gray-300">
+                    Solo se otorga el punto al primer participante que presione el botón y la respuesta sea correcta.
+                  </p>
+                </div>
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 border border-dark-700 flex gap-3">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neon-blue/10 border border-neon-blue/30 flex items-center justify-center font-display font-bold text-neon-blue text-sm sm:text-base flex-shrink-0">4</div>
+                  <p class="text-sm sm:text-base font-body text-gray-300">
+                    Si nadie responde correctamente, se pasa a la siguiente pregunta.
+                  </p>
+                </div>
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 border border-dark-700 flex gap-3">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neon-blue/10 border border-neon-blue/30 flex items-center justify-center font-display font-bold text-neon-blue text-sm sm:text-base flex-shrink-0">5</div>
+                  <p class="text-sm sm:text-base font-body text-gray-300">
+                    Cualquier intento de sabotaje (no pedalear, presionar pulsadores de otro participante, etc.) resultará en descalificación inmediata.
+                  </p>
+                </div>
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 border border-dark-700 flex gap-3">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neon-blue/10 border border-neon-blue/30 flex items-center justify-center font-display font-bold text-neon-blue text-sm sm:text-base flex-shrink-0">6</div>
+                  <p class="text-sm sm:text-base font-body text-gray-300">
+                    No presionar pulsadores si no se es necesario es decir si no se está en alguna pregunta.
+                  </p>
+                </div>
+                <div class="bg-dark-900 rounded-card p-3 sm:p-4 border border-dark-700 flex gap-3">
+                  <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-neon-blue/10 border border-neon-blue/30 flex items-center justify-center font-display font-bold text-neon-blue text-sm sm:text-base flex-shrink-0">7</div>
+                  <p class="text-sm sm:text-base font-body text-gray-300">
+                    Los participantes deben seguir las instrucciones del administrador en todo momento.
+                  </p>
+                </div>
               </div>
-              <div class="aspect-video bg-dark-900 rounded-card overflow-hidden border-2 border-neon-blue shadow-neon-blue-lg mb-4">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                  title="Reglas del juego"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowfullscreen
-                  class="w-full h-full"
-                ></iframe>
-              </div>
-              <p class="text-sm sm:text-base font-body text-gray-400 text-center">
-                Observa el video para entender cómo funciona el juego
-              </p>
             </div>
           </div>
 
