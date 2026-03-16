@@ -69,6 +69,11 @@ export class SidebarComponent {
       icon: '📜',
       route: '/historial',
     },
+    {
+      label: 'Manual',
+      icon: '📘',
+      route: '/manual',
+    },
   ];
 
   constructor(private router: Router) {}

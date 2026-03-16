@@ -45,6 +45,7 @@ import { BiciPaseoRegistroComponent } from './features/bici-paseo/registro/bici-
 import { BiciPaseoJuegoComponent } from './features/bici-paseo/juego/bici-paseo-juego.component';
 import { DrBiciRegistroComponent } from './features/dr-bici/registro/dr-bici-registro.component';
 import { DrBiciJuegoComponent } from './features/dr-bici/juego/dr-bici-juego.component';
+import { ManualUsuarioComponent } from './features/manual/manual-usuario.component';
 
 export const routes: Routes = [
   {
@@ -134,6 +135,12 @@ export const routes: Routes = [
         component: CalendarioSesionesComponent,
         canActivate: [rolGuard],
         data: { roles: ['super_admin', 'admin', 'viewer'] },
+      },
+      {
+        path: 'manual',
+        component: ManualUsuarioComponent,
+        canActivate: [rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'historial',

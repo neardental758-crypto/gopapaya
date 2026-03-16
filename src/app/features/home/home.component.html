@@ -284,6 +284,15 @@
       <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-6">⚙️ Administración</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <button
+          (click)="irAManual()"
+          class="p-4 sm:p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group"
+        >
+          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📘</div>
+          <p class="text-white font-bold text-lg mb-1">Manual</p>
+          <p class="text-gray-400 text-sm">Guía de uso y accesos rápidos</p>
+        </button>
+
+        <button
           (click)="irAUsuarios()"
           class="p-4 sm:p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group"
         >

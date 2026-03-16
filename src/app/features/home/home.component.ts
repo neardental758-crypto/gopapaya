@@ -324,4 +324,8 @@ export class HomeComponent implements OnInit {
   irABicilicuadora(): void {
     this.router.navigate(['/bicilicuadora/bebidas']);
   }
+
+  irAManual(): void {
+    this.router.navigate(['/manual']);
+  }
 }

@@ -1,0 +1,187 @@
+<div class="min-h-screen bg-dark-950 p-4 sm:p-6">
+  <div class="max-w-7xl mx-auto space-y-6">
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8 shadow-neon-yellow">
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-4xl font-display font-bold text-white mb-2">
+            Manual de <span class="text-neon-yellow">Usuario</span>
+          </h1>
+          <p class="text-gray-400 text-sm sm:text-base">
+            Guía rápida de funcionalidades y accesos según tu rol.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+          <button
+            (click)="goTo('/home')"
+            class="px-4 py-2 bg-dark-800 text-gray-200 rounded-lg font-bold border border-dark-600 hover:bg-dark-700 transition-all text-sm"
+          >
+            🏠 Ir al Dashboard
+          </button>
+          <button
+            (click)="goTo('/calendario')"
+            class="px-4 py-2 bg-neon-blue text-white rounded-lg font-bold shadow-neon-blue hover:shadow-neon-blue-lg transition-all text-sm"
+          >
+            📅 Calendario
+          </button>
+          <button
+            (click)="goTo('/historial')"
+            class="px-4 py-2 bg-dark-700 text-gray-200 rounded-lg font-bold border border-dark-600 hover:bg-dark-600 transition-all text-sm"
+          >
+            📜 Historial
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-display font-bold text-white">
+            Perfil activo
+          </h2>
+          <p class="text-gray-400 text-sm">
+            {{ usuario?.nombre }} ·
+            <span class="text-neon-yellow" *ngIf="isSuperAdmin()">Super Admin</span>
+            <span class="text-neon-yellow" *ngIf="isAdmin()">Admin</span>
+          </p>
+        </div>
+
+        <div class="px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg">
+          <p class="text-gray-400 text-xs">Consejo</p>
+          <p class="text-gray-200 text-sm font-semibold">
+            Usa los botones de cada tarjeta para ir directo al módulo.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-dark-900 border border-dark-700 rounded-card overflow-hidden">
+      <div class="px-6 sm:px-8 py-6 border-b border-dark-700">
+        <h2 class="text-xl sm:text-2xl font-display font-bold text-white">Módulos del menú</h2>
+        <p class="text-gray-400 text-sm mt-1">
+          Abre cada módulo para ver qué hace y qué botones/acciones encontrarás dentro.
+        </p>
+      </div>
+
+      <div class="divide-y divide-dark-700">
+        <div *ngFor="let section of sections; let i = index" class="px-6 sm:px-8 py-4">
+          <div class="bg-dark-850 border border-dark-700 rounded-lg overflow-hidden">
+            <div class="bg-dark-800">
+              <div class="p-4 flex items-start justify-between gap-4">
+                <button
+                  (click)="toggleSection(i)"
+                  class="flex items-start gap-3 text-left flex-1"
+                >
+                  <div class="w-10 h-10 rounded-lg bg-dark-900 flex items-center justify-center flex-shrink-0 shadow-neon-yellow/20">
+                    <span class="text-xl">{{ section.icon }}</span>
+                  </div>
+
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <h3 class="text-white font-bold text-base sm:text-lg">
+                        {{ section.title }}
+                      </h3>
+                      <span
+                        *ngIf="section.badge"
+                        class="px-2 py-0.5 text-[10px] rounded-full bg-neon-yellow text-dark-950 font-bold"
+                      >
+                        {{ section.badge }}
+                      </span>
+                    </div>
+                    <p class="text-gray-400 text-sm mt-0.5">
+                      {{ section.subtitle }}
+                    </p>
+                  </div>
+                </button>
+
+                <div class="flex items-center gap-3 flex-shrink-0">
+                  <button
+                    (click)="goTo(section.route, section.disabled)"
+                    [disabled]="section.disabled"
+                    class="px-5 py-2.5 rounded-lg font-bold transition-all text-sm flex items-center gap-2"
+                    [ngClass]="section.disabled
+                      ? 'bg-dark-700 text-gray-300 cursor-not-allowed'
+                      : 'bg-neon-yellow text-dark-950 shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 border border-neon-yellow/60'"
+                  >
+                    <span>🚀</span>
+                    <span>Ir al módulo</span>
+                  </button>
+
+                  <button
+                    (click)="toggleSection(i)"
+                    class="w-10 h-10 bg-dark-900 border border-dark-600 rounded-lg flex items-center justify-center transition-all"
+                    [ngClass]="isSectionOpen(i)
+                      ? 'bg-neon-yellow/10 border-neon-yellow shadow-neon-yellow'
+                      : 'hover:border-neon-yellow'"
+                  >
+                    <span class="text-neon-yellow font-bold text-lg">{{ isSectionOpen(i) ? '−' : '+' }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="isSectionOpen(i)" class="p-4 bg-dark-850 animate-fadeIn">
+              <p class="text-gray-300 text-sm">
+                <span class="text-gray-400">📝 Descripción:</span> {{ section.description }}
+              </p>
+
+              <div class="mt-4 flex flex-col gap-4">
+                <div *ngIf="section.infoShown?.length" class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                  <p class="text-white font-bold text-sm mb-2">📌 Información mostrada</p>
+                  <ul class="text-gray-400 text-sm space-y-1">
+                    <li *ngFor="let x of section.infoShown">- {{ x }}</li>
+                  </ul>
+                </div>
+
+                <div *ngIf="section.functionalities?.length" class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                  <p class="text-white font-bold text-sm mb-2">🔎 Filtros y navegación</p>
+                  <ul class="text-gray-400 text-sm space-y-1">
+                    <li *ngFor="let x of section.functionalities">- {{ x }}</li>
+                  </ul>
+                </div>
+
+                <div *ngIf="section.actions?.length" class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                  <p class="text-white font-bold text-sm mb-2">🛠️ Botones y acciones</p>
+                  <div class="space-y-2">
+                    <div *ngFor="let a of section.actions" class="bg-dark-800 border border-dark-700 rounded-lg p-3">
+                      <p class="text-white font-semibold text-sm">{{ a.title }}</p>
+                      <p *ngIf="a.description" class="text-gray-400 text-sm mt-1">{{ a.description }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-gray-500 text-xs mt-4">Ruta: {{ section.route }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8">
+      <h3 class="text-lg font-display font-bold text-white mb-2">Atajos recomendados</h3>
+      <p class="text-gray-400 text-sm mb-4">
+        Accede rápido a lo más usado según tu perfil.
+      </p>
+
+      <div class="flex flex-wrap gap-3">
+        <button
+          (click)="goTo('/sesion/crear')"
+          *ngIf="isSuperAdmin()"
+          class="px-5 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg transition-all"
+        >
+          ➕ Crear sesión
+        </button>
+
+        <button
+          (click)="goTo('/admin/usuarios')"
+          *ngIf="isSuperAdmin()"
+          class="px-5 py-3 bg-dark-800 text-white rounded-lg font-bold border border-dark-600 hover:border-neon-yellow hover:shadow-neon-yellow transition-all"
+        >
+          👥 Usuarios
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

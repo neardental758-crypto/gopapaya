@@ -12,7 +12,10 @@ import { AuthService } from '../../../core/services/auth.service';
 export class AdminFloatingMenuComponent {
   isOpen = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   toggleMenu(): void {
     this.isOpen = !this.isOpen;
@@ -35,6 +38,11 @@ export class AdminFloatingMenuComponent {
   verHistorial(): void {
     this.closeMenu();
     this.router.navigate(['/historial']);
+  }
+
+  verManual(): void {
+    this.closeMenu();
+    this.router.navigate(['/manual']);
   }
 
   logout(): void {
