@@ -1,155 +1,127 @@
-<<<<<<< HEAD
-# SistemaActividades
+# Sistema de Actividades Papaya
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.18.
+Plataforma web para la gestión y ejecución de actividades físicas interactivas, diseñada para empresas y organizaciones que ofrecen experiencias de bienestar y entretenimiento activo.
 
-## Development server
+## Descripción General
 
-To start a local development server, run:
+El sistema permite crear, gestionar y ejecutar sesiones de actividades físicas interactivas que combinan tecnología, ejercicio y gamificación. Los administradores pueden programar sesiones para diferentes empresas, mientras que los participantes disfrutan de experiencias únicas como bicicletas interactivas, realidad virtual y juegos de competencia.
+
+## Funcionalidades Principales
+
+### 🎮 Actividades y Juegos
+- **Brain Bike**: Actividad cognitiva en bicicleta estática con desafíos mentales
+- **Biketona**: Competencias en pista digital y física (1 vs 1, campeonatos, equipos)
+- **Bicilicuadora**: Bicicleta que funciona como licuadora al pedalear
+- **Realidad Virtual**: Experiencias inmersivas de ejercicio
+- **Hit Fit**: Rutinas de entrenamiento interactivas
+- **Bici Paseo**: Recorridos virtuales guiados en bicicleta
+- **Dr. Bici**: Experiencias médicas de rehabilitación
+
+### 👥 Gestión de Usuarios
+- Autenticación por roles (super_admin, admin, viewer)
+- Gestión de empresas y sus usuarios asignados
+- Control de acceso por empresa y permisos
+
+### 📅 Administración de Sesiones
+- Creación y programación de sesiones por empresa
+- Calendario de actividades con visualización intuitiva
+- Historial completo de sesiones ejecutadas
+- Registro de participantes y métricas
+
+### 📊 Reportes y Seguimiento
+- Historial detallado de sesiones
+- Métricas de participantes por actividad
+- Evidencias fotográficas de sesiones
+- Exportación de datos en Excel
+
+## Tecnologías Principales
+
+- **Frontend**: Angular 19 con TypeScript
+- **Estilos**: Tailwind CSS para diseño moderno y responsive
+- **Estado**: Servicios de Angular con inyección de dependencias
+- **Comunicación**: HTTP Client para API REST
+- **Voz**: Google Cloud Text-to-Speech para accesibilidad
+- **Excel**: XLSX para exportación de datos
+
+## Requisitos Previos
+
+- Node.js 18+ 
+- Angular CLI 19+
+- NPM o Yarn
+- Acceso al backend API (configurado en environment.prod.ts)
+
+## Instalación
 
 ```bash
+# Clonar el repositorio
+git clone [URL-del-repositorio]
+cd gopapaya
+
+# Instalar dependencias
+npm install
+
+# Configurar variables de entorno
+# Editar src/environments/environment.prod.ts si es necesario
+```
+
+## Ejecución en Local
+
+```bash
+# Iniciar servidor de desarrollo
+npm start
+# o
 ng serve
+
+# La aplicación estará disponible en http://localhost:4200
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Configuración Importante
 
-## Code scaffolding
+- **API URL**: Configurada en `src/environments/environment.prod.ts`
+- **Idioma**: Español (es-ES) configurado por defecto
+- **Modo Desarrollo**: Cambiar `production: false` en environment para desarrollo local
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-=======
-# papaya-app-fronted
-
-
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+## Estructura General del Proyecto
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/yesidwork2804/papaya-app-fronted.git
-git branch -M main
-git push -uf origin main
+src/
+├── app/
+│   ├── core/           # Servicios e interfaces centrales
+│   ├── features/       # Módulos de funcionalidad (juegos, administración)
+│   ├── layouts/        # Componentes de layout
+│   ├── guards/         # Protección de rutas
+│   ├── interceptors/   # Interceptores HTTP
+│   └── shared/         # Componentes reutilizables
+├── assets/             # Imágenes y recursos estáticos
+└── environments/       # Configuración de entornos
 ```
 
-## Integrate with your tools
+## Puntos Importantes para Desarrolladores
 
-- [ ] [Set up project integrations](https://gitlab.com/yesidwork2804/papaya-app-fronted/-/settings/integrations)
+### Arquitectura
+- **Standalone Components**: Angular 19 con componentes independientes
+- **Lazy Loading**: Las rutas principales cargan bajo demanda
+- ** Guards**: Protección por roles y estado de sesión
+- **Interceptors**: Manejo centralizado de peticiones HTTP
 
-## Collaborate with your team
+### Flujo de Sesiones
+1. Crear sesión → Asignar empresa y actividad
+2. Configurar parámetros específicos del juego
+3. Registro de participantes
+4. Ejecución de la actividad
+5. Finalización y generación de reportes
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+### Consideraciones Técnicas
+- Las sesiones no se pueden editar 1 hora antes de inicio
+- Los usuarios 'viewer' solo ven historial, no administran
+- Cada actividad tiene su propio flujo de componentes
+- Conexión Bluetooth para dispositivos físicos (BLE ESP32)
 
-## Test and Deploy
+### Backend Integration
+- API REST en `https://backend-papaya.onrender.com/api`
+- Autenticación mediante token JWT
+- Endpoints específicos por módulo (sesiones, usuarios, empresas)
 
-Use the built-in continuous integration in GitLab.
+---
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
->>>>>>> origin/main
+**Nota**: Este es el frontend del sistema. Para funcionamiento completo requiere el backend API corriendo y configuración de base de datos.

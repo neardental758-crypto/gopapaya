@@ -158,7 +158,8 @@
             <p class="text-gray-400 text-sm">Mantén la velocidad mínima: <span class="text-neon-yellow font-bold">{{ config?.velocidadMinimaVideo }} km/h</span></p>
           </div>
          <div *ngIf="config?.urlVideo" class="aspect-video bg-dark-800 rounded-card overflow-hidden border-2 border-neon-blue shadow-neon-blue-lg">
-          <div id="youtube-player" class="w-full h-full"></div>
+          <div *ngIf="esVideoYouTube" id="youtube-player" class="w-full h-full"></div>
+          <video *ngIf="!esVideoYouTube" class="w-full h-full" [src]="videoUrl" autoplay controls playsinline (ended)="onVideoTerminado()"></video>
         </div>
         <div *ngIf="!config?.urlVideo" class="aspect-video bg-dark-800 rounded-card flex items-center justify-center border-2 border-dark-600">
           <div class="text-center">

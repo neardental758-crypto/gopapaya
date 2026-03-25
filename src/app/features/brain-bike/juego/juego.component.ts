@@ -44,6 +44,7 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
   seccionActual: 'video' | 'trivia' | 'podio' = 'video';
   preguntaActual = 0;
   videoUrl: SafeResourceUrl | null = null;
+  esVideoYouTube = false;
 
   mostrarMensaje = false;
   mensajeTexto = '';
@@ -234,6 +235,8 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
     if (this.config?.urlVideo) {
       const videoId = this.extractYouTubeId(this.config.urlVideo);
       if (videoId) {
+        this.esVideoYouTube = true;
+        this.videoUrl = null;
         this.gameService.registrarEvento(
           'video_iniciado',
           'Video educativo iniciado',
@@ -245,8 +248,29 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
           const elemento = document.getElementById('youtube-player');
           this.inicializarPlayer(videoId);
         }, 1000);
+      } else {
+        this.esVideoYouTube = false;
+
+        if (this.player) {
+          this.player.destroy();
+          this.player = null;
+          this.playerReady = false;
+        }
+
+        this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+          this.config.urlVideo,
+        );
+
+        this.gameService.registrarEvento(
+          'video_iniciado',
+          'Video educativo iniciado',
+        );
+
+        this.iniciarBonosColorVideo();
       }
     } else {
+      this.esVideoYouTube = false;
+      this.videoUrl = null;
       console.log('No hay config.urlVideo');
     }
   }

@@ -1,0 +1,27 @@
+# Configuración para Hostinger - Angular SPA
+# Redirigir todas las rutas a index.html para soporte de Angular Router
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Si la solicitud es para un archivo existente, servirlo directamente
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Para todas las demás solicitudes, redirigir a index.html
+    RewriteRule ^(.*)$ index.html [L]
+</IfModule>
+
+# Configuración de seguridad y caché
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options nosniff
+    Header set X-Frame-Options DENY
+    Header set X-XSS-Protection "1; mode=block"
+    
+    # Caché para assets estáticos
+    <FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$">
+        Header set Cache-Control "max-age=31536000, public"
+    </FilesMatch>
+</IfModule>
