@@ -1,6 +1,6 @@
 # Sistema de Actividades Papaya
 
-Plataforma web para la gestión y ejecución de actividades físicas interactivas, diseñada para empresas y organizaciones que ofrecen experiencias de bienestar y entretenimiento activo.
+Plataforma web para la gestión y ejecución de actividades físicas interactivas, diseñada para empresas y organizaciones que  ofrecen experiencias de bienestar y entretenimiento activo.
 
 ## Descripción General
 
@@ -45,7 +45,7 @@ El sistema permite crear, gestionar y ejecutar sesiones de actividades físicas 
 
 ## Requisitos Previos
 
-- Node.js 18+ 
+- Node.js 18+
 - Angular CLI 19+
 - NPM o Yarn
 - Acceso al backend API (configurado en environment.prod.ts)
