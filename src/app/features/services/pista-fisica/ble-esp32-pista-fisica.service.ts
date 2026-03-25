@@ -151,9 +151,6 @@ export class BleEsp32PistaFisicaService {
     });
   }
 
-  // ------------------------
-  //     DISCONNECT ONE
-  // ------------------------
   disconnect(bike: BikeKey) {
     const device = this.devices[bike];
     if (device?.gatt?.connected) {
