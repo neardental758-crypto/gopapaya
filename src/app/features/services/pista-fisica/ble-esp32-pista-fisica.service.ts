@@ -137,6 +137,7 @@ export class BleEsp32PistaFisicaService {
     }
   }
 
+  // RAW para botones si lo necesitas
   async subscribeRaw(
     bike: BikeKey,
     key: string,
