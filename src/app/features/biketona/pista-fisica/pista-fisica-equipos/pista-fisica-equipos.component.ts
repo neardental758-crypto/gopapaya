@@ -40,7 +40,7 @@ interface ConfiguracionCarrera {
 }
 
 interface EquipoCampeonato {
-  id: number;
+  id: number; // 1, 2
   nombre: string;
   color: string;
   llavesGanadas: number;
