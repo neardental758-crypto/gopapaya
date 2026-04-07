@@ -111,6 +111,10 @@ export class EvidenciasModalComponent implements OnInit {
     });
   }
 
+  onEvidenciaImgError(url?: string | null): void {
+    console.log('EVIDENCIA_IMG_ERROR:', url || '(sin url)');
+  }
+
   agruparEvidencias(): void {
     const grupos = new Map<string, Evidencia[]>();
 

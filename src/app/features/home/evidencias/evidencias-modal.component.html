@@ -266,7 +266,7 @@
               </div>
 
               <div *ngIf="evidencia.tipo === 'foto' && evidencia.url_archivo">
-                <img [src]="evidencia.url_archivo" class="w-full h-48 object-cover rounded-lg">
+                <img [src]="evidencia.url_archivo" (error)="onEvidenciaImgError(evidencia.url_archivo)" class="w-full h-48 object-cover rounded-lg">
               </div>
             </div>
           </div>
