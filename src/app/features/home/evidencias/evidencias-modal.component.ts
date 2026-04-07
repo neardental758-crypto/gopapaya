@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SesionService, Evidencia } from '../../services/sesion.service';
+import { environment } from '../../../../environments/environment';
 
 interface EvidenciaAgrupada {
   seccion: string;
@@ -102,6 +103,22 @@ export class EvidenciasModalComponent implements OnInit {
     this.sesionService.getEvidencias(this.sesionId).subscribe({
       next: (evidencias) => {
         this.evidencias = evidencias;
+
+        try {
+          const fotos = (evidencias || [])
+            .filter((e) => e?.tipo === 'foto' && !!e?.url_archivo)
+            .map((e) => e.url_archivo);
+          console.log('EVIDENCIAS_FETCH_OK:', {
+            apiUrl: environment.apiUrl,
+            sesionId: this.sesionId,
+            total: (evidencias || []).length,
+            fotos: fotos.slice(0, 10),
+            fotosTotal: fotos.length,
+          });
+        } catch (e) {
+          console.log('EVIDENCIAS_FETCH_LOG_ERROR');
+        }
+
         this.agruparEvidencias();
         this.cargando = false;
       },
@@ -113,6 +130,10 @@ export class EvidenciasModalComponent implements OnInit {
 
   onEvidenciaImgError(url?: string | null): void {
     console.log('EVIDENCIA_IMG_ERROR:', url || '(sin url)');
+  }
+
+  onEvidenciaImgLoad(url?: string | null): void {
+    console.log('EVIDENCIA_IMG_LOAD:', url || '(sin url)');
   }
 
   agruparEvidencias(): void {
