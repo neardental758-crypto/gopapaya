@@ -227,7 +227,7 @@ export class SetupComponent implements OnInit {
 
   ajustarVueltas(valor: number): void {
     const min = 1;
-    const max = 20;
+    const max = 100;
     this.configuracion.numeroVueltas = Math.max(min, Math.min(max, valor));
   }
 
