@@ -39,7 +39,7 @@ export class SetupComponent implements OnInit {
     private router: Router,
     private biketonaService: BiketonaService,
     public audioService: BrainBikeAudioService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.audioService.iniciarMusicaFondo('parametros');
@@ -227,7 +227,7 @@ export class SetupComponent implements OnInit {
 
   ajustarVueltas(valor: number): void {
     const min = 1;
-    const max = 100;
+    const max = 20;
     this.configuracion.numeroVueltas = Math.max(min, Math.min(max, valor));
   }
 
@@ -242,7 +242,7 @@ export class SetupComponent implements OnInit {
     if (!this.requiereTurnos()) return 1;
     return Math.ceil(
       this.configuracion.numeroParticipantes /
-        this.configuracion.numeroBicicletas
+      this.configuracion.numeroBicicletas
     );
   }
 
@@ -384,7 +384,7 @@ export class SetupComponent implements OnInit {
       this.configuracion.tipoCompetencia === '1v1'
         ? '1vs1'
         : (this.configuracion
-            .tipoCompetencia as BiketonaCreatePayload['tipoCompetencia']);
+          .tipoCompetencia as BiketonaCreatePayload['tipoCompetencia']);
 
     const nuevoId = crypto.randomUUID();
 
