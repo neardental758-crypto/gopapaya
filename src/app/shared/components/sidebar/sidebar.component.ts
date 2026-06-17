@@ -46,6 +46,14 @@ export class SidebarComponent {
       ],
     },
     {
+      label: 'Biketona',
+      icon: '🚴',
+      expanded: false,
+      subItems: [
+        { label: 'Configurar / Setup', icon: '⚙️', route: '/biketona/splash' },
+      ],
+    },
+    {
       label: 'Administración',
       icon: '⚙️',
       expanded: false,

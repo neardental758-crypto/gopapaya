@@ -243,6 +243,8 @@ export class HomeComponent implements OnInit {
       this.router.navigate(['/bici-paseo/registro']);
     } else if (sesion.juego_asignado === 'dr-bici') {
       this.router.navigate(['/dr-bici/registro']);
+    } else if (sesion.juego_asignado === 'biketona') {
+      this.router.navigate(['/biketona/splash']);
     } else {
       this.router.navigate(['/sesion/seleccionar-juego', sesion.id]);
     }
@@ -323,6 +325,10 @@ export class HomeComponent implements OnInit {
   }
   irABicilicuadora(): void {
     this.router.navigate(['/bicilicuadora/bebidas']);
+  }
+
+  irABiketona(): void {
+    this.router.navigate(['/biketona/splash']);
   }
 
   irAManual(): void {
