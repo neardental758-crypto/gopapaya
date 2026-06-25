@@ -438,34 +438,23 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         });
 
         this.ble.subscribe('bici1', 'btns', (btns) => {
-          const grupos = btns.split(',');
+          const grupos = btns.split(',').map((g) => g.trim());
 
-          if (grupos.length !== 2) return;
+          this.participantes.forEach((p) => {
+            const indexBici = p.numeroBicicleta - 1;
+            if (indexBici < 0 || indexBici >= grupos.length) return;
 
-          const bici1Btns = grupos[0].trim();
-          const bici2Btns = grupos[1].trim();
+            const biciBtns = grupos[indexBici];
+            if (biciBtns.length !== 4) return;
 
-          if (bici1Btns.length !== 4 || bici2Btns.length !== 4) return;
-
-          this.participantes.forEach((p, indexParticipante) => {
             let botonPresionado = false;
             let colorIndex = -1;
 
-            if (p.numeroBicicleta === 1) {
-              for (let i = 0; i < 4; i++) {
-                if (bici1Btns[i] === '1') {
-                  botonPresionado = true;
-                  colorIndex = i;
-                  break;
-                }
-              }
-            } else if (p.numeroBicicleta === 2) {
-              for (let i = 0; i < 4; i++) {
-                if (bici2Btns[i] === '1') {
-                  botonPresionado = true;
-                  colorIndex = i;
-                  break;
-                }
+            for (let i = 0; i < 4; i++) {
+              if (biciBtns[i] === '1') {
+                botonPresionado = true;
+                colorIndex = i;
+                break;
               }
             }
 
