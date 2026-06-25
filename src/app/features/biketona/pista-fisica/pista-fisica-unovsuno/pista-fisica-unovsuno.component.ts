@@ -131,8 +131,7 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   estadoESP32: number = 0;
   mostrarModalCalibracion = false;
 
-  private sensorAnterior1 = 0;
-  private sensorAnterior2 = 0;
+  private sensoresAnteriores: number[] = [];
 
   fondosCarrera = [
     'assets/images/carro_movimiento_blanco.mp4',
@@ -599,8 +598,7 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
       j.posicion = idx + 1;
     });
 
-    this.sensorAnterior1 = 0;
-    this.sensorAnterior2 = 0;
+    this.sensoresAnteriores = [];
 
     llave.estado = 'en_curso';
     this.paso = 3;
@@ -673,14 +671,17 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
         .catch(() => {});
 
       await this.ble.subscribe(key, 'vel', (v) => {
-        const [vel1, vel2] = v.split(',').map((val) => parseFloat(val) || 0);
-        if (this.jugadores[0]) this.jugadores[0].velocidad = vel1;
-        if (this.jugadores[1]) this.jugadores[1].velocidad = vel2;
+        const vels = v.split(',').map((val) => parseFloat(val) || 0);
+        vels.forEach((vel, idx) => {
+          if (this.jugadores[idx]) {
+            this.jugadores[idx].velocidad = vel;
+          }
+        });
       });
 
-      await this.ble.subscribeSensores(key, (sensor1, sensor2, estadoID) => {
+      await this.ble.subscribeSensores(key, (sensores, estadoID) => {
         this.estadoESP32 = estadoID;
-        this.procesarSensores(sensor1, sensor2, estadoID);
+        this.procesarSensores(sensores, estadoID);
       });
 
       const bici2UI = this.getBiciUI('bici2');
@@ -695,14 +696,12 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
   }
 
   private procesarSensores(
-    sensor1: number,
-    sensor2: number,
+    sensores: number[],
     estadoID: number,
   ): void {
     if (estadoID === 1 || estadoID === 2) {
       this.mostrarModalCalibracion = true;
-      this.sensorAnterior1 = sensor1;
-      this.sensorAnterior2 = sensor2;
+      this.sensoresAnteriores = [...sensores];
       return;
     }
 
@@ -716,31 +715,24 @@ export class PistaFisicaUnovsunoComponent implements OnInit, OnDestroy {
     }
 
     if (!this.carreraIniciada || this.carreraPausada) {
-      this.sensorAnterior1 = sensor1;
-      this.sensorAnterior2 = sensor2;
+      this.sensoresAnteriores = [...sensores];
       return;
     }
 
     const distanciaPorVuelta = 100;
 
-    if (sensor1 === 1 && this.sensorAnterior1 === 0) {
-      if (this.jugadores[0]) {
-        this.jugadores[0].vueltaActual++;
-        this.jugadores[0].distanciaRecorrida += distanciaPorVuelta;
-        this.jugadores[0].distanciaReal += distanciaPorVuelta;
+    sensores.forEach((val, idx) => {
+      const valAnterior = this.sensoresAnteriores[idx] || 0;
+      if (val === 1 && valAnterior === 0) {
+        if (this.jugadores[idx]) {
+          this.jugadores[idx].vueltaActual++;
+          this.jugadores[idx].distanciaRecorrida += distanciaPorVuelta;
+          this.jugadores[idx].distanciaReal += distanciaPorVuelta;
+        }
       }
-    }
+    });
 
-    if (sensor2 === 1 && this.sensorAnterior2 === 0) {
-      if (this.jugadores[1]) {
-        this.jugadores[1].vueltaActual++;
-        this.jugadores[1].distanciaRecorrida += distanciaPorVuelta;
-        this.jugadores[1].distanciaReal += distanciaPorVuelta;
-      }
-    }
-
-    this.sensorAnterior1 = sensor1;
-    this.sensorAnterior2 = sensor2;
+    this.sensoresAnteriores = [...sensores];
 
     this.actualizarPosiciones();
   }

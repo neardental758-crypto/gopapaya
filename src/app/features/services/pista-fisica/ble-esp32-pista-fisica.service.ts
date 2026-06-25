@@ -183,7 +183,7 @@ export class BleEsp32PistaFisicaService {
 
   async subscribeSensores(
     bike: BikeKey,
-    callback: (sensor1: number, sensor2: number, estadoID: number) => void,
+    callback: (sensores: number[], estadoID: number) => void,
   ) {
     const ch = this.characteristics[bike]['btns'];
     if (!ch) {
@@ -195,8 +195,10 @@ export class BleEsp32PistaFisicaService {
 
     const handler = (event: any) => {
       const text = new TextDecoder().decode(event.target.value).trim();
-      const [s1, s2, estado] = text.split(',').map((v) => parseInt(v) || 0);
-      callback(s1, s2, estado);
+      const parts = text.split(',').map((v) => parseInt(v) || 0);
+      const estado = parts[parts.length - 1];
+      const sensores = parts.slice(0, -1);
+      callback(sensores, estado);
     };
 
     this.subscriptionHandlers[bike]['btns'] = handler;

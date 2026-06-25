@@ -369,9 +369,12 @@ export class PistaDigitalCampeonatoComponent implements OnInit, OnDestroy {
         .catch(() => {});
 
       await this.ble.subscribe(key, 'vel', (v) => {
-        const [vel1, vel2] = v.split(',').map((val) => parseFloat(val) || 0);
-        if (this.jugadores[0]) this.jugadores[0].velocidad = vel1;
-        if (this.jugadores[1]) this.jugadores[1].velocidad = vel2;
+        const vels = v.split(',').map((val) => parseFloat(val) || 0);
+        vels.forEach((vel, idx) => {
+          if (this.jugadores[idx]) {
+            this.jugadores[idx].velocidad = vel;
+          }
+        });
       });
 
       const bici2UI = this.getBiciUI('bici2');

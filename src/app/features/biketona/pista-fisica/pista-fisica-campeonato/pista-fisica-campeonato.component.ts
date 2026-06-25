@@ -137,8 +137,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
   cuentaRegresivaIniciada = false;
   estadoESP32: number = 0;
   mostrarModalCalibracion = false;
-  sensorAnterior1 = 0;
-  sensorAnterior2 = 0;
+  sensoresAnteriores: number[] = [];
 
   participantesRegistrados: any[] = [];
   participantesRecientes: string[] = [];
@@ -384,14 +383,17 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
         .catch(() => {});
 
       await this.ble.subscribe(key, 'vel', (v) => {
-        const [vel1, vel2] = v.split(',').map((val) => parseFloat(val) || 0);
-        if (this.jugadores[0]) this.jugadores[0].velocidad = vel1;
-        if (this.jugadores[1]) this.jugadores[1].velocidad = vel2;
+        const vels = v.split(',').map((val) => parseFloat(val) || 0);
+        vels.forEach((vel, idx) => {
+          if (this.jugadores[idx]) {
+            this.jugadores[idx].velocidad = vel;
+          }
+        });
       });
 
-      await this.ble.subscribeSensores(key, (sensor1, sensor2, estadoID) => {
+      await this.ble.subscribeSensores(key, (sensores, estadoID) => {
         this.estadoESP32 = estadoID;
-        this.procesarSensores(sensor1, sensor2, estadoID);
+        this.procesarSensores(sensores, estadoID);
       });
 
       const bici2UI = this.getBiciUI('bici2');
@@ -406,14 +408,12 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
   }
 
   private procesarSensores(
-    sensor1: number,
-    sensor2: number,
+    sensores: number[],
     estadoID: number,
   ): void {
     if (estadoID === 1 || estadoID === 2) {
       this.mostrarModalCalibracion = true;
-      this.sensorAnterior1 = sensor1;
-      this.sensorAnterior2 = sensor2;
+      this.sensoresAnteriores = [...sensores];
       return;
     }
 
@@ -427,31 +427,24 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     }
 
     if (!this.carreraIniciada || this.carreraPausada) {
-      this.sensorAnterior1 = sensor1;
-      this.sensorAnterior2 = sensor2;
+      this.sensoresAnteriores = [...sensores];
       return;
     }
 
     const distanciaPorVuelta = 100;
 
-    if (sensor1 === 1 && this.sensorAnterior1 === 0) {
-      if (this.jugadores[0]) {
-        this.jugadores[0].vueltaActual++;
-        this.jugadores[0].distanciaRecorrida += distanciaPorVuelta;
-        this.jugadores[0].distanciaReal += distanciaPorVuelta;
+    sensores.forEach((val, idx) => {
+      const valAnterior = this.sensoresAnteriores[idx] || 0;
+      if (val === 1 && valAnterior === 0) {
+        if (this.jugadores[idx]) {
+          this.jugadores[idx].vueltaActual++;
+          this.jugadores[idx].distanciaRecorrida += distanciaPorVuelta;
+          this.jugadores[idx].distanciaReal += distanciaPorVuelta;
+        }
       }
-    }
+    });
 
-    if (sensor2 === 1 && this.sensorAnterior2 === 0) {
-      if (this.jugadores[1]) {
-        this.jugadores[1].vueltaActual++;
-        this.jugadores[1].distanciaRecorrida += distanciaPorVuelta;
-        this.jugadores[1].distanciaReal += distanciaPorVuelta;
-      }
-    }
-
-    this.sensorAnterior1 = sensor1;
-    this.sensorAnterior2 = sensor2;
+    this.sensoresAnteriores = [...sensores];
 
     this.actualizarPosiciones();
   }
@@ -525,8 +518,7 @@ export class PistaFisicaCampeonatoComponent implements OnInit, OnDestroy {
     this.carreraIniciada = false;
     this.cuentaRegresivaIniciada = false;
     this.estadoESP32 = 0;
-    this.sensorAnterior1 = 0;
-    this.sensorAnterior2 = 0;
+    this.sensoresAnteriores = [];
 
     this.jugadores.forEach((j, idx) => {
       j.velocidad = 0;

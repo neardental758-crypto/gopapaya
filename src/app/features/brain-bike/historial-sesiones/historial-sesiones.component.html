@@ -422,8 +422,8 @@
 
   <div class="p-4 space-y-3">
     <p class="text-sm text-gray-400 font-bold mb-2">
-      {{ grupo.carreras[0]?.juego_jugado === 'VR' || grupo.carreras[0]?.juego_jugado === 'Hit-Fit' || grupo.carreras[0]?.juego_jugado === 'Bicilicuadora' ? '🎮' : '🏁' }}
-      {{ getNombreTipoActividad(grupo.carreras[0]?.juego_jugado || '') }} de esta sesión:
+      {{ getJuegoGrupo(grupo) === 'VR' || getJuegoGrupo(grupo) === 'Hit-Fit' || getJuegoGrupo(grupo) === 'Bicilicuadora' ? '🎮' : '🏁' }}
+      {{ getNombreTipoActividad(getJuegoGrupo(grupo)) }} de esta sesión:
     </p>
 
     <div *ngIf="isCargandoCarreras(grupo.sesion_id)" class="text-center py-8">
@@ -469,7 +469,7 @@
 
         <span class="text-sm text-neon-yellow/70">
           {{ getPaginacionCarreras(grupo.sesion_id).paginaActual }} / {{ getPaginacionCarreras(grupo.sesion_id).totalPaginas }}
-          <span class="text-gray-500">({{ getPaginacionCarreras(grupo.sesion_id).totalCarreras }} {{ getNombreTipoActividad(grupo.carreras[0]?.juego_jugado || '').toLowerCase() }})</span>
+          <span class="text-gray-500">({{ getPaginacionCarreras(grupo.sesion_id).totalCarreras }} {{ getNombreTipoActividad(getJuegoGrupo(grupo)).toLowerCase() }})</span>
         </span>
         <button (click)="cambiarPaginaCarreras(grupo.sesion_id, getPaginacionCarreras(grupo.sesion_id).paginaActual + 1); $event.stopPropagation()"
                 [disabled]="getPaginacionCarreras(grupo.sesion_id).paginaActual === getPaginacionCarreras(grupo.sesion_id).totalPaginas"
