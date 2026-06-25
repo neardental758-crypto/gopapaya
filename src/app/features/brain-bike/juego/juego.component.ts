@@ -438,14 +438,22 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
         });
 
         this.ble.subscribe('bici1', 'btns', (btns) => {
+          console.log('[BrainBike BLE BTNS] Raw string received:', btns);
           const grupos = btns.split(',').map((g) => g.trim());
+          console.log('[BrainBike BLE BTNS] Parsed groups:', grupos);
 
           this.participantes.forEach((p) => {
             const indexBici = p.numeroBicicleta - 1;
-            if (indexBici < 0 || indexBici >= grupos.length) return;
+            if (indexBici < 0 || indexBici >= grupos.length) {
+              console.warn(`[BrainBike BLE BTNS] Bike index ${indexBici} out of bounds for groups (len: ${grupos.length}) for participant:`, p.nombreParticipante);
+              return;
+            }
 
             const biciBtns = grupos[indexBici];
-            if (biciBtns.length !== 4) return;
+            if (biciBtns.length !== 4) {
+              console.warn(`[BrainBike BLE BTNS] Bike group "${biciBtns}" has invalid length (expected 4) for participant:`, p.nombreParticipante);
+              return;
+            }
 
             let botonPresionado = false;
             let colorIndex = -1;
@@ -458,8 +466,13 @@ export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
               }
             }
 
-            if (botonPresionado && p.botonesActivos) {
-              this.manejarBotonPresionado(p, colorIndex);
+            if (botonPresionado) {
+              console.log(`[BrainBike BLE BTNS] Button pressed on bike ${p.numeroBicicleta} (${p.nombreParticipante}): colorIndex=${colorIndex}, botonesActivos=${p.botonesActivos}, seccionActual=${this.seccionActual}, mostrandoBonoColor=${this.mostrandoBonoColor}, mostrandoRespuestas=${this.mostrandoRespuestas}`);
+              if (p.botonesActivos) {
+                this.manejarBotonPresionado(p, colorIndex);
+              } else {
+                console.warn(`[BrainBike BLE BTNS] Button ignored because participant's botonesActivos is FALSE (speed below minimum).`);
+              }
             }
           });
         });
