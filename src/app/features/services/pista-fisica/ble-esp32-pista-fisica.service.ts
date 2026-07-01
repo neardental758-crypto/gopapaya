@@ -33,7 +33,12 @@ export class BleEsp32PistaFisicaService {
   // ------------------------
   async requestDevice(bike: BikeKey) {
     const device = await navigator.bluetooth.requestDevice({
-      filters: [{ name: 'BIKETONA_BLE' }], // ✅ Nombre actualizado
+      filters: [
+        { name: 'BIKETONA_BLE' },
+        { name: 'BRAIN_BIKE_inalambrico' },
+        { namePrefix: 'BIKETONA_' },
+        { namePrefix: 'BRAIN_' }
+      ],
       optionalServices: [this.SERVICE_UUID],
     });
 

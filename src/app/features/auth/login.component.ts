@@ -16,7 +16,7 @@ export class LoginComponent implements OnInit {
     password: '',
   };
 
-  goPapayaIcon = 'assets/images/gopapaya.png';
+  goPapayaIcon = 'assets/images/gopapaya.png?v=3';
 
   errorMessage = '';
   loading = false;
