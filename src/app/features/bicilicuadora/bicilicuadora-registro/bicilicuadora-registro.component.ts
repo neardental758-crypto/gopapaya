@@ -120,7 +120,7 @@ export class BicilicuadoraRegistroComponent implements OnInit {
     this.participanteService.getByBicilicuadora(this.config.id).subscribe({
       next: (participantes) => {
         const participantesJugados = participantes.filter(
-          (p: any) => p.puntosTotales > 0 || p.caloriasQuemadas > 0,
+          (p: any) => (p.duracionTotal || 0) > 0,
         );
 
         this.totalParticipantesRegistrados = participantesJugados.length;
@@ -142,7 +142,7 @@ export class BicilicuadoraRegistroComponent implements OnInit {
     this.participanteService.getByBicilicuadora(this.config.id).subscribe({
       next: (participantes) => {
         const participantesJugados = participantes.filter(
-          (p: any) => p.puntosTotales > 0 || p.caloriasQuemadas > 0,
+          (p: any) => (p.duracionTotal || 0) > 0,
         );
         this.totalParticipantesRegistrados = participantesJugados.length;
       },

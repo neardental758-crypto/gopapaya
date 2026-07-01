@@ -189,7 +189,11 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
             (p: any) => p.id === participanteActual.id,
           );
 
-          if (participanteEnBD && participanteEnBD.bebidasCompletadas! > 0) {
+          if (
+            participanteEnBD &&
+            ((participanteEnBD.puntosTotales || 0) > 0 ||
+              (participanteEnBD.caloriasQuemadas || 0) > 0)
+          ) {
             localStorage.removeItem('participante_actual');
             localStorage.removeItem('bici1Conectada');
             this.router.navigate(['/bicilicuadora/conexion']);
@@ -390,8 +394,11 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
   async actualizarParticipanteBD(
     participante: ParticipanteJuego,
   ): Promise<void> {
-    const duracion = Math.floor(
-      (new Date().getTime() - this.fechaInicioCarrera.getTime()) / 60000,
+    const duracionSegundos = Math.max(
+      1,
+      Math.floor(
+        (new Date().getTime() - this.fechaInicioCarrera.getTime()) / 1000,
+      ),
     );
     const vatiosCalculados = parseFloat(
       (participante.velocidadPromedio * 10).toFixed(1),
@@ -400,18 +407,20 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
     const datosActualizar = {
       caloriasQuemadas: participante.caloriasQuemadas,
       vatiosGenerados: vatiosCalculados,
-      duracionTotal: duracion,
+      duracionTotal: duracionSegundos,
       distanciaRecorrida: participante.distanciaRecorrida,
       velocidadPromedio: participante.velocidadPromedio,
       velocidadMaxima: participante.velocidadMaxima,
       puntosTotales: participante.puntosTotales || 0,
     };
+    console.log('📊 [BICILICUADORA] Actualizando participante ID:', participante.id, 'Datos:', datosActualizar);
     try {
-      await this.participanteService
+      const resultado = await this.participanteService
         .update(participante.id!, datosActualizar)
         .toPromise();
+      console.log('✅ [BICILICUADORA] Participante actualizado:', resultado);
     } catch (error) {
-      console.error('Error actualizando participante:', error);
+      console.error('❌ [BICILICUADORA] Error actualizando participante:', error);
     }
   }
 
@@ -425,8 +434,9 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
       this.participanteService.getByBicilicuadora(this.config.id).subscribe({
         next: (participantes) => {
           this.totalParticipantesJugados = participantes.filter(
-            (p: any) => p.puntosTotales > 0 || p.caloriasQuemadas > 0,
+            (p: any) => (p.duracionTotal || 0) > 0,
           ).length;
+          console.log('📊 [BICILICUADORA] Total jugados:', this.totalParticipantesJugados, 'de', this.totalParticipantes);
           resolve();
         },
         error: () => {
@@ -442,8 +452,9 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
 
     this.participanteService.getByBicilicuadora(this.config.id).subscribe({
       next: (participantes) => {
+        console.log('📊 [BICILICUADORA] Participantes recibidos para ranking:', participantes);
         this.participantesCompletados = participantes
-          .filter((p: any) => p.puntosTotales > 0 || p.caloriasQuemadas > 0)
+          .filter((p: any) => (p.duracionTotal || 0) > 0)
           .map((p: any) => ({
             ...p,
             puntosTotales: p.puntosTotales || 0,
@@ -454,6 +465,7 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
           }))
           .sort((a: any, b: any) => b.puntosTotales - a.puntosTotales);
 
+        console.log('📊 [BICILICUADORA] Participantes completados:', this.participantesCompletados.length);
         this.rankingJuegoActual = [...this.participantesCompletados];
 
         this.cargarTotalRegistrados();
@@ -508,7 +520,7 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
         .toPromise();
 
       const participantesData = participantes!
-        .filter((p: any) => p.puntosTotales > 0 || p.caloriasQuemadas > 0)
+        .filter((p: any) => (p.duracionTotal || 0) > 0)
         .map((p: any) => ({
           nombreParticipante: p.nombreParticipante,
           documento: p.documento,
