@@ -642,7 +642,13 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
 
   irASiguienteParticipante(): void {
     localStorage.removeItem('participante_actual');
-    this.router.navigate(['/bicilicuadora/conexion']);
+
+    const estaConectado = this.ble.isConnected('bici1');
+    if (estaConectado) {
+      this.router.navigate(['/bicilicuadora/registro']);
+    } else {
+      this.router.navigate(['/bicilicuadora/conexion']);
+    }
   }
 
   calcularVatios(participante: any): number {
