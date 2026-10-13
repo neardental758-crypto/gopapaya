@@ -1,0 +1,997 @@
+#include <WiFi.h>
+#include <esp_now.h>
+#include <esp_wifi.h>
+#include <esp_idf_version.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+#include <BLEAdvertising.h>
+
+
+// ============================================================
+// BICI 1 / MAESTRA
+// MAC REAL: 8C:94:DF:6D:71:60
+//
+// MODOS:
+// 1 BLENDER BIKE
+// 2 BIKETONA
+// 3 BRAIN BIKE
+//
+// BLENDER:
+// BLE = BIKETONA_BLE_BLENDER_1
+//
+// BIKETONA:
+// BLE apagado.
+// Envia SU velocidad directamente a PISTA.
+// Si PISTA esta presente -> cambio manual bloqueado.
+//
+// BRAIN BIKE:
+// Recibe velocidad + botones de BICI 2.
+// BLE = BIKETONA_BLE_BRAINBIKE
+// Si BLE conectado -> cambio manual bloqueado.
+// ============================================================
+
+constexpr uint8_t PIN_HALL = 14;
+constexpr uint8_t PIN_RGB_R = 18;
+constexpr uint8_t PIN_RGB_G = 19;
+constexpr uint8_t PIN_RGB_B = 21;
+constexpr bool RGB_ANODO_COMUN = true;
+
+// Pines de botones conservados del codigo actual.
+// Brain Bike - orden exigido por la APP:
+// indice 0 = Amarillo
+// indice 1 = Azul/Celeste
+// indice 2 = Rojo
+// indice 3 = Blanco
+constexpr uint8_t PIN_BTN_1 = 32; // Amarillo
+constexpr uint8_t PIN_BTN_2 = 33; // Azul/Celeste
+constexpr uint8_t PIN_BTN_3 = 25; // Rojo
+constexpr uint8_t PIN_BTN_4 = 26; // Blanco
+
+constexpr uint8_t HALL_LIBRE = LOW;
+constexpr uint8_t HALL_IMAN  = HIGH;
+
+// VELOCIDAD - rueda real de 70 cm y 2 imanes a 180 grados.
+constexpr float DIAMETRO_RUEDA_M = 0.70f;
+constexpr uint8_t NUMERO_IMANES = 2;
+constexpr float CIRCUNFERENCIA_RUEDA_M =
+  PI * DIAMETRO_RUEDA_M;
+constexpr float DISTANCIA_POR_PULSO_M =
+  CIRCUNFERENCIA_RUEDA_M / NUMERO_IMANES;
+
+// Se guardan solo los 2 intervalos mas recientes.
+// Dos intervalos = una vuelta completa con 2 imanes.
+// Esto reduce mucho el retardo frente al promedio anterior de 5 pulsos.
+constexpr uint8_t MUESTRAS = 2;
+constexpr uint32_t ANTIRREBOTE_US = 8000;
+constexpr uint32_t TIMEOUT_VEL_US = 2000000;
+
+// Si los dos ultimos intervalos son parecidos, se usa la vuelta
+// completa para máxima precision. Si cambian bastante, se da mas
+// peso al ultimo medio giro para responder rapido a aceleraciones.
+constexpr float UMBRAL_CAMBIO_RAPIDO = 0.15f;
+constexpr float PESO_INSTANTANEO = 0.80f;
+
+constexpr uint32_t CAMBIO_MODO_MS = 3000;
+constexpr uint32_t ARMADO_HALL_MS = 400;
+
+constexpr uint32_t TX_MS = 50;
+constexpr uint32_t ESTADO_MAESTRA_MS = 100;
+constexpr uint32_t BLE_MS = 100;
+constexpr uint32_t MONITOR_MS = 500;
+constexpr uint32_t TIMEOUT_REMOTO_MS = 700;
+constexpr uint32_t TIMEOUT_PISTA_MS = 700;
+
+constexpr uint8_t CANAL_ESPNOW = 1;
+
+const uint8_t MAC_BICI_2[6] = {
+  0x8C, 0x94, 0xDF, 0xB9, 0xBF, 0x40
+};
+
+const uint8_t MAC_PISTA[6] = {
+  0x8C, 0x94, 0xDF, 0x69, 0x07, 0xAC
+};
+
+enum Modo : uint8_t {
+  MODO_BLENDER = 1,
+  MODO_BIKETONA = 2,
+  MODO_BRAINBIKE = 3
+};
+
+Modo modoActual = MODO_BLENDER;
+
+constexpr uint32_t FIRMA = 0x4B444952; // KDIR
+
+enum TipoMensaje : uint8_t {
+  MSG_DATOS_BICI = 1,
+  MSG_ESTADO_PISTA = 2,
+  MSG_ESTADO_MAESTRA = 3
+};
+
+struct __attribute__((packed)) PaqueteBici {
+  uint32_t firma;
+  uint8_t tipo;
+  uint8_t biciId;
+  uint8_t modo;
+  uint8_t botones;
+  uint32_t secuencia;
+  float velocidadKmh;
+  uint32_t tiempoMs;
+};
+
+struct __attribute__((packed)) PaquetePista {
+  uint32_t firma;
+  uint8_t tipo;
+  uint8_t presente;
+  uint8_t bleConectado;
+  uint8_t estadoId;
+  uint32_t secuencia;
+  uint32_t tiempoMs;
+};
+
+struct __attribute__((packed)) PaqueteEstadoMaestra {
+  uint32_t firma;
+  uint8_t tipo;
+  uint8_t modo;
+  uint8_t bleConectado;
+  uint8_t reservado;
+  uint32_t secuencia;
+  uint32_t tiempoMs;
+};
+
+static_assert(sizeof(PaqueteBici) == 20, "PaqueteBici invalido");
+static_assert(sizeof(PaquetePista) == 16, "PaquetePista invalido");
+static_assert(sizeof(PaqueteEstadoMaestra) == 16, "PaqueteEstadoMaestra invalido");
+
+// ---------------- HALL / VELOCIDAD ----------------
+portMUX_TYPE hallMux = portMUX_INITIALIZER_UNLOCKED;
+volatile uint32_t ultimoPulsoUs = 0;
+volatile uint32_t intervalos[MUESTRAS] = {0};
+volatile uint8_t posIntervalo = 0;
+volatile uint8_t numMuestras = 0;
+float velocidadLocal = 0.0f;
+
+void IRAM_ATTR pulsoHall() {
+  const uint32_t ahora = micros();
+
+  portENTER_CRITICAL_ISR(&hallMux);
+
+  // Primer pulso: solo sirve como referencia temporal.
+  if (ultimoPulsoUs == 0) {
+    ultimoPulsoUs = ahora;
+    portEXIT_CRITICAL_ISR(&hallMux);
+    return;
+  }
+
+  const uint32_t dt = ahora - ultimoPulsoUs;
+
+  // Ignorar rebotes o pulsos electricos demasiado cercanos.
+  if (dt < ANTIRREBOTE_US) {
+    portEXIT_CRITICAL_ISR(&hallMux);
+    return;
+  }
+
+  // Si llevaba mucho tiempo sin pulsos, esta es una nueva arrancada.
+  // No usamos el intervalo de parada para calcular una velocidad falsa.
+  if (dt >= TIMEOUT_VEL_US) {
+    ultimoPulsoUs = ahora;
+    posIntervalo = 0;
+    numMuestras = 0;
+
+    for (uint8_t i = 0; i < MUESTRAS; i++) {
+      intervalos[i] = 0;
+    }
+
+    portEXIT_CRITICAL_ISR(&hallMux);
+    return;
+  }
+
+  ultimoPulsoUs = ahora;
+
+  intervalos[posIntervalo] = dt;
+  posIntervalo = (posIntervalo + 1) % MUESTRAS;
+
+  if (numMuestras < MUESTRAS) {
+    numMuestras++;
+  }
+
+  portEXIT_CRITICAL_ISR(&hallMux);
+}
+
+void resetVelocidad() {
+  portENTER_CRITICAL(&hallMux);
+
+  ultimoPulsoUs = 0;
+  posIntervalo = 0;
+  numMuestras = 0;
+
+  for (uint8_t i = 0; i < MUESTRAS; i++) {
+    intervalos[i] = 0;
+  }
+
+  portEXIT_CRITICAL(&hallMux);
+
+  velocidadLocal = 0.0f;
+}
+
+float calcularVelocidad() {
+  uint32_t copia[MUESTRAS] = {0};
+  uint8_t n = 0;
+  uint8_t posicionSiguiente = 0;
+  uint32_t ultimo = 0;
+
+  portENTER_CRITICAL(&hallMux);
+
+  n = numMuestras;
+  posicionSiguiente = posIntervalo;
+  ultimo = ultimoPulsoUs;
+
+  for (uint8_t i = 0; i < MUESTRAS; i++) {
+    copia[i] = intervalos[i];
+  }
+
+  portEXIT_CRITICAL(&hallMux);
+
+  if (n == 0 || ultimo == 0) {
+    return 0.0f;
+  }
+
+  const uint32_t ahora = micros();
+  const uint32_t tiempoSinPulso = ahora - ultimo;
+
+  if (tiempoSinPulso >= TIMEOUT_VEL_US) {
+    return 0.0f;
+  }
+
+  // posIntervalo siempre apunta al lugar donde se escribira
+  // el siguiente dato. Por eso el anterior es el mas reciente.
+  const uint8_t indiceUltimo =
+    (posicionSiguiente + MUESTRAS - 1) % MUESTRAS;
+
+  const uint32_t dtUltimo = copia[indiceUltimo];
+
+  if (dtUltimo == 0) {
+    return 0.0f;
+  }
+
+  // Velocidad mas reciente: distancia entre dos imanes / ultimo periodo.
+  float velocidadInstantanea =
+    (DISTANCIA_POR_PULSO_M /
+    (static_cast<float>(dtUltimo) / 1000000.0f)) * 3.6f;
+
+  float velocidadCalculada = velocidadInstantanea;
+
+  if (n >= 2) {
+    const uint8_t indiceAnterior =
+      (indiceUltimo + MUESTRAS - 1) % MUESTRAS;
+
+    const uint32_t dtAnterior = copia[indiceAnterior];
+
+    if (dtAnterior > 0) {
+      // Los ultimos dos intervalos abarcan una vuelta completa.
+      // Esto compensa pequeños errores de posicion entre los 2 imanes.
+      const uint64_t tiempoVueltaUs =
+        static_cast<uint64_t>(dtUltimo) +
+        static_cast<uint64_t>(dtAnterior);
+
+      const float velocidadVuelta =
+        (CIRCUNFERENCIA_RUEDA_M /
+        (static_cast<float>(tiempoVueltaUs) / 1000000.0f)) * 3.6f;
+
+      const uint32_t dtMayor =
+        dtUltimo > dtAnterior ? dtUltimo : dtAnterior;
+
+      const float cambioRelativo =
+        dtMayor > 0
+          ? static_cast<float>(
+              dtUltimo > dtAnterior
+                ? dtUltimo - dtAnterior
+                : dtAnterior - dtUltimo
+            ) / static_cast<float>(dtMayor)
+          : 0.0f;
+
+      if (cambioRelativo <= UMBRAL_CAMBIO_RAPIDO) {
+        // Pedaleo relativamente estable:
+        // usar la vuelta completa da el valor mas preciso.
+        velocidadCalculada = velocidadVuelta;
+      } else {
+        // Aceleracion/deceleracion:
+        // responder principalmente al intervalo mas reciente.
+        velocidadCalculada =
+          (PESO_INSTANTANEO * velocidadInstantanea) +
+          ((1.0f - PESO_INSTANTANEO) * velocidadVuelta);
+      }
+    }
+  }
+
+  // Si ya paso mas tiempo del esperado para el siguiente iman,
+  // la velocidad real necesariamente esta bajando.
+  // Este limite evita mantener una velocidad vieja hasta el timeout.
+  if (tiempoSinPulso > dtUltimo) {
+    const float velocidadMaximaPosible =
+      (DISTANCIA_POR_PULSO_M /
+      (static_cast<float>(tiempoSinPulso) / 1000000.0f)) * 3.6f;
+
+    if (velocidadMaximaPosible < velocidadCalculada) {
+      velocidadCalculada = velocidadMaximaPosible;
+    }
+  }
+
+  if (!isfinite(velocidadCalculada) || velocidadCalculada < 0.0f) {
+    velocidadCalculada = 0.0f;
+  }
+
+  return constrain(velocidadCalculada, 0.0f, 100.0f);
+}
+
+
+// ---------------- RGB ----------------
+void ledPin(uint8_t pin, bool on) {
+  digitalWrite(
+    pin,
+    RGB_ANODO_COMUN ? (on ? LOW : HIGH) : (on ? HIGH : LOW)
+  );
+}
+
+void apagarRgb() {
+  ledPin(PIN_RGB_R, false);
+  ledPin(PIN_RGB_G, false);
+  ledPin(PIN_RGB_B, false);
+}
+
+void colorModo() {
+  apagarRgb();
+
+  if (modoActual == MODO_BLENDER) ledPin(PIN_RGB_B, true);
+  else if (modoActual == MODO_BIKETONA) ledPin(PIN_RGB_G, true);
+  else ledPin(PIN_RGB_R, true);
+}
+
+// ---------------- BOTONES ----------------
+uint8_t leerBotones() {
+  if (modoActual != MODO_BRAINBIKE) return 0;
+
+  uint8_t b = 0;
+  if (digitalRead(PIN_BTN_1) == LOW) b |= 1 << 0;
+  if (digitalRead(PIN_BTN_2) == LOW) b |= 1 << 1;
+  if (digitalRead(PIN_BTN_3) == LOW) b |= 1 << 2;
+  if (digitalRead(PIN_BTN_4) == LOW) b |= 1 << 3;
+  return b;
+}
+
+void botonesTexto(uint8_t b, char out[5]) {
+  out[0] = (b & 1) ? '1' : '0';
+  out[1] = (b & 2) ? '1' : '0';
+  out[2] = (b & 4) ? '1' : '0';
+  out[3] = (b & 8) ? '1' : '0';
+  out[4] = 0;
+}
+
+// ---------------- RX ----------------
+portMUX_TYPE rxMux = portMUX_INITIALIZER_UNLOCKED;
+
+volatile float velBici2Rx = 0.0f;
+volatile uint8_t botonesBici2Rx = 0;
+volatile uint8_t modoBici2Rx = 0;
+volatile uint32_t ultimaBici2Ms = 0;
+
+volatile bool pistaPresenteRx = false;
+volatile bool pistaBleRx = false;
+volatile uint8_t pistaEstadoRx = 0;
+volatile uint32_t ultimaPistaMs = 0;
+
+bool mismaMac(const uint8_t* a, const uint8_t* b) {
+  return a && b && memcmp(a, b, 6) == 0;
+}
+
+void procesarRx(const uint8_t* mac, const uint8_t* data, int len) {
+  if (!mac || !data || len < 5) return;
+
+  uint32_t firma;
+  memcpy(&firma, data, 4);
+  if (firma != FIRMA) return;
+
+  uint8_t tipo = data[4];
+
+  if (
+    tipo == MSG_DATOS_BICI &&
+    len == sizeof(PaqueteBici) &&
+    mismaMac(mac, MAC_BICI_2)
+  ) {
+    PaqueteBici p;
+    memcpy(&p, data, sizeof(p));
+
+    if (p.biciId != 2) return;
+
+    float v = p.velocidadKmh;
+    if (!isfinite(v) || v < 0 || v > 100) v = 0;
+
+    portENTER_CRITICAL(&rxMux);
+    velBici2Rx = v;
+    botonesBici2Rx = p.botones;
+    modoBici2Rx = p.modo;
+    ultimaBici2Ms = millis();
+    portEXIT_CRITICAL(&rxMux);
+
+    return;
+  }
+
+  if (
+    tipo == MSG_ESTADO_PISTA &&
+    len == sizeof(PaquetePista) &&
+    mismaMac(mac, MAC_PISTA)
+  ) {
+    PaquetePista p;
+    memcpy(&p, data, sizeof(p));
+
+    portENTER_CRITICAL(&rxMux);
+    pistaPresenteRx = p.presente == 1;
+    pistaBleRx = p.bleConectado == 1;
+    pistaEstadoRx = p.estadoId;
+    ultimaPistaMs = millis();
+    portEXIT_CRITICAL(&rxMux);
+  }
+}
+
+#if ESP_IDF_VERSION_MAJOR >= 5
+void recvCb(const esp_now_recv_info_t* info, const uint8_t* data, int len) {
+  if (info) procesarRx(info->src_addr, data, len);
+}
+#else
+void recvCb(const uint8_t* mac, const uint8_t* data, int len) {
+  procesarRx(mac, data, len);
+}
+#endif
+
+bool agregarPeer(const uint8_t* mac) {
+  if (esp_now_is_peer_exist(mac)) return true;
+
+  esp_now_peer_info_t p = {};
+  memcpy(p.peer_addr, mac, 6);
+  p.channel = CANAL_ESPNOW;
+  p.encrypt = false;
+  p.ifidx = WIFI_IF_STA;
+
+  return esp_now_add_peer(&p) == ESP_OK;
+}
+
+bool iniciarEspNow() {
+  WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);
+  delay(100);
+
+  if (
+    esp_wifi_set_channel(CANAL_ESPNOW, WIFI_SECOND_CHAN_NONE) != ESP_OK
+  ) return false;
+
+  if (esp_now_init() != ESP_OK) return false;
+  if (esp_now_register_recv_cb(recvCb) != ESP_OK) return false;
+
+  if (!agregarPeer(MAC_BICI_2)) return false;
+  if (!agregarPeer(MAC_PISTA)) return false;
+
+  return true;
+}
+
+bool pistaDetectada() {
+  bool presente;
+  uint32_t ultimo;
+
+  portENTER_CRITICAL(&rxMux);
+  presente = pistaPresenteRx;
+  ultimo = ultimaPistaMs;
+  portEXIT_CRITICAL(&rxMux);
+
+  return presente && ultimo != 0 && millis() - ultimo < TIMEOUT_PISTA_MS;
+}
+
+bool datosBici2Brain(float& vel, uint8_t& botones) {
+  uint8_t modo;
+  uint32_t ultimo;
+
+  portENTER_CRITICAL(&rxMux);
+  vel = velBici2Rx;
+  botones = botonesBici2Rx;
+  modo = modoBici2Rx;
+  ultimo = ultimaBici2Ms;
+  portEXIT_CRITICAL(&rxMux);
+
+  if (
+    ultimo == 0 ||
+    millis() - ultimo >= TIMEOUT_REMOTO_MS ||
+    modo != MODO_BRAINBIKE
+  ) {
+    vel = 0.0f;
+    botones = 0;
+    return false;
+  }
+
+  vel = constrain(vel, 0.0f, 100.0f);
+  return true;
+}
+
+// ---------------- BLE ----------------
+// GATT estable para Android/Chrome:
+// - Se inicializa UNA sola vez.
+// - Blender y Brain Bike usan la misma tabla GATT.
+// - En Biketona solo se detiene el advertising.
+// - El nombre completo va en el advertising primario.
+#define UUID_SERVICE "0000a001-0000-1000-8000-00805f9b34fb"
+#define UUID_CTRL    "0000a002-0000-1000-8000-00805f9b34fb"
+#define UUID_VEL     "0000a003-0000-1000-8000-00805f9b34fb"
+#define UUID_BTNS    "0000a004-0000-1000-8000-00805f9b34fb"
+
+// UUID_SERVICE completo (128-bit) se utiliza para maxima compatibilidad con Android e iOS
+
+BLEServer* bleServer = nullptr;
+BLEService* bleService = nullptr;
+BLECharacteristic* chCtrl = nullptr;
+BLECharacteristic* chVel = nullptr;
+BLECharacteristic* chBtns = nullptr;
+
+volatile bool bleConectado = false;
+bool bleInicializado = false;
+bool bleAnterior = false;
+bool bleAdvertisingActivo = false;
+uint32_t ultimoBle = 0;
+
+volatile bool brainInicializadoPorApp = false;
+
+class ServerCB : public BLEServerCallbacks {
+  void onConnect(BLEServer*) override {
+    bleConectado = true;
+    bleAdvertisingActivo = false;
+
+    if (modoActual == MODO_BRAINBIKE) {
+      brainInicializadoPorApp = false;
+    }
+
+    Serial.println("BLE conectado");
+  }
+
+  void onDisconnect(BLEServer* pServer) override {
+    bleConectado = false;
+    bleAdvertisingActivo = false;
+    brainInicializadoPorApp = false;
+    Serial.println("BLE desconectado");
+
+    if (modoActual != MODO_BIKETONA) {
+      pServer->startAdvertising();
+      bleAdvertisingActivo = true;
+    }
+  }
+};
+
+class CtrlCB : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic* c) override {
+    String s = String(c->getValue().c_str());
+    s.trim();
+    s.toLowerCase();
+
+    if (
+      modoActual == MODO_BRAINBIKE &&
+      s == "brain"
+    ) {
+      brainInicializadoPorApp = true;
+      c->setValue("brain");
+      Serial.println("BRAIN BIKE INICIALIZADO POR APP.");
+    }
+  }
+};
+
+void configurarAdvertisingBle(const char* nombre) {
+  if (!bleInicializado) return;
+
+  BLEDevice::stopAdvertising();
+  delay(50);
+
+  BLEAdvertising* adv = BLEDevice::getAdvertising();
+  adv->stop();
+
+  BLEAdvertisementData advData;
+  BLEAdvertisementData scanData;
+
+  advData.setFlags(
+    ESP_BLE_ADV_FLAG_GEN_DISC |
+    ESP_BLE_ADV_FLAG_BREDR_NOT_SPT
+  );
+  advData.setCompleteServices(BLEUUID(UUID_SERVICE));
+
+  scanData.setName(String(nombre));
+
+  adv->setAdvertisementData(advData);
+  adv->setScanResponseData(scanData);
+  adv->setScanResponse(true);
+  adv->setMinPreferred(0x06);
+  adv->setMaxPreferred(0x12);
+
+  adv->start();
+
+  bleAdvertisingActivo = true;
+  bleAnterior = false;
+
+  Serial.print("BLE advertising: ");
+  Serial.println(nombre);
+}
+
+void apagarBle() {
+  if (!bleInicializado) {
+    bleConectado = false;
+    return;
+  }
+
+  // No se destruye el stack BLE.
+  // Solo se deja de anunciar en modo Biketona.
+  BLEDevice::stopAdvertising();
+  bleAdvertisingActivo = false;
+  brainInicializadoPorApp = false;
+}
+
+bool inicializarBleBase() {
+  if (bleInicializado) return true;
+
+  BLEDevice::init("BIKETONA_BLE");
+
+  bleServer = BLEDevice::createServer();
+  if (!bleServer) return false;
+
+  bleServer->setCallbacks(new ServerCB());
+
+  bleService = bleServer->createService(UUID_SERVICE);
+  if (!bleService) return false;
+
+  chCtrl = bleService->createCharacteristic(
+    UUID_CTRL,
+    BLECharacteristic::PROPERTY_READ |
+    BLECharacteristic::PROPERTY_WRITE |
+    BLECharacteristic::PROPERTY_WRITE_NR |
+    BLECharacteristic::PROPERTY_NOTIFY
+  );
+  chCtrl->addDescriptor(new BLE2902());
+  chCtrl->setCallbacks(new CtrlCB());
+  chCtrl->setValue("brain");
+
+  chVel = bleService->createCharacteristic(
+    UUID_VEL,
+    BLECharacteristic::PROPERTY_READ |
+    BLECharacteristic::PROPERTY_NOTIFY
+  );
+  chVel->addDescriptor(new BLE2902());
+  chVel->setValue("0.0");
+
+  chBtns = bleService->createCharacteristic(
+    UUID_BTNS,
+    BLECharacteristic::PROPERTY_READ |
+    BLECharacteristic::PROPERTY_NOTIFY
+  );
+  chBtns->addDescriptor(new BLE2902());
+  chBtns->setValue("0000,0000");
+
+  bleService->start();
+
+  bleInicializado = true;
+  bleConectado = false;
+  bleAnterior = false;
+  bleAdvertisingActivo = false;
+  ultimoBle = 0;
+  brainInicializadoPorApp = false;
+
+  return true;
+}
+
+bool iniciarBleBlender() {
+  if (!inicializarBleBase()) return false;
+
+  brainInicializadoPorApp = false;
+  chVel->setValue("0.0");
+
+  configurarAdvertisingBle(
+    "BIKETONA_BLE_BLENDER_1"
+  );
+
+  return true;
+}
+
+bool iniciarBleBrain() {
+  if (!inicializarBleBase()) return false;
+
+  brainInicializadoPorApp = false;
+
+  chCtrl->setValue("brain");
+  chVel->setValue("v0.0,0.0");
+  chBtns->setValue("0000,0000");
+
+  configurarAdvertisingBle(
+    "BIKETONA_BLE_BRAINBIKE"
+  );
+
+  return true;
+}
+
+void publicarBle() {
+  if (!bleInicializado || !chVel) return;
+  if (millis() - ultimoBle < BLE_MS) return;
+
+  ultimoBle = millis();
+
+  if (modoActual == MODO_BLENDER) {
+    char txt[16];
+    snprintf(txt, sizeof(txt), "%.1f", velocidadLocal);
+
+    chVel->setValue(txt);
+
+    if (bleConectado) {
+      chVel->notify();
+    }
+
+    return;
+  }
+
+  if (modoActual == MODO_BRAINBIKE) {
+    float v2 = 0.0f;
+    uint8_t b2 = 0;
+
+    datosBici2Brain(v2, b2);
+
+    char velTxt[32];
+    snprintf(
+      velTxt,
+      sizeof(velTxt),
+      "v%.1f,%.1f",
+      velocidadLocal,
+      v2
+    );
+
+    chVel->setValue(velTxt);
+
+    char b1Txt[5];
+    char b2Txt[5];
+    char btnTxt[16];
+
+    botonesTexto(leerBotones(), b1Txt);
+    botonesTexto(b2, b2Txt);
+
+    snprintf(
+      btnTxt,
+      sizeof(btnTxt),
+      "%s,%s",
+      b1Txt,
+      b2Txt
+    );
+
+    chBtns->setValue(btnTxt);
+
+    if (
+      bleConectado &&
+      brainInicializadoPorApp
+    ) {
+      chVel->notify();
+      chBtns->notify();
+    }
+  }
+}
+
+// ---------------- TX BIKETONA ----------------
+uint32_t secuencia = 0;
+uint32_t ultimoTx = 0;
+
+void enviarBiketonaAPista() {
+  if (modoActual != MODO_BIKETONA) return;
+  if (millis() - ultimoTx < TX_MS) return;
+
+  ultimoTx = millis();
+
+  PaqueteBici p = {};
+  p.firma = FIRMA;
+  p.tipo = MSG_DATOS_BICI;
+  p.biciId = 1;
+  p.modo = MODO_BIKETONA;
+  p.botones = 0;
+  p.secuencia = ++secuencia;
+  p.velocidadKmh = velocidadLocal;
+  p.tiempoMs = millis();
+
+  esp_now_send(
+    MAC_PISTA,
+    reinterpret_cast<const uint8_t*>(&p),
+    sizeof(p)
+  );
+}
+
+// ---------------- ESTADO MAESTRA -> BICI 2 ----------------
+uint32_t secuenciaEstadoMaestra = 0;
+uint32_t ultimoEstadoMaestra = 0;
+
+void enviarEstadoMaestraABici2() {
+  if (millis() - ultimoEstadoMaestra < ESTADO_MAESTRA_MS) return;
+  ultimoEstadoMaestra = millis();
+  PaqueteEstadoMaestra p = {};
+  p.firma = FIRMA;
+  p.tipo = MSG_ESTADO_MAESTRA;
+  p.modo = (uint8_t)modoActual;
+  p.bleConectado = bleConectado ? 1 : 0;
+  p.reservado = 0;
+  p.secuencia = ++secuenciaEstadoMaestra;
+  p.tiempoMs = millis();
+  esp_now_send(MAC_BICI_2, reinterpret_cast<const uint8_t*>(&p), sizeof(p));
+}
+
+// ---------------- CAMBIO MANUAL ----------------
+bool armado = false;
+uint32_t inicioLibre = 0;
+bool contando = false;
+uint32_t inicioConteo = 0;
+bool exigeRetiro = false;
+
+bool cambioBloqueado() {
+  if (modoActual == MODO_BLENDER) return bleConectado;
+  if (modoActual == MODO_BIKETONA) return pistaDetectada();
+  if (modoActual == MODO_BRAINBIKE) return bleConectado;
+  return false;
+}
+
+void configurarModo() {
+  colorModo();
+  resetVelocidad();
+
+  if (modoActual == MODO_BLENDER) {
+    iniciarBleBlender();
+  }
+  else if (modoActual == MODO_BIKETONA) {
+    apagarBle();
+  }
+  else {
+    brainInicializadoPorApp = false;
+    iniciarBleBrain();
+  }
+}
+
+void cambiarModo() {
+  if (modoActual == MODO_BLENDER) modoActual = MODO_BIKETONA;
+  else if (modoActual == MODO_BIKETONA) modoActual = MODO_BRAINBIKE;
+  else modoActual = MODO_BLENDER;
+
+  contando = false;
+  inicioConteo = 0;
+  exigeRetiro = true;
+
+  configurarModo();
+
+  Serial.print("MODO=");
+  Serial.println((uint8_t)modoActual);
+}
+
+void actualizarCambioManual() {
+  uint32_t ahora = millis();
+  bool iman = digitalRead(PIN_HALL) == HALL_IMAN;
+  bool libre = digitalRead(PIN_HALL) == HALL_LIBRE;
+
+  if (!armado) {
+    contando = false;
+    inicioConteo = 0;
+
+    if (libre) {
+      if (inicioLibre == 0) inicioLibre = ahora;
+
+      if (ahora - inicioLibre >= ARMADO_HALL_MS) {
+        armado = true;
+        inicioLibre = 0;
+        exigeRetiro = false;
+      }
+    } else {
+      inicioLibre = 0;
+    }
+
+    return;
+  }
+
+  if (!iman) {
+    contando = false;
+    inicioConteo = 0;
+
+    if (exigeRetiro && libre) exigeRetiro = false;
+
+    return;
+  }
+
+  if (exigeRetiro) return;
+
+  if (cambioBloqueado()) {
+    contando = false;
+    inicioConteo = 0;
+    return;
+  }
+
+  if (!contando) {
+    contando = true;
+    inicioConteo = ahora;
+    return;
+  }
+
+  if (ahora - inicioConteo >= CAMBIO_MODO_MS) {
+    cambiarModo();
+  }
+}
+
+// ---------------- MONITOR ----------------
+uint32_t ultimoMonitor = 0;
+
+void monitor() {
+  if (millis() - ultimoMonitor < MONITOR_MS) return;
+  ultimoMonitor = millis();
+
+  Serial.print("Modo:");
+  Serial.print((uint8_t)modoActual);
+  Serial.print(" Vel:");
+  Serial.print(velocidadLocal, 1);
+  Serial.print(" Pista:");
+  Serial.print(pistaDetectada() ? "SI" : "NO");
+  Serial.print(" BLE:");
+  Serial.print(bleConectado ? "SI" : "NO");
+  Serial.print(" Bloqueo:");
+  Serial.println(cambioBloqueado() ? "SI" : "NO");
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(400);
+
+  // Liberar RAM de Bluetooth clasico para evitar conflictos de radio con ESP-NOW + BLE
+  esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
+
+  pinMode(PIN_RGB_R, OUTPUT);
+  pinMode(PIN_RGB_G, OUTPUT);
+  pinMode(PIN_RGB_B, OUTPUT);
+
+  pinMode(PIN_HALL, INPUT_PULLUP);
+
+  pinMode(PIN_BTN_1, INPUT_PULLUP);
+  pinMode(PIN_BTN_2, INPUT_PULLUP);
+  pinMode(PIN_BTN_3, INPUT_PULLUP);
+  pinMode(PIN_BTN_4, INPUT_PULLUP);
+
+  attachInterrupt(
+    digitalPinToInterrupt(PIN_HALL),
+    pulsoHall,
+    RISING
+  );
+
+  if (!iniciarEspNow()) {
+    Serial.println("ERROR ESP-NOW");
+    delay(2000);
+    ESP.restart();
+  }
+
+  modoActual = MODO_BLENDER;
+  colorModo();
+  iniciarBleBlender();
+
+  Serial.println("BICI 1 LISTA - MAC 8C:94:DF:6D:71:60");
+}
+
+void loop() {
+  velocidadLocal = calcularVelocidad();
+
+  actualizarCambioManual();
+  publicarBle();
+  enviarBiketonaAPista();
+  enviarEstadoMaestraABici2();
+
+  if (
+    bleInicializado &&
+    modoActual != MODO_BIKETONA &&
+    !bleConectado &&
+    !bleAdvertisingActivo &&
+    bleServer
+  ) {
+    delay(500);
+    BLEDevice::startAdvertising();
+    bleAdvertisingActivo = true;
+  }
+
+  bleAnterior = bleConectado;
+
+  monitor();
+  delay(1);
+}

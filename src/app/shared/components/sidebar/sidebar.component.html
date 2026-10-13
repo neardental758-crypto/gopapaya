@@ -13,7 +13,7 @@
     </div>
   </div>
 
-  <nav class="flex-1 py-4 px-2 overflow-y-auto">
+  <nav class="flex-1 py-4 px-2 overflow-y-auto" aria-label="Sidebar navigation">
     <div *ngFor="let menuItem of menuItems">
       <div
         (click)="toggleSubMenu(menuItem)"
@@ -23,9 +23,10 @@
         [class.gap-4]="!isCollapsed"
         [class.justify-center]="isCollapsed"
         [class.bg-dark-800]="menuItem.expanded && !isCollapsed"
+        [attr.title]="isCollapsed ? (menuItem.labelKey | transloco) : null"
       >
         <span class="text-xl">{{ menuItem.icon }}</span>
-        <span *ngIf="!isCollapsed" class="flex-1 text-sm font-medium">{{ menuItem.label }}</span>
+        <span *ngIf="!isCollapsed" class="flex-1 text-sm font-medium">{{ menuItem.labelKey | transloco }}</span>
         <span
           *ngIf="!isCollapsed && hasSubItems(menuItem)"
           class="text-sm transition-transform text-neon-blue"
@@ -39,15 +40,14 @@
         *ngIf="menuItem.expanded && !isCollapsed && hasSubItems(menuItem)"
         class="ml-4 mt-1 mb-2 space-y-1"
       >
-      <a
-
+        <a
           *ngFor="let subItem of menuItem.subItems"
           [routerLink]="subItem.route"
           routerLinkActive="bg-dark-700 border-l-2 border-neon-blue text-white"
           class="flex items-center px-4 py-2 mx-2 rounded-lg text-gray-400 hover:bg-dark-700 hover:text-white transition-all text-xs"
         >
           <span class="text-base mr-3">{{ subItem.icon }}</span>
-          <span>{{ subItem.label }}</span>
+          <span>{{ subItem.labelKey | transloco }}</span>
         </a>
       </div>
     </div>
@@ -56,10 +56,12 @@
   <div class="p-4 border-t border-dark-700">
     <button
       (click)="toggleSidebar()"
-      class="w-full py-2 px-4 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg flex items-center justify-center gap-2 transition-all text-gray-300 hover:text-white"
+      class="w-full py-2 px-4 bg-dark-800 hover:bg-dark-700 border border-dark-600 rounded-lg flex items-center justify-center gap-2 transition-all text-gray-300 hover:text-white cursor-pointer"
+      [attr.aria-label]="(isCollapsed ? 'common.expand' : 'common.collapse') | transloco"
     >
       <span class="text-lg">{{ isCollapsed ? '»' : '«' }}</span>
-      <span *ngIf="!isCollapsed" class="text-xs font-medium">Contraer</span>
+      <span *ngIf="!isCollapsed" class="text-xs font-medium">{{ 'common.collapse' | transloco }}</span>
     </button>
   </div>
 </aside>
+

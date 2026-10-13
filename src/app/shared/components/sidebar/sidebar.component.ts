@@ -1,15 +1,16 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 interface SubMenuItem {
-  label: string;
+  labelKey: string;
   icon: string;
   route: string;
 }
 
 interface MenuItem {
-  label: string;
+  labelKey: string;
   icon: string;
   route?: string;
   subItems?: SubMenuItem[];
@@ -19,7 +20,7 @@ interface MenuItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslocoPipe],
   templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent {
@@ -27,57 +28,58 @@ export class SidebarComponent {
 
   menuItems: MenuItem[] = [
     {
-      label: 'Inicio',
+      labelKey: 'nav.home',
       icon: '🏠',
       route: '/home',
     },
     {
-      label: 'Brain Bike',
+      labelKey: 'nav.brain_bike',
       icon: '🧠',
       expanded: false,
-      subItems: [{ label: 'Temáticas', icon: '📚', route: '/brain-bike' }],
+      subItems: [{ labelKey: 'nav.themes', icon: '📚', route: '/brain-bike' }],
     },
     {
-      label: 'Bicilicuadora',
+      labelKey: 'nav.bicilicuadora',
       icon: '🥤',
       expanded: false,
       subItems: [
-        { label: 'Bebidas', icon: '🍹', route: '/bicilicuadora/bebidas' },
+        { labelKey: 'nav.drinks', icon: '🍹', route: '/bicilicuadora/bebidas' },
       ],
     },
     {
-      label: 'Biketona',
+      labelKey: 'nav.biketona',
       icon: '🚴',
       expanded: false,
       subItems: [
-        { label: 'Configurar / Setup', icon: '⚙️', route: '/biketona/splash' },
+        { labelKey: 'nav.setup', icon: '⚙️', route: '/biketona/splash' },
       ],
     },
     {
-      label: 'Administración',
+      labelKey: 'nav.administration',
       icon: '⚙️',
       expanded: false,
       subItems: [
-        { label: 'Usuarios', icon: '👥', route: '/admin/usuarios' },
-        { label: 'Aliados', icon: '🤝', route: '/admin/aliados' },
+        { labelKey: 'nav.users', icon: '👥', route: '/admin/usuarios' },
+        { labelKey: 'nav.allies', icon: '🤝', route: '/admin/aliados' },
       ],
     },
     {
-      label: 'Calendario',
+      labelKey: 'nav.calendar',
       icon: '📅',
       route: '/calendario',
     },
     {
-      label: 'Historial',
+      labelKey: 'nav.history',
       icon: '📜',
       route: '/historial',
     },
     {
-      label: 'Manual',
+      labelKey: 'nav.manual',
       icon: '📘',
       route: '/manual',
     },
   ];
+
 
   constructor(private router: Router) {}
 

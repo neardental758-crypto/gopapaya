@@ -1,0 +1,192 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Volver",
+    "continue": "Continuar",
+    "confirm": "Confirmar",
+    "yes": "Sí",
+    "no": "No",
+    "loading": "Cargando...",
+    "success": "Éxito",
+    "error": "Error",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "all": "Todos",
+    "none": "Ninguno",
+    "status": "Estado",
+    "active": "Activa",
+    "inactive": "Inactiva",
+    "actions": "Acciones",
+    "role": "Rol",
+    "roles": {
+      "super_admin": "Super Administrador",
+      "admin": "Administrador",
+      "viewer": "Visualizador"
+    },
+    "logout": "Cerrar Sesión",
+    "exit": "Salir",
+    "collapse": "Contraer",
+    "expand": "Expandir",
+    "details": "Detalles",
+    "notes": "Nota",
+    "date": "Fecha",
+    "time": "Hora",
+    "company": "Empresa",
+    "place": "Lugar",
+    "user": "Usuario",
+    "users": "Usuarios",
+    "evidence": "Evidencias",
+    "photo": "Foto",
+    "upload": "Subir",
+    "download": "Descargar",
+    "export": "Exportar",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "language": "Idioma",
+    "select_language": "Seleccionar idioma",
+    "spanish": "Español",
+    "english": "Inglés"
+  },
+  "nav": {
+    "home": "Inicio",
+    "brain_bike": "Brain Bike",
+    "bicilicuadora": "Bicilicuadora",
+    "biketona": "Biketona",
+    "administration": "Administración",
+    "users": "Usuarios",
+    "allies": "Aliados / Empresas",
+    "calendar": "Calendario",
+    "history": "Historial",
+    "manual": "Manual",
+    "setup": "Configurar / Setup",
+    "themes": "Temáticas",
+    "drinks": "Bebidas",
+    "reports": "Reportes",
+    "floating_menu": "Menú de Acciones"
+  },
+  "header": {
+    "wellness_activities": "Actividades de",
+    "wellness_highlight": "Bienestar",
+    "session_history": "Historial de",
+    "history_highlight": "Sesiones"
+  },
+  "auth": {
+    "login_title": "Iniciar Sesión",
+    "login_btn": "Iniciar Sesión",
+    "logging_in": "Ingresando...",
+    "email_label": "Correo Electrónico",
+    "email_placeholder": "tu@email.com",
+    "password_label": "Contraseña",
+    "password_placeholder": "••••••••",
+    "show_password": "Ver contraseña",
+    "hide_password": "Ocultar contraseña",
+    "brand_tagline": "Bienestar Experiencial & Eduentretenimiento",
+    "unauthorized_title": "Acceso",
+    "unauthorized_highlight": "Denegado",
+    "unauthorized_desc": "No tienes permisos para acceder a esta sección",
+    "back_to_home": "Volver al Inicio"
+  },
+  "home": {
+    "welcome": "Bienvenido,",
+    "dashboard_subtitle": "Panel de Control - Go PAPAYA",
+    "active_sessions": "Sesiones Activas",
+    "btn_calendar": "📅 Calendario",
+    "btn_new_session": "➕ Nueva Sesión",
+    "loading_sessions": "Cargando sesiones...",
+    "no_sessions_title": "No hay sesiones activas",
+    "no_sessions_superadmin": "Crea una nueva sesión para comenzar",
+    "no_sessions_admin": "No tienes sesiones asignadas en este momento",
+    "filter_company": "Filtrar por empresa",
+    "all_companies": "Todas las empresas",
+    "filter_place": "Filtrar por lugar",
+    "all_places": "Todos los lugares",
+    "filter_date": "Filtrar por fecha",
+    "admins_count": "admin(s)",
+    "sessions_count": "sesión(es)",
+    "btn_edit": "Editar",
+    "btn_finish": "Finalizar",
+    "cannot_edit_notice": "No se puede editar (menos de 1 hora para inicio)",
+    "active_badge": "✓ Activa",
+    "continue_label": "Continuar →",
+    "admin_heading": "⚙️ Administración",
+    "card_manual_title": "Manual",
+    "card_manual_desc": "Guía de uso y accesos rápidos",
+    "card_users_title": "Usuarios",
+    "card_users_desc": "Gestionar administradores",
+    "card_brainbike_title": "Brain Bike",
+    "card_brainbike_desc": "Gestionar contenidos",
+    "card_bicilicuadora_title": "Bicilicuadora",
+    "card_bicilicuadora_desc": "Gestionar bebidas",
+    "card_biketona_title": "Biketona",
+    "card_biketona_desc": "Configurar juego / Setup",
+    "card_companies_title": "Empresas",
+    "card_companies_desc": "Gestionar empresas"
+  },
+  "games": {
+    "brain_bike": "Brain Bike",
+    "bicilicuadora": "Bicilicuadora",
+    "vr": "VR",
+    "hit_fit": "Hit-Fit",
+    "bici_paseo": "BiciPaseo",
+    "biketona": "Biketona"
+  },
+  "seo": {
+    "default": {
+      "title": "Bienestar Experiencial & Eduentretenimiento",
+      "description": "Plataforma interactiva Go PAPAYA para actividades de bienestar corporativo, salud y gamificación deportiva.",
+      "keywords": "bienestar, salud corporativa, gamificación, brain bike, bicilicuadora, biketona, eduentretenimiento"
+    },
+    "pages": {
+      "home": {
+        "title": "Panel Principal",
+        "description": "Panel de control y gestión de sesiones activas de bienestar interactivo en Go PAPAYA.",
+        "keywords": "panel, sesiones activas, bienestar corporativo, actividades lúdicas"
+      },
+      "login": {
+        "title": "Iniciar Sesión",
+        "description": "Acceso administrativo a la plataforma de actividades experienciales Go PAPAYA.",
+        "keywords": "login, autenticación, acceso, bienestar corporativo"
+      },
+      "brainBike": {
+        "title": "Brain Bike - Gestión de Contenidos",
+        "description": "Configuración de temáticas y preguntas interactivas para Brain Bike.",
+        "keywords": "brain bike, preguntas, trivia, ciclismo interactivo"
+      },
+      "calendar": {
+        "title": "Calendario de Sesiones",
+        "description": "Planificación y cronograma de eventos y sesiones de bienestar.",
+        "keywords": "calendario, eventos, agenda, sesiones"
+      },
+      "history": {
+        "title": "Historial de Sesiones",
+        "description": "Consulta de resultados, métricas y reportes históricos de sesiones completadas.",
+        "keywords": "historial, métricas, reportes, sesiones terminadas"
+      },
+      "manual": {
+        "title": "Manual de Usuario",
+        "description": "Guía completa de operación de juegos interactivos y dispositivos Go PAPAYA.",
+        "keywords": "manual, guía de uso, instrucciones, soporte"
+      },
+      "adminUsers": {
+        "title": "Gestión de Administradores",
+        "description": "Administración de usuarios, accesos y permisos del sistema.",
+        "keywords": "usuarios, roles, administradores"
+      },
+      "adminAllies": {
+        "title": "Gestión de Empresas y Aliados",
+        "description": "Registro y gestión de empresas clientes y aliados comerciales.",
+        "keywords": "empresas, aliados, clientes corporativos"
+      }
+    }
+  },
+  "geo_aeo": {
+    "organization_name": "Go PAPAYA",
+    "industry": "Corporate Wellness & Interactive Entertainment",
+    "location": "Global / LATAM",
+    "description": "Soluciones interactivas de bienestar laboral que combinan hardware IoT, bicicletas interactivas, gamificación y analítica en tiempo real."
+  }
+}

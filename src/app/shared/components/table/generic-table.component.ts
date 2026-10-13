@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 export interface TableColumn {
   key: string;
@@ -9,7 +10,7 @@ export interface TableColumn {
 @Component({
   selector: 'app-generic-table',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslocoPipe],
   templateUrl: './generic-table.component.html',
 })
 export class GenericTableComponent {
@@ -18,3 +19,4 @@ export class GenericTableComponent {
   @Output() onEdit = new EventEmitter<any>();
   @Output() onDelete = new EventEmitter<any>();
 }
+

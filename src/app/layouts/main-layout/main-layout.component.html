@@ -4,21 +4,24 @@
 
   <div class="flex-1 flex flex-col overflow-hidden">
     <header class="bg-dark-900 border-b border-dark-700 shadow-neon-yellow/10">
-      <div class="px-6 py-4 flex items-center justify-between">
-        <h1 class="text-2xl font-display font-bold text-white">
-           Actividades de<span class="text-neon-yellow">  Bienestar</span>
+      <div class="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+        <h1 class="text-xl sm:text-2xl font-display font-bold text-white">
+          {{ 'header.wellness_activities' | transloco }} <span class="text-neon-yellow">{{ 'header.wellness_highlight' | transloco }}</span>
         </h1>
 
-        <div class="flex items-center gap-4">
-          <div class="text-right">
+        <div class="flex items-center gap-3 sm:gap-4">
+          <app-language-selector></app-language-selector>
+
+          <div class="text-right hidden sm:block">
             <p class="text-sm font-semibold text-white">{{ usuario?.nombre }}</p>
-            <p class="text-xs text-gray-400">{{ getRolLabel(usuario?.rol) }}</p>
+            <p class="text-xs text-gray-400">{{ 'common.roles.super_admin' | transloco }}</p>
           </div>
           <button
             (click)="logout()"
-            class="px-4 py-2 bg-dark-700 text-gray-300 rounded-lg font-semibold hover:bg-dark-600 border border-dark-600 hover:text-neon-red transition-all"
+            class="px-3 sm:px-4 py-1.5 sm:py-2 bg-dark-700 text-gray-300 rounded-lg text-xs sm:text-sm font-semibold hover:bg-dark-600 border border-dark-600 hover:text-neon-red transition-all cursor-pointer"
+            [attr.aria-label]="'common.logout' | transloco"
           >
-            🚪 Salir
+            🚪 <span class="hidden sm:inline">{{ 'common.logout' | transloco }}</span>
           </button>
         </div>
       </div>
@@ -30,39 +33,68 @@
   </div>
 </div>
 
-<!-- Layout para Admin (sin sidebar, con botón flotante) -->
-<div *ngIf="isAdmin()" class="h-screen bg-dark-950 overflow-hidden">
-  <main class="h-full overflow-y-auto">
+<!-- Layout para Admin (con header superior y menú flotante) -->
+<div *ngIf="isAdmin()" class="h-screen bg-dark-950 flex flex-col overflow-hidden">
+  <header *ngIf="!isInGame()" class="bg-dark-900 border-b border-dark-700 px-4 sm:px-6 py-3 flex items-center justify-between shadow-neon-blue/10">
+    <div class="flex items-center gap-2">
+      <span class="text-xl">🎮</span>
+      <span class="text-lg font-display font-bold text-white">
+        Go <span class="text-neon-yellow">PAPAYA</span>
+      </span>
+    </div>
+
+    <div class="flex items-center gap-3 sm:gap-4">
+      <app-language-selector></app-language-selector>
+
+      <div class="text-right hidden sm:block">
+        <p class="text-sm font-semibold text-white">{{ usuario?.nombre }}</p>
+        <p class="text-xs text-gray-400">{{ 'common.roles.admin' | transloco }}</p>
+      </div>
+      <button
+        (click)="logout()"
+        class="px-3 py-1.5 bg-dark-700 text-gray-300 rounded-lg text-xs sm:text-sm font-semibold hover:bg-dark-600 border border-dark-600 hover:text-neon-red transition-all cursor-pointer"
+        [attr.aria-label]="'common.logout' | transloco"
+      >
+        🚪 <span class="hidden sm:inline">{{ 'common.logout' | transloco }}</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto">
     <router-outlet></router-outlet>
   </main>
 
   <app-admin-floating-menu *ngIf="!isInGame()"></app-admin-floating-menu>
 </div>
 
-<!-- Layout para Viewer (simple, solo contenido) -->
-<div *ngIf="isViewer()" class="h-screen bg-dark-950 overflow-hidden">
+<!-- Layout para Viewer (simple con header superior) -->
+<div *ngIf="isViewer()" class="h-screen bg-dark-950 flex flex-col overflow-hidden">
   <header class="bg-dark-900 border-b border-dark-700 shadow-neon-green/10">
-    <div class="px-6 py-4 flex items-center justify-between">
-      <h1 class="text-2xl font-display font-bold text-white">
-        Historial de <span class="text-neon-green">Sesiones</span>
+    <div class="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+      <h1 class="text-xl sm:text-2xl font-display font-bold text-white">
+        {{ 'header.session_history' | transloco }} <span class="text-neon-green">{{ 'header.history_highlight' | transloco }}</span>
       </h1>
 
-      <div class="flex items-center gap-4">
-        <div class="text-right">
+      <div class="flex items-center gap-3 sm:gap-4">
+        <app-language-selector></app-language-selector>
+
+        <div class="text-right hidden sm:block">
           <p class="text-sm font-semibold text-white">{{ usuario?.nombre }}</p>
-          <p class="text-xs text-gray-400">{{ getRolLabel(usuario?.rol) }}</p>
+          <p class="text-xs text-gray-400">{{ 'common.roles.viewer' | transloco }}</p>
         </div>
         <button
           (click)="logout()"
-          class="px-4 py-2 bg-dark-700 text-gray-300 rounded-lg font-semibold hover:bg-dark-600 border border-dark-600 hover:text-neon-red transition-all"
+          class="px-3 sm:px-4 py-1.5 sm:py-2 bg-dark-700 text-gray-300 rounded-lg text-xs sm:text-sm font-semibold hover:bg-dark-600 border border-dark-600 hover:text-neon-red transition-all cursor-pointer"
+          [attr.aria-label]="'common.logout' | transloco"
         >
-          🚪 Salir
+          🚪 <span class="hidden sm:inline">{{ 'common.logout' | transloco }}</span>
         </button>
       </div>
     </div>
   </header>
 
-  <main class="h-full overflow-y-auto">
+  <main class="flex-1 overflow-y-auto">
     <router-outlet></router-outlet>
   </main>
 </div>
+

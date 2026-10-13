@@ -5,6 +5,8 @@ import { Usuario } from '../../core/interfaces/usuario.interface';
 import { AuthService } from '../../core/services/auth.service';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { AdminFloatingMenuComponent } from '../../features/admin/admin-floating-menu/admin-floating-menu.component';
+import { LanguageSelectorComponent } from '../../shared/components/language-selector/language-selector.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-main-layout',
@@ -14,11 +16,14 @@ import { AdminFloatingMenuComponent } from '../../features/admin/admin-floating-
     RouterModule,
     SidebarComponent,
     AdminFloatingMenuComponent,
+    LanguageSelectorComponent,
+    TranslocoPipe,
   ],
   templateUrl: './main-layout.component.html',
 })
 export class MainLayoutComponent implements OnInit {
   usuario: Usuario | null = null;
+
 
   constructor(
     private authService: AuthService,

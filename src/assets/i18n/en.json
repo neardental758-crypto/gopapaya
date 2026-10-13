@@ -1,0 +1,192 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "continue": "Continue",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "none": "None",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "actions": "Actions",
+    "role": "Role",
+    "roles": {
+      "super_admin": "Super Administrator",
+      "admin": "Administrator",
+      "viewer": "Viewer"
+    },
+    "logout": "Log Out",
+    "exit": "Exit",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "details": "Details",
+    "notes": "Note",
+    "date": "Date",
+    "time": "Time",
+    "company": "Company",
+    "place": "Location",
+    "user": "User",
+    "users": "Users",
+    "evidence": "Evidence",
+    "photo": "Photo",
+    "upload": "Upload",
+    "download": "Download",
+    "export": "Export",
+    "next": "Next",
+    "previous": "Previous",
+    "language": "Language",
+    "select_language": "Select language",
+    "spanish": "Spanish",
+    "english": "English"
+  },
+  "nav": {
+    "home": "Home",
+    "brain_bike": "Brain Bike",
+    "bicilicuadora": "Bicilicuadora",
+    "biketona": "Biketona",
+    "administration": "Administration",
+    "users": "Users",
+    "allies": "Allies / Companies",
+    "calendar": "Calendar",
+    "history": "History",
+    "manual": "User Manual",
+    "setup": "Settings / Setup",
+    "themes": "Themes",
+    "drinks": "Drinks",
+    "reports": "Reports",
+    "floating_menu": "Action Menu"
+  },
+  "header": {
+    "wellness_activities": "Activities for",
+    "wellness_highlight": "Wellness",
+    "session_history": "Session",
+    "history_highlight": "History"
+  },
+  "auth": {
+    "login_title": "Log In",
+    "login_btn": "Sign In",
+    "logging_in": "Signing in...",
+    "email_label": "Email Address",
+    "email_placeholder": "you@email.com",
+    "password_label": "Password",
+    "password_placeholder": "••••••••",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "brand_tagline": "Experiential Wellness & Edutainment",
+    "unauthorized_title": "Access",
+    "unauthorized_highlight": "Denied",
+    "unauthorized_desc": "You do not have permission to access this section",
+    "back_to_home": "Back to Home"
+  },
+  "home": {
+    "welcome": "Welcome,",
+    "dashboard_subtitle": "Dashboard - Go PAPAYA",
+    "active_sessions": "Active Sessions",
+    "btn_calendar": "📅 Calendar",
+    "btn_new_session": "➕ New Session",
+    "loading_sessions": "Loading sessions...",
+    "no_sessions_title": "No active sessions",
+    "no_sessions_superadmin": "Create a new session to get started",
+    "no_sessions_admin": "You have no assigned sessions at this moment",
+    "filter_company": "Filter by company",
+    "all_companies": "All companies",
+    "filter_place": "Filter by location",
+    "all_places": "All locations",
+    "filter_date": "Filter by date",
+    "admins_count": "admin(s)",
+    "sessions_count": "session(s)",
+    "btn_edit": "Edit",
+    "btn_finish": "Finish",
+    "cannot_edit_notice": "Cannot be edited (less than 1 hour before start)",
+    "active_badge": "✓ Active",
+    "continue_label": "Continue →",
+    "admin_heading": "⚙️ Administration",
+    "card_manual_title": "Manual",
+    "card_manual_desc": "User guide and quick links",
+    "card_users_title": "Users",
+    "card_users_desc": "Manage administrators",
+    "card_brainbike_title": "Brain Bike",
+    "card_brainbike_desc": "Manage contents",
+    "card_bicilicuadora_title": "Bicilicuadora",
+    "card_bicilicuadora_desc": "Manage drinks",
+    "card_biketona_title": "Biketona",
+    "card_biketona_desc": "Configure game / Setup",
+    "card_companies_title": "Companies",
+    "card_companies_desc": "Manage companies"
+  },
+  "games": {
+    "brain_bike": "Brain Bike",
+    "bicilicuadora": "Bicilicuadora",
+    "vr": "VR",
+    "hit_fit": "Hit-Fit",
+    "bici_paseo": "BiciPaseo",
+    "biketona": "Biketona"
+  },
+  "seo": {
+    "default": {
+      "title": "Experiential Wellness & Edutainment",
+      "description": "Go PAPAYA interactive platform for corporate wellness, health, and sports gamification activities.",
+      "keywords": "wellness, corporate health, gamification, brain bike, bicilicuadora, biketona, edutainment"
+    },
+    "pages": {
+      "home": {
+        "title": "Main Dashboard",
+        "description": "Management dashboard for active interactive wellness sessions on Go PAPAYA.",
+        "keywords": "dashboard, active sessions, corporate wellness, playful activities"
+      },
+      "login": {
+        "title": "Log In",
+        "description": "Administrative access to the Go PAPAYA experiential activities platform.",
+        "keywords": "login, authentication, access, corporate wellness"
+      },
+      "brainBike": {
+        "title": "Brain Bike - Content Management",
+        "description": "Configuration of interactive themes and questions for Brain Bike.",
+        "keywords": "brain bike, questions, trivia, interactive cycling"
+      },
+      "calendar": {
+        "title": "Sessions Calendar",
+        "description": "Planning and schedule of wellness events and sessions.",
+        "keywords": "calendar, events, schedule, sessions"
+      },
+      "history": {
+        "title": "Session History",
+        "description": "Query results, metrics, and historical reports of completed sessions.",
+        "keywords": "history, metrics, reports, completed sessions"
+      },
+      "manual": {
+        "title": "User Manual",
+        "description": "Complete operating guide for Go PAPAYA interactive games and devices.",
+        "keywords": "manual, user guide, instructions, support"
+      },
+      "adminUsers": {
+        "title": "Administrator Management",
+        "description": "Management of users, system access, and roles.",
+        "keywords": "users, roles, administrators"
+      },
+      "adminAllies": {
+        "title": "Company & Ally Management",
+        "description": "Registration and management of client companies and business partners.",
+        "keywords": "companies, allies, corporate clients"
+      }
+    }
+  },
+  "geo_aeo": {
+    "organization_name": "Go PAPAYA",
+    "industry": "Corporate Wellness & Interactive Entertainment",
+    "location": "Global / LATAM",
+    "description": "Interactive workplace wellness solutions combining IoT hardware, smart stationary bikes, gamification, and real-time analytics."
+  }
+}

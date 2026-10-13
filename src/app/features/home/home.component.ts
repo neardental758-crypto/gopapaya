@@ -6,14 +6,16 @@ import { AuthService } from '../../core/services/auth.service';
 import { Sesion, SesionService } from '../services/sesion.service';
 import { FormsModule } from '@angular/forms';
 import { EvidenciasModalComponent } from './evidencias/evidencias-modal.component';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, EvidenciasModalComponent],
+  imports: [CommonModule, FormsModule, EvidenciasModalComponent, TranslocoPipe],
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {
+
   @ViewChild('evidenciasModal') evidenciasModal!: EvidenciasModalComponent;
 
   usuario: Usuario | null = null;

@@ -4,15 +4,15 @@
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 class="text-2xl sm:text-4xl font-display font-bold text-white mb-2">
-            Bienvenido, <span class="text-neon-yellow">{{ usuario?.nombre }}</span>
+            {{ 'home.welcome' | transloco }} <span class="text-neon-yellow">{{ usuario?.nombre }}</span>
           </h1>
-          <p class="text-gray-400 text-sm sm:text-base">Panel de Control - Go PAPAYA</p>
+          <p class="text-gray-400 text-sm sm:text-base">{{ 'home.dashboard_subtitle' | transloco }}</p>
         </div>
         <button
           (click)="logout()"
-          class="px-4 py-2 bg-dark-700 text-gray-300 rounded-lg font-bold border border-dark-600 hover:bg-dark-600 transition-all text-sm"
+          class="px-4 py-2 bg-dark-700 text-gray-300 rounded-lg font-bold border border-dark-600 hover:bg-dark-600 transition-all text-sm cursor-pointer"
         >
-          Cerrar Sesión
+          {{ 'common.logout' | transloco }}
         </button>
       </div>
     </div>
@@ -20,7 +20,7 @@
     <div *ngIf="isAdmin()" class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h2 class="text-xl sm:text-2xl font-display font-bold text-white">
-          Sesiones Activas
+          {{ 'home.active_sessions' | transloco }}
           <span class="ml-2 px-3 py-1 bg-neon-yellow text-dark-950 rounded-full text-sm">
             {{ sesionesActivas.length }}
           </span>
@@ -28,30 +28,30 @@
         <div class="flex gap-3">
           <button
             (click)="irACalendario()"
-            class="px-6 py-3 bg-neon-blue text-white rounded-lg font-bold shadow-neon-blue hover:shadow-neon-blue-lg hover:scale-105 transition-all"
+            class="px-6 py-3 bg-neon-blue text-white rounded-lg font-bold shadow-neon-blue hover:shadow-neon-blue-lg hover:scale-105 transition-all cursor-pointer"
           >
-            📅 Calendario
+            {{ 'home.btn_calendar' | transloco }}
           </button>
           <button
             *ngIf="isSuperAdmin()"
             (click)="irACrearSesion()"
-            class="px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all"
+            class="px-6 py-3 bg-neon-yellow text-dark-950 rounded-lg font-bold shadow-neon-yellow hover:shadow-neon-yellow-lg hover:scale-105 transition-all cursor-pointer"
           >
-            ➕ Nueva Sesión
+            {{ 'home.btn_new_session' | transloco }}
           </button>
         </div>
       </div>
 
       <div *ngIf="cargandoSesiones" class="text-center py-12">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-neon-yellow border-t-transparent"></div>
-        <p class="text-gray-400 mt-4">Cargando sesiones...</p>
+        <p class="text-gray-400 mt-4">{{ 'home.loading_sessions' | transloco }}</p>
       </div>
 
       <div *ngIf="!cargandoSesiones && sesionesActivas.length === 0" class="text-center py-12">
         <div class="text-6xl mb-4">📋</div>
-        <p class="text-gray-400 text-lg mb-4">No hay sesiones activas</p>
-        <p class="text-gray-500 text-sm" *ngIf="isSuperAdmin()">Crea una nueva sesión para comenzar</p>
-        <p class="text-gray-500 text-sm" *ngIf="!isSuperAdmin()">No tienes sesiones asignadas en este momento</p>
+        <p class="text-gray-400 text-lg mb-4">{{ 'home.no_sessions_title' | transloco }}</p>
+        <p class="text-gray-500 text-sm" *ngIf="isSuperAdmin()">{{ 'home.no_sessions_superadmin' | transloco }}</p>
+        <p class="text-gray-500 text-sm" *ngIf="!isSuperAdmin()">{{ 'home.no_sessions_admin' | transloco }}</p>
       </div>
 
       <div *ngIf="!cargandoSesiones && isSuperAdmin() && sesionesAgrupadas.length > 0" class="space-y-4">
@@ -70,8 +70,8 @@
               <div>
                 <h3 class="text-lg font-bold text-white">{{ grupoEmpresa.empresa_nombre }}</h3>
                 <p class="text-gray-400 text-sm">
-                  {{ grupoEmpresa.admins.length }} admin(s) ·
-                  {{ getTotalSesiones(grupoEmpresa) }} sesión(es)
+                  {{ grupoEmpresa.admins.length }} {{ 'home.admins_count' | transloco }} ·
+                  {{ getTotalSesiones(grupoEmpresa) }} {{ 'home.sessions_count' | transloco }}
                 </p>
               </div>
             </div>
@@ -91,7 +91,7 @@
                   <p class="text-gray-500 text-xs" *ngIf="grupoAdmin.admin_email">{{ grupoAdmin.admin_email }}</p>
                 </div>
                 <span class="ml-auto px-2 py-1 bg-dark-900 border border-dark-600 rounded text-xs text-gray-400">
-                  {{ grupoAdmin.sesiones.length }} sesión(es)
+                  {{ grupoAdmin.sesiones.length }} {{ 'home.sessions_count' | transloco }}
                 </span>
               </div>
 
@@ -115,44 +115,44 @@
                     </div>
                     <div class="flex gap-1 sm:gap-2 flex-shrink-0">
                       <button
-                      (click)="editarParametros(sesion, $event)"
-                      [disabled]="!puedeEditarSesion(sesion)"
-                      class="px-2 sm:px-3 py-1 bg-neon-blue text-white rounded text-[10px] sm:text-xs font-bold hover:shadow-neon-blue transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        [title]="!puedeEditarSesion(sesion) ? 'No se puede editar (menos de 1 hora para inicio)' : ''"
+                        (click)="editarParametros(sesion, $event)"
+                        [disabled]="!puedeEditarSesion(sesion)"
+                        class="px-2 sm:px-3 py-1 bg-neon-blue text-white rounded text-[10px] sm:text-xs font-bold hover:shadow-neon-blue transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        [title]="!puedeEditarSesion(sesion) ? ('home.cannot_edit_notice' | transloco) : ''"
                       >
-                        Editar
+                        {{ 'home.btn_edit' | transloco }}
                       </button>
-                    <button
-                      (click)="finalizarSesion(sesion, $event)"
-                      class="px-2 sm:px-3 py-1 bg-neon-red text-white rounded text-[10px] sm:text-xs font-bold hover:shadow-neon-red transition-all"
-                    >
-                        Finalizar
+                      <button
+                        (click)="finalizarSesion(sesion, $event)"
+                        class="px-2 sm:px-3 py-1 bg-neon-red text-white rounded text-[10px] sm:text-xs font-bold hover:shadow-neon-red transition-all cursor-pointer"
+                      >
+                        {{ 'home.btn_finish' | transloco }}
                       </button>
                     </div>
                   </div>
 
-              <div *ngIf="sesion.juego_asignado" class="mb-2 px-2 py-1 bg-dark-900 rounded">
-                <p class="text-neon-blue text-xs font-bold uppercase">
-                  🎮 {{
-                    sesion.juego_asignado === 'brain-bike' ? 'Brain Bike' :
-                    sesion.juego_asignado === 'bicilicuadora' ? 'Bicilicuadora' :
-                    sesion.juego_asignado === 'vr' ? 'VR' :
-                    sesion.juego_asignado === 'hit-fit' ? 'Hit-Fit' :
-                    sesion.juego_asignado === 'bici-paseo' ? 'BiciPaseo' :
-                    sesion.juego_asignado === 'biketona' ? 'Biketona' :
-                    sesion.juego_asignado
-                  }}
-                </p>
-              </div>
+                  <div *ngIf="sesion.juego_asignado" class="mb-2 px-2 py-1 bg-dark-900 rounded">
+                    <p class="text-neon-blue text-xs font-bold uppercase">
+                      🎮 {{
+                        sesion.juego_asignado === 'brain-bike' ? ('games.brain_bike' | transloco) :
+                        sesion.juego_asignado === 'bicilicuadora' ? ('games.bicilicuadora' | transloco) :
+                        sesion.juego_asignado === 'vr' ? ('games.vr' | transloco) :
+                        sesion.juego_asignado === 'hit-fit' ? ('games.hit_fit' | transloco) :
+                        sesion.juego_asignado === 'bici-paseo' ? ('games.bici_paseo' | transloco) :
+                        sesion.juego_asignado === 'biketona' ? ('games.biketona' | transloco) :
+                        sesion.juego_asignado
+                      }}
+                    </p>
+                  </div>
 
                   <div *ngIf="sesion.nota" class="mb-2 p-2 bg-dark-900 rounded">
-                    <p class="text-gray-400 text-xs mb-1">Nota:</p>
+                    <p class="text-gray-400 text-xs mb-1">{{ 'common.notes' | transloco }}:</p>
                     <p class="text-gray-300 text-xs line-clamp-2">{{ sesion.nota }}</p>
                   </div>
 
                   <div class="flex items-center justify-between pt-2 border-t border-dark-700">
-                    <span class="text-neon-yellow text-xs font-bold">✓ Activa</span>
-                    <span class="text-gray-400 text-xs">Continuar →</span>
+                    <span class="text-neon-yellow text-xs font-bold">{{ 'home.active_badge' | transloco }}</span>
+                    <span class="text-gray-400 text-xs">{{ 'home.continue_label' | transloco }}</span>
                   </div>
                 </div>
               </div>
@@ -164,33 +164,33 @@
       <div *ngIf="!cargandoSesiones && !isSuperAdmin() && sesionesActivas.length > 0">
         <div class="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-gray-400 text-sm mb-2">Filtrar por empresa</label>
+            <label class="block text-gray-400 text-sm mb-2">{{ 'home.filter_company' | transloco }}</label>
             <select
               [(ngModel)]="filtroEmpresa"
               (ngModelChange)="aplicarFiltros()"
               class="w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
             >
-              <option value="">Todas las empresas</option>
+              <option value="">{{ 'home.all_companies' | transloco }}</option>
               <option *ngFor="let empresa of empresasDisponibles" [value]="empresa">
                 {{ empresa }}
               </option>
             </select>
           </div>
           <div>
-            <label class="block text-gray-400 text-sm mb-2">Filtrar por lugar</label>
+            <label class="block text-gray-400 text-sm mb-2">{{ 'home.filter_place' | transloco }}</label>
             <select
               [(ngModel)]="filtroLugar"
               (ngModelChange)="aplicarFiltros()"
               class="w-full px-4 py-2 bg-dark-800 border border-dark-600 rounded-lg text-white focus:border-neon-yellow focus:outline-none"
             >
-              <option value="">Todos los lugares</option>
+              <option value="">{{ 'home.all_places' | transloco }}</option>
               <option *ngFor="let lugar of lugaresDisponibles" [value]="lugar">
                 {{ lugar }}
               </option>
             </select>
           </div>
           <div>
-            <label class="block text-gray-400 text-sm mb-2">Filtrar por fecha</label>
+            <label class="block text-gray-400 text-sm mb-2">{{ 'home.filter_date' | transloco }}</label>
             <input
               type="date"
               [(ngModel)]="filtroFecha"
@@ -215,7 +215,7 @@
                 </div>
                 <div>
                   <h3 class="text-lg font-bold text-white">{{ grupoEmpresa.empresa_nombre }}</h3>
-                  <p class="text-gray-400 text-sm">{{ grupoEmpresa.sesiones.length }} sesión(es)</p>
+                  <p class="text-gray-400 text-sm">{{ grupoEmpresa.sesiones.length }} {{ 'home.sessions_count' | transloco }}</p>
                 </div>
               </div>
               <div class="text-neon-yellow text-xl transition-transform" [class.rotate-90]="isEmpresaAdminExpandida(grupoEmpresa.empresa_id)">
@@ -223,124 +223,125 @@
               </div>
             </div>
 
-<div *ngIf="isEmpresaAdminExpandida(grupoEmpresa.empresa_id)" class="p-4 bg-dark-850">
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-    <div
-      *ngFor="let sesion of grupoEmpresa.sesiones"
-      (click)="continuarSesion(sesion)"
-      class="bg-dark-800 border border-neon-yellow rounded-lg p-4 cursor-pointer hover:shadow-neon-yellow transition-all group"
-    >
-      <div class="flex items-start justify-between mb-3">
-        <div class="flex-1">
-          <h4 class="text-base font-bold text-white mb-1 group-hover:text-neon-yellow transition-colors">
-            {{ sesion.nombreCliente }}
-          </h4>
-          <p class="text-gray-400 text-xs mb-1" *ngIf="sesion.lugarEjecucion">
-            📍 {{ sesion.lugarEjecucion }}
-          </p>
-          <p class="text-gray-500 text-xs" *ngIf="sesion.fecha_sesion">
-            📅 {{ sesion.fecha_sesion | date: 'dd/MM/yyyy HH:mm' }}
-          </p>
-        </div>
+            <div *ngIf="isEmpresaAdminExpandida(grupoEmpresa.empresa_id)" class="p-4 bg-dark-850">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div
+                  *ngFor="let sesion of grupoEmpresa.sesiones"
+                  (click)="continuarSesion(sesion)"
+                  class="bg-dark-800 border border-neon-yellow rounded-lg p-4 cursor-pointer hover:shadow-neon-yellow transition-all group"
+                >
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                      <h4 class="text-base font-bold text-white mb-1 group-hover:text-neon-yellow transition-colors">
+                        {{ sesion.nombreCliente }}
+                      </h4>
+                      <p class="text-gray-400 text-xs mb-1" *ngIf="sesion.lugarEjecucion">
+                        📍 {{ sesion.lugarEjecucion }}
+                      </p>
+                      <p class="text-gray-500 text-xs" *ngIf="sesion.fecha_sesion">
+                        📅 {{ sesion.fecha_sesion | date: 'dd/MM/yyyy HH:mm' }}
+                      </p>
+                    </div>
 
-          <button
-            (click)="abrirEvidencias(sesion, $event)"
-            class="px-2 sm:px-3 py-1.5 sm:py-2 bg-neon-green text-white rounded text-xs font-bold hover:shadow-neon-green transition-all flex-shrink-0"
-          >
-          📸
-        </button>
-      </div>
+                    <button
+                      (click)="abrirEvidencias(sesion, $event)"
+                      class="px-2 sm:px-3 py-1.5 sm:py-2 bg-neon-green text-white rounded text-xs font-bold hover:shadow-neon-green transition-all flex-shrink-0 cursor-pointer"
+                      [attr.aria-label]="'common.evidence' | transloco"
+                    >
+                      📸
+                    </button>
+                  </div>
 
-    <div *ngIf="sesion.juego_asignado" class="mb-2 px-2 py-1 bg-dark-900 rounded">
-      <p class="text-neon-blue text-xs font-bold uppercase">
-        🎮 {{
-          sesion.juego_asignado === 'brain-bike' ? 'Brain Bike' :
-          sesion.juego_asignado === 'bicilicuadora' ? 'Bicilicuadora' :
-          sesion.juego_asignado === 'vr' ? 'VR' :
-          sesion.juego_asignado === 'hit-fit' ? 'Hit-Fit' :
-          sesion.juego_asignado === 'bici-paseo' ? 'BiciPaseo' :
-          sesion.juego_asignado === 'biketona' ? 'Biketona' :
-          sesion.juego_asignado
-        }}
-      </p>
-    </div>
+                  <div *ngIf="sesion.juego_asignado" class="mb-2 px-2 py-1 bg-dark-900 rounded">
+                    <p class="text-neon-blue text-xs font-bold uppercase">
+                      🎮 {{
+                        sesion.juego_asignado === 'brain-bike' ? ('games.brain_bike' | transloco) :
+                        sesion.juego_asignado === 'bicilicuadora' ? ('games.bicilicuadora' | transloco) :
+                        sesion.juego_asignado === 'vr' ? ('games.vr' | transloco) :
+                        sesion.juego_asignado === 'hit-fit' ? ('games.hit_fit' | transloco) :
+                        sesion.juego_asignado === 'bici-paseo' ? ('games.bici_paseo' | transloco) :
+                        sesion.juego_asignado === 'biketona' ? ('games.biketona' | transloco) :
+                        sesion.juego_asignado
+                      }}
+                    </p>
+                  </div>
 
-      <div *ngIf="sesion.nota" class="mb-2 p-2 bg-dark-900 rounded">
-        <p class="text-gray-400 text-xs mb-1">Nota:</p>
-        <p class="text-gray-300 text-xs line-clamp-2">{{ sesion.nota }}</p>
-      </div>
+                  <div *ngIf="sesion.nota" class="mb-2 p-2 bg-dark-900 rounded">
+                    <p class="text-gray-400 text-xs mb-1">{{ 'common.notes' | transloco }}:</p>
+                    <p class="text-gray-300 text-xs line-clamp-2">{{ sesion.nota }}</p>
+                  </div>
 
-      <div class="flex items-center justify-between pt-2 border-t border-dark-700">
-        <span class="text-neon-yellow text-xs font-bold">✓ Activa</span>
-        <span class="text-gray-400 text-xs">Continuar →</span>
-      </div>
-    </div>
-  </div>
-</div>
+                  <div class="flex items-center justify-between pt-2 border-t border-dark-700">
+                    <span class="text-neon-yellow text-xs font-bold">{{ 'home.active_badge' | transloco }}</span>
+                    <span class="text-gray-400 text-xs">{{ 'home.continue_label' | transloco }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <div *ngIf="isSuperAdmin()" class="bg-dark-900 border border-dark-700 rounded-card p-6 sm:p-8">
-      <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-6">⚙️ Administración</h2>
+      <h2 class="text-xl sm:text-2xl font-display font-bold text-white mb-6">{{ 'home.admin_heading' | transloco }}</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <button
           (click)="irAManual()"
-          class="p-4 sm:p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group"
+          class="p-4 sm:p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group cursor-pointer"
         >
           <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">📘</div>
-          <p class="text-white font-bold text-lg mb-1">Manual</p>
-          <p class="text-gray-400 text-sm">Guía de uso y accesos rápidos</p>
+          <p class="text-white font-bold text-lg mb-1">{{ 'home.card_manual_title' | transloco }}</p>
+          <p class="text-gray-400 text-sm">{{ 'home.card_manual_desc' | transloco }}</p>
         </button>
 
         <button
           (click)="irAUsuarios()"
-          class="p-4 sm:p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group"
+          class="p-4 sm:p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group cursor-pointer"
         >
           <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">👥</div>
-          <p class="text-white font-bold text-lg mb-1">Usuarios</p>
-          <p class="text-gray-400 text-sm">Gestionar administradores</p>
+          <p class="text-white font-bold text-lg mb-1">{{ 'home.card_users_title' | transloco }}</p>
+          <p class="text-gray-400 text-sm">{{ 'home.card_users_desc' | transloco }}</p>
         </button>
 
         <button
           (click)="irABrainBike()"
-          class="p-4 sm:p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group"
+          class="p-4 sm:p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group cursor-pointer"
         >
           <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🧠</div>
-          <p class="text-white font-bold text-lg mb-1">Brain Bike</p>
-          <p class="text-gray-400 text-sm">Gestionar contenidos</p>
+          <p class="text-white font-bold text-lg mb-1">{{ 'home.card_brainbike_title' | transloco }}</p>
+          <p class="text-gray-400 text-sm">{{ 'home.card_brainbike_desc' | transloco }}</p>
         </button>
 
-        <!-- Gestionar Bicilicuadora -->
-          <button
-            (click)="irABicilicuadora()"
-            class="p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-blue hover:shadow-neon-blue transition-all text-left group"
-          >
-            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🥤</div>
-            <p class="text-white font-bold text-lg mb-1">Bicilicuadora</p>
-            <p class="text-gray-400 text-sm">Gestionar bebidas</p>
-          </button>
+        <button
+          (click)="irABicilicuadora()"
+          class="p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-blue hover:shadow-neon-blue transition-all text-left group cursor-pointer"
+        >
+          <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🥤</div>
+          <p class="text-white font-bold text-lg mb-1">{{ 'home.card_bicilicuadora_title' | transloco }}</p>
+          <p class="text-gray-400 text-sm">{{ 'home.card_bicilicuadora_desc' | transloco }}</p>
+        </button>
 
-        <!-- Configurar Biketona -->
         <button
           (click)="irABiketona()"
-          class="p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-pink hover:shadow-neon-pink transition-all text-left group"
+          class="p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-pink hover:shadow-neon-pink transition-all text-left group cursor-pointer"
         >
           <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🚴</div>
-          <p class="text-white font-bold text-lg mb-1">Biketona</p>
-          <p class="text-gray-400 text-sm">Configurar juego / Setup</p>
+          <p class="text-white font-bold text-lg mb-1">{{ 'home.card_biketona_title' | transloco }}</p>
+          <p class="text-gray-400 text-sm">{{ 'home.card_biketona_desc' | transloco }}</p>
         </button>
 
         <button
           (click)="irAAliados()"
-          class="p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group"
+          class="p-6 bg-dark-800 border border-dark-600 rounded-lg hover:border-neon-yellow hover:shadow-neon-yellow transition-all text-left group cursor-pointer"
         >
           <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">🏢</div>
-          <p class="text-white font-bold text-lg mb-1">Empresas</p>
-          <p class="text-gray-400 text-sm">Gestionar empresas</p>
+          <p class="text-white font-bold text-lg mb-1">{{ 'home.card_companies_title' | transloco }}</p>
+          <p class="text-gray-400 text-sm">{{ 'home.card_companies_desc' | transloco }}</p>
         </button>
       </div>
     </div>
     <app-evidencias-modal #evidenciasModal></app-evidencias-modal>
+  </div>
 </div>
+
