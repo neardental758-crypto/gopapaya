@@ -184,7 +184,7 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
       const participanteActual = JSON.parse(participanteActualStr);
 
       this.participanteService.getByBicilicuadora(this.config!.id!).subscribe({
-        next: (participantes) => {
+        next: async (participantes) => {
           const participanteEnBD = participantes.find(
             (p: any) => p.id === participanteActual.id,
           );
@@ -202,19 +202,23 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
 
           this.participanteActual = participanteActual;
 
-          this.cargarBebidaDelParticipante();
           this.cargarScriptYouTube();
 
-          this.verificarYReconectarBicicleta()
-            .then(() => {
-              this.paso = 'juego';
-              this.etapaJuego = 'pedaleo';
+          // Esperar la carga de la bebida antes de inicializar el juego para no finalizar de inmediato
+          await this.cargarBebidaDelParticipante();
 
-              setTimeout(() => {
-                this.iniciarPedaleoPorParticipante();
-              }, 500);
-            })
-            .catch(() => {});
+          try {
+            await this.verificarYReconectarBicicleta();
+          } catch (e) {
+            console.warn('Bicicleta no reconectada, continuando...', e);
+          }
+
+          this.paso = 'juego';
+          this.etapaJuego = 'pedaleo';
+
+          setTimeout(() => {
+            this.iniciarPedaleoPorParticipante();
+          }, 300);
         },
         error: () => {
           this.router.navigate(['/bicilicuadora/conexion']);
@@ -290,7 +294,7 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
     }
 
     if (this.bebidaActual) {
-      this.tiempoRestante = this.bebidaActual.tiempo_pedaleo;
+      this.tiempoRestante = Number(this.bebidaActual.tiempo_pedaleo) || 60;
       this.progresoPedaleo = 0;
       this.puntosActuales = 0;
 
@@ -301,19 +305,31 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
       this.iniciarTemporizador();
       this.iniciarCalculoPuntos();
     } else {
-      this.finalizarParticipante();
+      console.warn('⚠️ Bebida actual no lista, intentando recargar...');
+      this.cargarBebidaDelParticipante().then((bebida) => {
+        if (bebida) {
+          this.cargarSiguienteBebida();
+        } else {
+          this.finalizarParticipante();
+        }
+      });
     }
   }
 
   iniciarTemporizador(): void {
     this.timerSubscription?.unsubscribe();
 
-    const tiempoTotal = this.bebidaActual?.tiempo_pedaleo || 0;
+    const tiempoTotal = Math.max(
+      1,
+      Number(this.bebidaActual?.tiempo_pedaleo) || 60,
+    );
 
     this.timerSubscription = interval(1000).subscribe(() => {
       this.tiempoRestante--;
-      this.progresoPedaleo =
-        ((tiempoTotal - this.tiempoRestante) / tiempoTotal) * 100;
+      this.progresoPedaleo = Math.min(
+        100,
+        Math.max(0, ((tiempoTotal - this.tiempoRestante) / tiempoTotal) * 100),
+      );
 
       if (this.tiempoRestante <= 0) {
         this.completarBebida();
@@ -328,8 +344,21 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
     }
     this.audioService.reproducirSonidoExito();
 
+    if (this.participanteActual) {
+      this.participanteActual.bebidasCompletadas =
+        (this.participanteActual.bebidasCompletadas || 0) + 1;
+    }
+
+    this.bebidaActualIndex++;
+    const cantidadTotal =
+      this.participanteActual?.cantidadBebidasSeleccionadas || 1;
+
     setTimeout(() => {
-      this.finalizarParticipante();
+      if (this.bebidaActualIndex < cantidadTotal) {
+        this.cargarSiguienteBebida();
+      } else {
+        this.finalizarParticipante();
+      }
     }, 1500);
   }
 
@@ -491,6 +520,12 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
     this.planoService.limpiar();
     this.gameService.detenerSimulacion();
     this.ble.unsubscribe('bici1', 'vel');
+
+    if (this.player) {
+      try {
+        this.player.pauseVideo();
+      } catch (e) {}
+    }
 
     if (this.participanteActual) {
       this.actualizarParticipanteBD(this.participanteActual).then(() => {
@@ -673,8 +708,9 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
       );
 
       if (ritmoActivo) {
-        const velocidadObjetivo = ritmoActivo.velocidad_objetivo;
-        const margenError = 1;
+        const velocidadObjetivo =
+          parseFloat(ritmoActivo.velocidad_objetivo as any) || 0;
+        const margenError = 1.5;
         const diferencia = Math.abs(velocidadActual - velocidadObjetivo);
 
         this.planoService.agregarPunto(
@@ -690,6 +726,12 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
               (this.participanteActual.puntosTotales || 0) + 1;
           }
         }
+      } else {
+        this.planoService.agregarPunto(
+          segundoActual,
+          0,
+          velocidadActual,
+        );
       }
 
       segundoActual++;
@@ -701,15 +743,18 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
     if (!ritmo || !this.participanteActual) return false;
 
     const velocidadActual = this.participanteActual.velocidadActual || 0;
-    const margenError = 1;
+    const velocidadObjetivo =
+      parseFloat(ritmo.velocidad_objetivo as any) || 0;
+    const margenError = 1.5;
 
-    return Math.abs(velocidadActual - ritmo.velocidad_objetivo) <= margenError;
+    return Math.abs(velocidadActual - velocidadObjetivo) <= margenError;
   }
+
   obtenerRitmoActual(): any {
     if (!this.bebidaActual || !this.participanteActual) return null;
 
-    const tiempoTranscurrido =
-      (this.bebidaActual.tiempo_pedaleo || 0) - this.tiempoRestante;
+    const tiempoTotal = Number(this.bebidaActual.tiempo_pedaleo) || 60;
+    const tiempoTranscurrido = Math.max(0, tiempoTotal - this.tiempoRestante);
 
     const ritmo = this.bebidaActual.ritmos?.find(
       (r) =>
@@ -719,17 +764,58 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
     return ritmo;
   }
 
-  cargarBebidaDelParticipante(): void {
-    if (!this.participanteActual?.bebidaSeleccionadaId) return;
+  cargarBebidaDelParticipante(): Promise<Bebida | null> {
+    return new Promise((resolve) => {
+      if (!this.participanteActual?.bebidaSeleccionadaId) {
+        resolve(null);
+        return;
+      }
 
-    this.bebidasService.getAllBebidas().subscribe({
-      next: (todasLasBebidas) => {
-        this.bebidaActual =
-          todasLasBebidas.find(
-            (b) => b._id === this.participanteActual!.bebidaSeleccionadaId,
-          ) || null;
-      },
-      error: (error) => console.error('Error cargando bebida:', error),
+      this.bebidasService.getAllBebidas().subscribe({
+        next: (todasLasBebidas) => {
+          this.bebidaActual =
+            todasLasBebidas.find(
+              (b) => b._id === this.participanteActual!.bebidaSeleccionadaId,
+            ) || null;
+
+          if (!this.bebidaActual) {
+            this.bebidasService
+              .getBebidaById(this.participanteActual!.bebidaSeleccionadaId)
+              .subscribe({
+                next: (bebida) => {
+                  this.bebidaActual = bebida || null;
+                  if (this.bebidaActual) {
+                    this.bebidaActual.tiempo_pedaleo =
+                      Number(this.bebidaActual.tiempo_pedaleo) || 60;
+                  }
+                  resolve(this.bebidaActual);
+                },
+                error: () => resolve(null),
+              });
+            return;
+          }
+
+          this.bebidaActual.tiempo_pedaleo =
+            Number(this.bebidaActual.tiempo_pedaleo) || 60;
+          resolve(this.bebidaActual);
+        },
+        error: (error) => {
+          console.error('Error cargando bebida:', error);
+          this.bebidasService
+            .getBebidaById(this.participanteActual!.bebidaSeleccionadaId)
+            .subscribe({
+              next: (bebida) => {
+                this.bebidaActual = bebida || null;
+                if (this.bebidaActual) {
+                  this.bebidaActual.tiempo_pedaleo =
+                    Number(this.bebidaActual.tiempo_pedaleo) || 60;
+                }
+                resolve(this.bebidaActual);
+              },
+              error: () => resolve(null),
+            });
+        },
+      });
     });
   }
 
@@ -751,14 +837,22 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
     const videoId = this.extractYouTubeId(url);
     if (!videoId) return;
 
+    let intentos = 0;
+    const maxIntentos = 30;
+
     const esperarYT = () => {
-      if (
+      intentos++;
+      const elemento = document.getElementById('youtube-player-bicilicuadora');
+      const ytDisponible =
         typeof (window as any).YT !== 'undefined' &&
-        (window as any).YT.Player
-      ) {
-        setTimeout(() => this.inicializarPlayer(videoId), 300);
-      } else {
+        (window as any).YT.Player;
+
+      if (elemento && ytDisponible) {
+        this.inicializarPlayer(videoId);
+      } else if (intentos < maxIntentos) {
         setTimeout(esperarYT, 100);
+      } else {
+        console.warn('⚠️ No se pudo inicializar reproductor YouTube');
       }
     };
 
@@ -771,8 +865,13 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
       if (!elemento) return;
 
       if (this.player) {
-        this.player.destroy();
+        try {
+          this.player.destroy();
+        } catch (e) {}
+        this.player = null;
       }
+
+      this.playerReady = false;
 
       this.player = new (window as any).YT.Player(
         'youtube-player-bicilicuadora',
@@ -780,11 +879,43 @@ export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
           height: '100%',
           width: '100%',
           videoId: videoId,
-          playerVars: { autoplay: 1, rel: 0, controls: 1, modestbranding: 1 },
+          playerVars: {
+            autoplay: 1,
+            rel: 0,
+            controls: 1,
+            modestbranding: 1,
+            playsinline: 1,
+          },
           events: {
             onReady: (event: any) => {
               this.playerReady = true;
-              event.target.playVideo();
+              try {
+                event.target.playVideo();
+              } catch (e) {
+                console.warn('Autoplay error:', e);
+              }
+              const duracion = Math.round(event.target.getDuration());
+              if (
+                duracion > 0 &&
+                (!this.bebidaActual?.tiempo_pedaleo ||
+                  this.bebidaActual.tiempo_pedaleo <= 0)
+              ) {
+                this.bebidaActual!.tiempo_pedaleo = duracion;
+                this.tiempoRestante = duracion;
+              }
+            },
+            onStateChange: (event: any) => {
+              // 0 = YT.PlayerState.ENDED
+              if (
+                event.data === 0 ||
+                event.data === (window as any).YT?.PlayerState?.ENDED
+              ) {
+                console.log('🎬 Video finalizado por evento de YouTube');
+                this.completarBebida();
+              }
+            },
+            onError: (err: any) => {
+              console.warn('⚠️ Error en reproductor YouTube:', err);
             },
           },
         },

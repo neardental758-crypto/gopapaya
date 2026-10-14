@@ -22,7 +22,9 @@
     <div *ngIf="paso === 'juego'" class="h-full">
 <div *ngIf="etapaJuego === 'pedaleo'" class="h-full flex bg-black">
   <div class="w-2/3 relative overflow-hidden">
-    <div *ngIf="bebidaActual?.link_video" id="youtube-player-bicilicuadora" class="w-full h-full"></div>
+    <div *ngIf="bebidaActual?.link_video" class="w-full h-full">
+      <div id="youtube-player-bicilicuadora" class="w-full h-full"></div>
+    </div>
     <div *ngIf="!bebidaActual?.link_video && bebidaActual?.foto_bebida" class="w-full h-full">
       <img [src]="bebidaActual!.foto_bebida" class="w-full h-full object-contain" [alt]="bebidaActual!.nombre_bebida"/>
     </div>
