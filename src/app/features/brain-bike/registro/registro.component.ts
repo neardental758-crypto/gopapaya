@@ -11,6 +11,8 @@ import { SesionService } from '../../services/sesion.service';
 import { forkJoin } from 'rxjs';
 import { BrainBikeAudioService } from '../../services/audio/brain-bike-audio.service';
 
+import { FullscreenButtonComponent } from '../../../shared/components/fullscreen-button/fullscreen-button.component';
+
 interface ColorBicicleta {
   nombre: string;
   valor: string;
@@ -20,7 +22,7 @@ interface ColorBicicleta {
 @Component({
   selector: 'app-brain-bike-registro',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FullscreenButtonComponent],
   templateUrl: './registro.component.html',
 })
 export class BrainBikeRegistroComponent implements OnInit {

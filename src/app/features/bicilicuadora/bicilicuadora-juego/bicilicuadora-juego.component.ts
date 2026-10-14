@@ -19,6 +19,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BicilicuadoraPlanoService } from '../services/bicilicuadora-plano.service';
 import { BicilicuadoraPlanoComponent } from '../bicilicuadora-plano/bicilicuadora-plano.component';
+import { FullscreenButtonComponent } from '../../../shared/components/fullscreen-button/fullscreen-button.component';
 
 interface Bebida {
   _id: string;
@@ -62,7 +63,7 @@ interface BiciConexion {
   selector: 'app-bicilicuadora-juego',
   templateUrl: './bicilicuadora-juego.component.html',
   providers: [DecimalPipe],
-  imports: [CommonModule, FormsModule, BicilicuadoraPlanoComponent],
+  imports: [CommonModule, FormsModule, BicilicuadoraPlanoComponent, FullscreenButtonComponent],
 })
 export class BicilicuadoraJuegoComponent implements OnInit, OnDestroy {
   config: any = null;

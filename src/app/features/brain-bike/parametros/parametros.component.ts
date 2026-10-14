@@ -14,6 +14,7 @@ import {
   BikeKey,
   BleEsp32BrainBikeService,
 } from '../../services/brain-bike/ble-esp32-brain-bike.service';
+import { FullscreenButtonComponent } from '../../../shared/components/fullscreen-button/fullscreen-button.component';
 
 interface VelocidadPreset {
   nombre: string;
@@ -30,7 +31,7 @@ interface BiciUI {
 @Component({
   selector: 'app-brain-bike-parametros',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FullscreenButtonComponent],
   templateUrl: './parametros.component.html',
 })
 export class BrainBikeParametrosComponent implements OnInit {

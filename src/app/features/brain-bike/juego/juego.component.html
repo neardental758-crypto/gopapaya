@@ -16,7 +16,8 @@
           </div>
         </div>
 
-        <div class="flex gap-2 w-full sm:w-auto">
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <app-fullscreen-button mode="inline"></app-fullscreen-button>
           <button [disabled]="seccionActual !== 'video'"
             class="flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg font-bold text-xs sm:text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed"
             [class.bg-neon-blue]="seccionActual === 'video'" [class.text-white]="seccionActual === 'video'"

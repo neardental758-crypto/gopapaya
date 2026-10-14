@@ -15,11 +15,12 @@ import {
   Bebida,
   BebidasService,
 } from '../../services/bicilicuadora/bebidas.service';
+import { FullscreenButtonComponent } from '../../../shared/components/fullscreen-button/fullscreen-button.component';
 
 @Component({
   selector: 'app-bicilicuadora-registro',
   templateUrl: './bicilicuadora-registro.component.html',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FullscreenButtonComponent],
 })
 export class BicilicuadoraRegistroComponent implements OnInit {
   config: BicilicuadoraConfig | null = null;

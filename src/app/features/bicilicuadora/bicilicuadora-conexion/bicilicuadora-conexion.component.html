@@ -1,23 +1,27 @@
-<div class="min-h-screen bg-dark-950 p-6">
+<div class="min-h-screen bg-dark-950 p-3 sm:p-6">
   <div class="max-w-5xl mx-auto">
-    <div class="bg-dark-900 border border-dark-700 rounded-card p-6 mb-6">
-      <div class="flex items-center gap-4 mb-4">
-        <button (click)="router.navigate(['/bicilicuadora/parametros'])"
-          class="w-12 h-12 flex items-center justify-center bg-dark-700 hover:bg-dark-600 rounded-lg transition-all">
-          <span class="text-2xl">←</span>
-        </button>
-        <div class="text-5xl">🥤</div>
-        <div>
-          <h1 class="text-2xl font-bold text-white mb-2">
-            <span class="text-neon-blue">🔌 Conexión Bluetooth</span>
-          </h1>
-          <p class="text-gray-400">
-            <span class="font-bold" [class.text-neon-green]="todasBicisConectadas()"
-              [class.text-neon-yellow]="!todasBicisConectadas()">
-              {{ todasBicisConectadas() ? '✓ Listo para continuar' : '⚠ Conecta todas las bicis' }}
-            </span>
-          </p>
+    <div class="bg-dark-900 border border-dark-700 rounded-card p-4 sm:p-6 mb-4 sm:mb-6">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-3 sm:gap-4">
+          <button (click)="router.navigate(['/bicilicuadora/parametros'])"
+            class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-dark-700 hover:bg-dark-600 rounded-lg transition-all">
+            <span class="text-xl sm:text-2xl">←</span>
+          </button>
+          <div class="text-3xl sm:text-5xl">🥤</div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-bold text-white mb-1">
+              <span class="text-neon-blue">🔌 Conexión Bluetooth</span>
+            </h1>
+            <p class="text-gray-400 text-xs sm:text-sm">
+              <span class="font-bold" [class.text-neon-green]="todasBicisConectadas()"
+                [class.text-neon-yellow]="!todasBicisConectadas()">
+                {{ todasBicisConectadas() ? '✓ Listo para continuar' : '⚠ Conecta todas las bicis' }}
+              </span>
+            </p>
+          </div>
         </div>
+
+        <app-fullscreen-button mode="inline"></app-fullscreen-button>
       </div>
     </div>
 

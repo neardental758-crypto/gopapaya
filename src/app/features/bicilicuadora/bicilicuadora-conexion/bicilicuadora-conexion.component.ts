@@ -5,12 +5,13 @@ import { Router } from '@angular/router';
 import { BicilicuadoraConfigService } from '../../services/bicilicuadora/bicilicuadora-config.service';
 import { BleEsp32Service, BikeKey } from '../../services/ble-esp32.service';
 import { BicilicuadoraGameService } from '../../services/bicilicuadora/bicilicuadora-game.service';
+import { FullscreenButtonComponent } from '../../../shared/components/fullscreen-button/fullscreen-button.component';
 
 @Component({
   selector: 'app-bicilicuadora-conexion',
   templateUrl: './bicilicuadora-conexion.component.html',
   providers: [DecimalPipe],
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FullscreenButtonComponent],
 })
 export class BicilicuadoraConexionComponent implements OnInit, OnDestroy {
   config: any = null;

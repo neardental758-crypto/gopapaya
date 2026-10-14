@@ -1,19 +1,22 @@
 <div class="h-screen bg-dark-950 flex flex-col overflow-hidden">
-  <div class="bg-dark-900 border-b border-dark-700 p-4 flex-shrink-0">
+  <div class="bg-dark-900 border-b border-dark-700 p-3 sm:p-4 flex-shrink-0">
     <div class="flex items-center justify-between max-w-7xl mx-auto">
-      <div class="flex items-center gap-4">
-        <div class="text-5xl">🥤</div>
-        <img *ngIf="logoEmpresa" [src]="logoEmpresa" class="h-12 w-12 rounded-lg object-cover border-2 border-neon-orange" [alt]="sesion?.nombreCliente"/>
+      <div class="flex items-center gap-3 sm:gap-4">
+        <div class="text-3xl sm:text-5xl">🥤</div>
+        <img *ngIf="logoEmpresa" [src]="logoEmpresa" class="h-10 w-10 sm:h-12 sm:w-12 rounded-lg object-cover border-2 border-neon-orange" [alt]="sesion?.nombreCliente"/>
         <div>
-          <h1 class="text-2xl font-display font-bold text-white">
+          <h1 class="text-xl sm:text-2xl font-display font-bold text-white">
             <span class="text-neon-orange">Bicilicuadora</span>
           </h1>
-          <p class="text-sm text-gray-400">{{ sesion?.nombreCliente }}</p>
+          <p class="text-xs sm:text-sm text-gray-400">{{ sesion?.nombreCliente }}</p>
         </div>
       </div>
-      <div class="text-right">
-        <p class="text-sm text-gray-400">Participantes</p>
-        <p class="text-2xl font-bold text-neon-green">{{ paso === 'juego' && participanteActual ? totalParticipantesJugados + 1 : totalParticipantesJugados }} / {{ totalParticipantes }}</p>
+      <div class="flex items-center gap-3 sm:gap-4">
+        <app-fullscreen-button mode="inline"></app-fullscreen-button>
+        <div class="text-right">
+          <p class="text-xs sm:text-sm text-gray-400">Participantes</p>
+          <p class="text-xl sm:text-2xl font-bold text-neon-green">{{ paso === 'juego' && participanteActual ? totalParticipantesJugados + 1 : totalParticipantesJugados }} / {{ totalParticipantes }}</p>
+        </div>
       </div>
     </div>
   </div>

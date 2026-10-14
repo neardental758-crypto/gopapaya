@@ -21,6 +21,7 @@ import {
   BikeKey,
   BleEsp32BrainBikeService,
 } from '../../services/brain-bike/ble-esp32-brain-bike.service';
+import { FullscreenButtonComponent } from '../../../shared/components/fullscreen-button/fullscreen-button.component';
 
 interface PreguntaBrain {
   _id: string;
@@ -31,7 +32,7 @@ interface PreguntaBrain {
 @Component({
   selector: 'app-brain-bike-juego',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FullscreenButtonComponent],
   templateUrl: './juego.component.html',
 })
 export class BrainBikeJuegoComponent implements OnInit, OnDestroy {
