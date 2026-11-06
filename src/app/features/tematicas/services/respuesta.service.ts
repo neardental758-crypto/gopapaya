@@ -20,7 +20,7 @@ export class RespuestaService {
     return this.http.patch<Respuesta>(`${this.apiUrl}/${id}`, data);
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  delete(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }
 }

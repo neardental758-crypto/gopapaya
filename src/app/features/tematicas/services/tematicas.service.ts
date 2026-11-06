@@ -31,7 +31,7 @@ export class TematicasService {
     return this.http.patch<Tematica>(`${this.apiUrl}/${id}`, data);
   }
 
-  deleteTematica(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  deleteTematica(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }
 }

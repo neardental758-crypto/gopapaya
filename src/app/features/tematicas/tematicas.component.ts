@@ -184,7 +184,18 @@ export class TematicasComponent implements OnInit, OnDestroy {
               this.selectedContenido = null;
               this.selectedPregunta = null;
             },
-            error: (error) => console.error('Error al eliminar:', error),
+            error: (error) => {
+              if (error?.status >= 200 && error?.status < 300) {
+                this.tematicas = this.tematicas.filter(
+                  (t) => t._id !== tematica._id
+                );
+                this.selectedTematica = null;
+                this.selectedContenido = null;
+                this.selectedPregunta = null;
+                return;
+              }
+              console.error('Error al eliminar temática:', error);
+            },
           });
         this.subscriptions.push(sub);
       }
@@ -334,7 +345,30 @@ export class TematicasComponent implements OnInit, OnDestroy {
             this.selectedContenido = null;
             this.selectedPregunta = null;
           },
-          error: (error) => console.error('Error al eliminar:', error),
+          error: (error) => {
+            if (error?.status >= 200 && error?.status < 300) {
+              const updatedContenidos = this.selectedTematica!.contenidos!.filter(
+                (c) => c._id !== contenido._id
+              );
+              const updatedTematica = {
+                ...this.selectedTematica!,
+                contenidos: updatedContenidos,
+              };
+              const tematicaIndex = this.tematicas.findIndex(
+                (t) => t._id === this.selectedTematica!._id
+              );
+              if (tematicaIndex !== -1) {
+                this.tematicas = this.tematicas.map((t, i) =>
+                  i === tematicaIndex ? updatedTematica : t
+                );
+              }
+              this.selectedTematica = updatedTematica;
+              this.selectedContenido = null;
+              this.selectedPregunta = null;
+              return;
+            }
+            console.error('Error al eliminar:', error);
+          },
         });
         this.subscriptions.push(sub);
       }
@@ -596,7 +630,23 @@ export class TematicasComponent implements OnInit, OnDestroy {
             this.actualizarContenidoEnTematica();
             this.selectedPregunta = null;
           },
-          error: (error) => console.error('Error al eliminar:', error),
+          error: (error) => {
+            if (error?.status >= 200 && error?.status < 300) {
+              this.selectedContenido = {
+                ...this.selectedContenido!,
+                preguntas: this.selectedContenido!.preguntas!.filter(
+                  (p) => p._id !== pregunta._id
+                ),
+                num_preguntas:
+                  (this.selectedContenido!.preguntas?.length || 1) - 1,
+              };
+
+              this.actualizarContenidoEnTematica();
+              this.selectedPregunta = null;
+              return;
+            }
+            console.error('Error al eliminar pregunta:', error);
+          },
         });
         this.subscriptions.push(sub);
       }

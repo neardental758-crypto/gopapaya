@@ -21,7 +21,7 @@ export class PreguntaService {
     return this.http.patch<Pregunta>(`${this.apiUrl}/${id}`, data);
   }
 
-  delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  delete(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }
 }
