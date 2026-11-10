@@ -16,6 +16,12 @@ import { BrainBikeReglasComponent } from './features/brain-bike/reglas/reglas.co
 import { BrainBikeSplashComponent } from './features/brain-bike/splash/splash.component';
 import { BrainBikeCountdownComponent } from './features/brain-bike/countdown/countdown.component';
 import { BrainBikeJuegoComponent } from './features/brain-bike/juego/juego.component';
+import { BrainBikeV2ParametrosComponent } from './features/brain-bike-v2/parametros/parametros.component';
+import { BrainBikeV2RegistroComponent } from './features/brain-bike-v2/registro/registro.component';
+import { BrainBikeV2ReglasComponent } from './features/brain-bike-v2/reglas/reglas.component';
+import { BrainBikeV2SplashComponent } from './features/brain-bike-v2/splash/splash.component';
+import { BrainBikeV2CountdownComponent } from './features/brain-bike-v2/countdown/countdown.component';
+import { BrainBikeV2JuegoComponent } from './features/brain-bike-v2/juego/juego.component';
 import { GestionEmpresasComponent } from './features/gestion-empresas/gestion-empresas.component';
 import { EditarParametrosSesionComponent } from './features/brain-bike/editar-parametros-sesion/editar-parametros-sesion.component';
 import { CalendarioSesionesComponent } from './features/brain-bike/calendario-sesiones/calendario-sesiones.component';
@@ -121,6 +127,42 @@ export const routes: Routes = [
       {
         path: 'brain-bike/juego',
         component: BrainBikeJuegoComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'brain-bike-v2/splash',
+        component: BrainBikeV2SplashComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'brain-bike-v2/parametros',
+        component: BrainBikeV2ParametrosComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'brain-bike-v2/registro',
+        component: BrainBikeV2RegistroComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'brain-bike-v2/reglas',
+        component: BrainBikeV2ReglasComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'brain-bike-v2/countdown',
+        component: BrainBikeV2CountdownComponent,
+        canActivate: [sesionActivaGuard, rolGuard],
+        data: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'brain-bike-v2/juego',
+        component: BrainBikeV2JuegoComponent,
         canActivate: [sesionActivaGuard, rolGuard],
         data: { roles: ['super_admin', 'admin'] },
       },

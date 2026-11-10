@@ -224,7 +224,7 @@ export class CrearSesionComponent implements OnInit {
   seleccionarJuego(juego: string): void {
     this.juegoAsignado = juego;
 
-    if (juego !== 'brain-bike') {
+    if (juego !== 'brain-bike' && juego !== 'brain-bike-v2') {
       this.parametrosBrainBike = {
         tematica_id: '',
         contenido_id: '',
@@ -331,7 +331,7 @@ export class CrearSesionComponent implements OnInit {
       }
     }
 
-    if (this.paso === 3 && this.juegoAsignado === 'brain-bike') {
+    if (this.paso === 3 && (this.juegoAsignado === 'brain-bike' || this.juegoAsignado === 'brain-bike-v2')) {
       if (!this.parametrosBrainBike.tematica_id) {
         this.errorMensaje = 'Debe seleccionar una temática';
         return false;
@@ -420,7 +420,7 @@ export class CrearSesionComponent implements OnInit {
 
     let parametrosJuego = null;
 
-    if (this.juegoAsignado === 'brain-bike') {
+    if (this.juegoAsignado === 'brain-bike' || this.juegoAsignado === 'brain-bike-v2') {
       parametrosJuego = this.parametrosBrainBike;
     } else if (this.juegoAsignado === 'bicilicuadora') {
       parametrosJuego = {

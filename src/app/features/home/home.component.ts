@@ -235,6 +235,8 @@ export class HomeComponent implements OnInit {
 
     if (sesion.juego_asignado === 'brain-bike') {
       this.router.navigate(['/brain-bike/parametros']);
+    } else if (sesion.juego_asignado === 'brain-bike-v2') {
+      this.router.navigate(['/brain-bike-v2/parametros']);
     } else if (sesion.juego_asignado === 'bicilicuadora') {
       this.router.navigate(['/bicilicuadora/parametros']);
     } else if (sesion.juego_asignado === 'vr') {

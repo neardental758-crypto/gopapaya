@@ -34,6 +34,15 @@ export class SeleccionarJuegoComponent implements OnInit {
       disponible: true,
     },
     {
+      id: 'brain-bike-v2',
+      nombre: 'Brain Bike V2',
+      icono: '⚡',
+      descripcion:
+        'Trivia interactiva V2 con nuevos componentes y dinámicas avanzadas',
+      ruta: '/brain-bike-v2/splash',
+      disponible: true,
+    },
+    {
       id: 'biketona',
       nombre: 'Biketona',
       icono: '🚴',
